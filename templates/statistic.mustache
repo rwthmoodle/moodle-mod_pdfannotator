@@ -1,0 +1,56 @@
+ <script src="https://code.highcharts.com/highcharts.js"></script> <!-- durch lokale version ersetzen -->
+
+<div class="pdfannotator-statistic">
+    
+    
+        <div class="row">
+          <div class="col-md-6">
+            <table class = "generaltable table-bordered">
+              <thead>
+                <tr>
+                  {{#isteacher}}  <th></th><th>{{#str}}in_document, pdfannotator{{/str}}</th><th>{{#str}}in_course, pdfannotator{{/str}}</th>  {{/isteacher}}
+                  {{^isteacher}}   <th>{{#str}}in_document, pdfannotator{{/str}}</th><th>{{#str}}total, pdfannotator{{/str}}</th> <th>{{#str}}own, pdfannotator{{/str}}</th> <th>{{#str}}average, pdfannotator{{/str}}<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}average_help, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}average, pdfannotator{{/str}}"></li></a></th>   {{/isteacher}}
+                </tr>
+              </thead>
+              <tbody>
+                {{#tabledata_1}}
+                    <tr>
+                      <!--    <td>{{x}}</td><td>{{y}}</td><td>{{z}}</td> -->
+                      {{#i}} <td> {{.}} </td> {{/i}}
+                    </tr>
+                {{/tabledata_1}}
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-6">
+            {{^isteacher}}
+                <table class = "generaltable table-bordered">
+                    <thead>
+                      <tr>
+                        <th>{{#str}}in_course, pdfannotator{{/str}}</th><th>{{#str}}total, pdfannotator{{/str}}</th> <th>{{#str}}own, pdfannotator{{/str}}</th> <th>{{#str}}average, pdfannotator{{/str}}<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}average_help, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}average, pdfannotator{{/str}}"></li></a></th> 
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {{#tabledata_2}}
+                          <tr>
+                             {{#i}} <td> {{.}} </td> {{/i}}
+                          </tr>
+                      {{/tabledata_2}}
+                    </tbody>
+                  </table>
+
+            {{/isteacher}}
+          </div>
+        </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+         <div id="chart_questions_answers" ></div> 
+      </div>
+      <div class="col-md-6">
+        
+      </div>
+    </div>
+    
+</div>
+

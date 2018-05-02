@@ -1,0 +1,56 @@
+<div class="pdfannotator-studentoverview">
+    
+    <div>
+        <h3 class="course-content ul.topics"><a data-toggle="collapse" href="#accordion1">{{#str}}newanswersavailable, pdfannotator{{/str}}   </a><a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}newanswersavailable_help, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}newanswersavailable, pdfannotator{{/str}}"></li></a></h3>
+    </div>
+
+    <div class="container" id="accordion1">
+        {{> mod_pdfannotator/studentoverview_answers }}
+    </div>
+
+    <hr>
+
+
+    <div>
+        <h3><a data-toggle="collapse" href="#accordion2">{{#str}}newquestionstitle, pdfannotator{{/str}}   </a><a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}newquestionstitle_help1, pdfannotator{{/str}}{{timespan}}{{#str}}newquestionstitle_help2, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}newquestionstitle, pdfannotator{{/str}}"></li></a></h3>
+    </div>
+
+    <div class="container" id="accordion2">
+        {{> mod_pdfannotator/overview_new_questions }}
+    </div>
+
+
+    <hr>
+
+
+    <div>
+        <h3><a data-toggle="collapse" href="#accordion3">{{#str}}mypoststitle, pdfannotator{{/str}}   </a><a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}mypoststitle_help, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}mypoststitle, pdfannotator{{/str}}"></li></a></h3>
+    </div>
+
+    <div class="container" id="accordion3">
+        {{> mod_pdfannotator/overview_my_posts }}
+    </div>
+
+
+    <hr>
+
+
+    <div>
+        <h3><a data-toggle="collapse" href="#accordion4">{{#str}}hiddenentriestitle, pdfannotator{{/str}}   </a><a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="{{#str}}hiddenentriestitle_help, pdfannotator{{/str}}" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="{{#str}}entity_helptitle, pdfannotator{{/str}}{{#str}}hiddenentriestitle, pdfannotator{{/str}}"></li></a></h3>
+    </div>
+
+    <div class="container" id="accordion4">
+        {{> mod_pdfannotator/overview_administrate_entries }}
+    </div>
+
+    <hr>
+
+
+    <div>
+        <h3><a data-toggle="collapse" href="#accordion5">{{#str}}didyouknow, pdfannotator{{/str}}</a></h3>
+    </div>
+    
+    <div class="container" id="accordion5">{{#str}}chooseyoursettings, pdfannotator{{/str}}  <a href="{{linktosettingspage}}">{{#str}}tosettingspage, pdfannotator{{/str}}</a></div>
+
+
+ </div>

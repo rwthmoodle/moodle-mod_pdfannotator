@@ -1,0 +1,51 @@
+
+
+<div id='noanswers'>{{noanswers}}</div>
+
+{{#annotators_with_answers}}
+
+    <div class="panel-group">
+
+        <div class="panel panel-default" id="answerpanel_{{annotatorid}}">
+
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                        <a id="answerlink_{{annotatorid}}" data-toggle="collapse" class="annotator answerlink" data-parent="#accordion1" href="#collapse_{{annotatorid}}">{{annotatorname}} 
+                        <span id="answercount{{annotatorid}}">({{answercount}})</span><img id="dropdown1_{{annotatorid}}" class="dropdown_image" src={{{pixcollapsed}}}></a>
+                </h4>
+            </div>
+
+            <div id="collapse_{{annotatorid}}" class="panel-collapse collapse">
+
+                <ul class="list-group zebra">
+
+                    {{#answers}}
+
+                        <li class="list-group-item r" id="answer{{answerid}}">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <span class="col-lg-10 more"><strong>{{#shortentext}} 30, {{answeredquestion}}{{/shortentext}}</strong><br>{{{answer}}}</span>
+                                    <div class="col-lg-2">
+                                        <span>
+                                            <a href='{{{link}}}'>
+                                                <img id="linkicon" title="{{#str}}gotoquestion, pdfannotator{{/str}}" src={{{pixgotox}}}>
+                                            </a>
+                                        </span><!--<img src={{{pixcollapsed}}}>-->
+                                        <span class="ausblenden" id="{{answerid}}" data-annotator="{{annotatorid}}">
+                                            <img id="linkicon" title="{{#str}}hideforever, pdfannotator{{/str}}" src={{{pixhide}}}>
+                                        </span><!--<img src='/moodle/pix/e/accessibility_checker.png'>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                    {{/answers}}
+
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+{{/annotators_with_answers}}

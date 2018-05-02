@@ -1,0 +1,54 @@
+
+<div id='noreports'>{{noreports}}</div>
+
+{{#annotators_with_reports}}
+
+    <div class="panel-group">
+
+        <div class="panel panel-default" id="reportpanel_{{annotatorid}}">
+
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                        <a id="reportslink_{{annotatorid}}" data-toggle="collapse" class="annotator reportlink" data-parent="#accordion1" href="#collapse_{{annotatorid}}">{{annotatorname}} 
+                            <span id="reportcount{{annotatorid}}">({{reportcount}})</span> <img id="dropdown1_{{annotatorid}}" class="dropdown_image" src={{{pixcollapsed}}}>
+                        </a>
+                </h4>
+            </div>
+
+            <div id="collapse_{{annotatorid}}" class="panel-collapse collapse">
+
+                <ul class="list-group zebra">
+
+                    {{#reports}}
+
+                        <li class="list-group-item r" id="report{{reportid}}">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <span class="col-lg-10 more"><strong>{{#shortentext}} 30, {{reportedcomment}}{{/shortentext}}</strong><br>{{report}}</span>
+                                    <div class="col-lg-2">
+                                        <span class="delete" id="delete{{reportid}}" data-annotator="{{annotatorid}}">
+                                            <img id="linkicon" title="{{#str}}deletereport, pdfannotator{{/str}}" src={{{pixdelete}}}>
+                                        </span>
+                                        <span class="ausblenden" id="{{reportid}}" data-annotator="{{annotatorid}}">
+                                            <img id="linkicon" title="{{#str}}hideforever, pdfannotator{{/str}}" src={{{pixhide}}}>
+                                        </span>
+                                        <span>
+                                            <a href='{{{link}}}'>
+                                                <img id="linkicon" title="{{#str}}gotocomment, pdfannotator{{/str}}" src={{{pixgotox}}}>
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                    {{/reports}}
+
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+{{/annotators_with_reports}}

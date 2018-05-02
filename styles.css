@@ -1,0 +1,655 @@
+
+.pdfannotator_index .toolbar {
+  background-color: #eaeaea;
+  border-bottom: 1px solid #d0d0d0;
+  height: 35px;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0px 0 0 5px;
+  text-shadow: 1px 1px 0 #fff;
+  z-index: 100;
+  -webkit-box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
+     -moz-box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
+          box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
+}
+
+.pdfannotator_index .toolbar .spacer {
+  display: inline-block;
+  border-left: 1px solid #c1c1c1;
+  height: 34px;
+  margin: 0 5px -11px;
+}
+/*
+.toolbar a {
+  color: inherit;
+  text-decoration: none;
+}
+
+*/
+.toolbar button {
+  background-color: transparent;
+    border: 0px solid transparent;
+    border-radius: 0px;
+    font-size: 15px;
+    padding: 3px;
+    margin: 0 0 0px 0px;
+    text-align: center;
+    text-shadow: 0px 0px 0 #fff;
+    position: relative;
+    min-width: 27px;
+    min-height: 27px;
+    background-image: none;
+}
+
+.toolbar.fullscreen {
+    margin-left: 15px;
+}
+
+.toolbar button.active { /*RWTH-hellblau*/
+    background-image: radial-gradient(ellipse at center,#e6f2ff 40%,#8ebae5 100%); 
+    background-color: #8ebae5;
+  border-color: #bababa;
+  -webkit-box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
+     -moz-box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
+          box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
+}
+
+.toolbar select {
+    margin-bottom: 0px;
+}
+/*
+.toolbar button:hover,
+.toolbar button:focus {
+  border-color: #bababa;
+}
+
+.toolbar button.pen {
+  
+}
+
+.toolbar button.comment {
+
+}*/
+.color {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000;
+  vertical-align: middle;
+  margin: 0 0 0px 0px;
+}
+.color-selected {
+  border: 3px solid #666;
+  width: 30px;
+  height: 30px;
+  margin-top: -1px;
+  margin-left: -2px;
+  margin-right: -2px;
+}
+
+.text-color, .pen-color {
+    z-index: 100;
+  display: inline-block;
+}
+
+
+/* Copyright 2014 Mozilla Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.textLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  opacity: 0.2;
+  line-height: 1.0;
+
+    z-index: 20;
+}
+
+.textLayer > div:not(.helperLayer) {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  -webkit-transform-origin: 0% 0%;
+  -moz-transform-origin: 0% 0%;
+  -o-transform-origin: 0% 0%;
+  -ms-transform-origin: 0% 0%;
+  transform-origin: 0% 0%;
+}
+
+.textLayer .highlight {
+  margin: -1px;
+  padding: 1px;
+
+  background-color: rgb(180, 0, 170);
+  border-radius: 4px;
+}
+
+.textLayer .highlight.begin {
+  border-radius: 4px 0px 0px 4px;
+}
+
+.textLayer .highlight.end {
+  border-radius: 0px 4px 4px 0px;
+}
+
+.textLayer .highlight.middle {
+  border-radius: 0px;
+}
+
+.textLayer .highlight.selected {
+  background-color: rgb(0, 100, 0);
+}
+
+.textLayer ::selection { background: rgb(0,0,255); }
+.textLayer ::-moz-selection { background: rgb(0,0,255); }
+
+.textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  left: 0px;
+  top: 100%;
+  right: 0px;
+  bottom: 0px;
+  z-index: -1;
+  cursor: default;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+}
+
+.textLayer .endOfContent.active {
+  top: 0px;
+}
+
+
+.annotationLayer section {
+  position: absolute;
+}
+
+.annotationLayer .linkAnnotation > a {
+  position: absolute;
+  font-size: 1em;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.annotationLayer .linkAnnotation > a /* -ms-a */  {
+  background: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0 repeat;
+}
+
+.annotationLayer .linkAnnotation > a:hover {
+  opacity: 0.2;
+  background: #ff0;
+  box-shadow: 0px 2px 10px #ff0;
+}
+
+.annotationLayer .textAnnotation img {
+  position: absolute;
+  cursor: pointer;
+}
+
+.annotationLayer .popupWrapper {
+  position: absolute;
+  width: 20em;
+}
+
+.annotationLayer .popup {
+  position: absolute;
+  z-index: 200;
+  max-width: 20em;
+  background-color: #FFFF99;
+  box-shadow: 0px 2px 5px #333;
+  border-radius: 2px;
+  padding: 0.6em;
+  margin-left: 5px;
+  cursor: pointer;
+  word-wrap: break-word;
+}
+
+.annotationLayer .popup h1 {
+  font-size: 1em;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 0.2em;
+}
+
+.annotationLayer .popup p {
+  padding-top: 0.2em;
+}
+
+.annotationLayer .highlightAnnotation,
+.annotationLayer .underlineAnnotation,
+.annotationLayer .squigglyAnnotation,
+.annotationLayer .strikeoutAnnotation,
+.annotationLayer .fileAttachmentAnnotation {
+  cursor: pointer;
+}
+
+.pdfViewer .canvasWrapper {
+  overflow: hidden;
+}
+
+.pdfViewer .page {
+  direction: ltr;
+  width: 816px;
+  height: 1056px;
+  margin: 1px auto -8px auto;
+  position: relative;
+  overflow: visible;
+  border: 9px solid transparent;
+  background-clip: content-box;
+  border-image: url(images/shadow.png) 9 9 repeat;
+  background-color: white;
+}
+
+.pdfViewer.removePageBorders .page {
+  margin: 0px auto 10px auto;
+  border: none;
+}
+
+.pdfViewer .page canvas {
+  margin: 0;
+  display: block;
+}
+
+.pdfViewer .page .loadingIcon {
+  position: absolute;
+  display: block;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: url('images/loading-icon.gif') center no-repeat;
+}
+
+.pdfPresentationMode:-webkit-full-screen .pdfViewer .page {
+  margin-bottom: 100%;
+  border: 0;
+}
+
+.pdfPresentationMode:-moz-full-screen .pdfViewer .page {
+  margin-bottom: 100%;
+  border: 0;
+}
+
+.pdfPresentationMode:-ms-fullscreen .pdfViewer .page {
+  margin-bottom: 100% !important;
+  border: 0;
+}
+
+.pdfPresentationMode:fullscreen .pdfViewer .page {
+  margin-bottom: 100%;
+  border: 0;
+}
+
+body {
+    background-color: #eee;
+    font-family: sans-serif;
+    margin: 0;
+}
+
+    .pdfViewer .canvasWrapper {
+      box-shadow: 0 0 3px #bbb;
+      position: absolute; 
+    }
+    .pdfViewer .page {
+      margin-bottom: 10px;
+    }
+
+    .annotationLayer {
+        position: absolute;
+        z-index: 2;
+    }
+
+    #content-wrapper {
+        display: inline-block;
+        overflow: auto;
+        bottom: 0;
+        height: 100%;
+/*
+      position: relative;
+      top: 35px;
+      left: 0;
+      right: 250px;
+      bottom: 0;
+      overflow: auto;*/
+    }
+
+    #comment-wrapper {
+        display: inline-block;
+        overflow: auto;
+        background: #eaeaea;
+        border-left: 1px solid #d0d0d0;
+        bottom: 0;
+        height: 100%;
+        margin: 0;
+/*
+      position: relative;
+      top: 35px;
+      right: 0;
+      bottom: 0;
+      
+      width: 100%;
+      */
+    }
+    #comment-wrapper h4 {
+      margin: 10px;
+    }
+    #comment-wrapper .comment-list {
+      font-size: 12px;
+      position: relative;
+      top: 38px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+    #comment-wrapper .comment-list-item {
+      border-bottom: 1px solid #d0d0d0;
+      padding: 10px;
+    }
+    #comment-wrapper .comment-list-container {
+      position: relative;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 47px;
+      overflow: auto;
+    }
+    #comment-wrapper .comment-list-form {
+      position: relative;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px;
+    }
+    #comment-wrapper .comment-list-form input {
+      padding: 5px;
+      width: 100%;
+    }
+    .pdfViewer .page {
+      border-image: none;
+    }
+
+    .chat-message {
+        /*border: 1px dotted #ddd;*/
+        border-radius: 4px;
+        padding: 4px 10px;
+        margin: 0 0px 10px 0;
+        background-color: #fefefe;        
+    } 
+        
+    .chat-message-container {
+        flex-grow: 1;
+    }
+
+    .chat-message.owner:not(.questioncomment), .chat-message.private:not(.questioncomment) {
+        margin: 0 10px 10px 10px;
+        border: 3px solid #c7ddf2 !important;
+    }
+    
+    .chat-message:not(.questioncomment) {
+        margin: 0 10px 10px 10px;
+    }
+
+    .chat-message.comment-list-item:not(.questions) {
+        display: flex; 
+        
+    }
+    
+    .chat-message.comment-list-item:not(.questions).usevotes {
+         padding-left: 0px !important;
+     }
+    
+    .chat-message .votes {
+        text-align: center;
+    }
+    
+    .chat-message .voteIcon {
+        margin-right: 0;
+    }
+        
+    .chat-message .time {
+        float: right;
+        font-size: 11px;
+        color: #777;
+    }
+    .chat-message .user {
+        font-weight: 700;
+    }
+
+    .chat-message .comment-delete-button {
+        float: right;
+        margin: 0px 0px 0px 5px;
+    }
+
+    .chat-message .comment-report-button {
+        float: right;
+        margin: 0px 0px 0px 5px;
+    }
+    
+    .chat-message.questioncomment {
+        margin: 0 0 10px 0;
+        background-color: #C7DDF2;
+    }
+/*    
+    .chat-message.questioncomment .time {
+        color: white;
+    }
+*/    
+    .chat-message.questions {
+        background-color: #c7ddf2;
+        color: rgb(0,84,159);
+    }
+    
+    .chat-message-meta {
+        min-height: 12px;
+        overflow: hidden;
+    }
+   
+    :not(.questioncomment) > .chat-message-text p{
+        margin-bottom: 0;
+    }
+/*    
+    .owner, #commentSubmit.owner:hover {
+        background: #C7DDF2;
+    }
+
+    input.private:hover, .private {
+        background: #d2cfe2;
+    }
+
+    .anonymous, input.anonymous:hover {
+        background: #ffffe6; 
+    }
+*/
+    .helperLayer {
+        width: 100%;
+        height: 100%;
+        
+    }
+
+    .reportMenu {
+        display: none;
+    }
+    
+    
+    .comment-radio input{
+        width: auto !important;
+    }
+
+    /*AnkerToolbar*/
+    .fixtool{
+        position: fixed;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: visible;
+        left: unset !important;
+        right: unset !important;
+    }
+    
+    
+    .fullscreenWrapper #region-main{
+        position: fixed ;
+        top: 0px;
+        left: 0px;
+        max-width: 100%;
+        width: 100%;
+        max-height: 100%;
+    }
+    
+    .fullscreenWrapper #nav-drawer {
+        display: none;
+        visibility: hidden;
+    }
+    
+    .fullscreenWrapper header {
+        display: none;
+        visibility: hidden;
+    }
+    
+    .fullscreenWrapper #block-region-side-pre{
+        display: none;
+        visibility: hidden;
+    }
+    
+    .fullscreenWrapper #page-footer {
+        display: none;
+        visibility: hidden;
+    }
+    
+    
+    #myarea {
+        width: 100%;
+    }
+    
+    
+    .cursor-area * {
+        cursor: crosshair;
+    }
+    
+    .cursor-highlight{
+        cursor: url([[pix:pdfannotator|text_highlight_picker]]) 8 8, auto;
+    }
+    .cursor-strikeout{
+        cursor: url([[pix:pdfannotator|strikethrough]]) 8 8, auto;
+    }
+    .cursor-pen * {
+        cursor: url([[pix:pdfannotator|editstring]]) 0 12, auto !important;
+    }
+    .cursor-text * {
+        cursor: url([[pix:pdfannotator|text_color_picker]]) 0 0, auto !important;
+    }
+    .cursor-point * {
+        cursor: url([[pix:pdfannotator|pinbild]]) 8 16, auto !important;
+    }
+    .cursor-edit * {
+        cursor: pointer !important;
+    }
+    
+    
+    .questionanswercount {
+        /*border: 2px solid rgb(142,186,229)*/;
+        float: right;
+        padding: 0px 2px 0px 2px;
+        margin: -2px;
+        border-radius: 8px;
+        font-size: 100% !important;
+    }
+    
+/******************************************** START: mainly for studentoverview.mustache and teacheroverview.mustache *******************************************/
+
+    /*Information for older browsers*/
+    header, section, footer, aside, nav, main, article, figure {
+        display: block;
+    }
+
+/*    h3 a {
+        aria-expanded: 'true' !important;
+    }*/
+    
+    
+    .panel-group {      
+        border-radius: 10px;
+    }
+
+    .panel-default {
+        background-color: #f2f2f2;
+        border-radius: 5px;
+        padding-left:30px;
+        padding-right:15px;
+        
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .mycurrent {
+        background-color: rgb(199,221,242);
+    }
+    
+    .panel.panel-default.open {
+        padding-bottom:15px;
+    }
+
+    .panel-title {
+        line-height: 40px;
+        color: rgb(0,84,159);
+    }
+
+    #linkicon:hover{
+        height: 20px;
+    }
+
+    #linkicon {
+        float: right;
+        padding-left: 20px;
+    }
+
+    a.morelink {
+	text-decoration:none !important;
+	outline: none;
+    }
+
+    .morecontent span {
+        display: none;
+    }
+
+    li.stripe-odd{
+        background-color: #ffffff;<!--#f7f7f7;<!--#e6e6e6;<!--#f2f2f2;-->
+    }
+    li.stripe-even{
+        background-color: #ffffff;
+    }  
+    ul.zebra li:hover{
+        background-color: #ededed;<!--#d9d9d9;#e6e6e6;-->
+    }
+
+    .annotator  {
+        text-decoration: none !important;
+    }
+    
+/******************************************** END: mainly for studentoverview.mustache and teacheroverview.mustache *******************************************/
+
+
+    :disabled img {
+        opacity: 0.4;
+    }
