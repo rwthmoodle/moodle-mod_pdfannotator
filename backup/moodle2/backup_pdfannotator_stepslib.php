@@ -38,56 +38,82 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
         // 2. Define each element separately
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
-            'name', 'intro', 'introformat', 'timecreated', 'timemodified'));
+            'name', 'intro', 'introformat', 'usevotes', 'use_studenttextbox', 'use_studentdrawing', 'newsspan', 'timecreated', 'timemodified'));
 
             $annotations = new backup_nested_element('annotations');
             $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid', 'data', 'timecreated', 'timemodified'));
 
-                $comments = new backup_nested_element('comments');
-                $comment = new backup_nested_element('comment', array('id'), array('userid', 'content', 'timecreated', 'timemodified', 'visibility', 'isquestion', 'isdeleted', 'seen'));
-
-                    $reports = new backup_nested_element('reports');
-                    $report = new backup_nested_element('report', array('id'), array('courseid', 'pdfannotatorid', 'page', 'message', 'userid', 'timecreated', 'seen'));
+                $subscriptions = new backup_nested_element('subscriptions');
+                $subscription = new backup_nested_element('subscription', array('id'), array('userid'));
             
-//                $comments_archiv = new backup_nested_element('comments_archiv');
-//                $comment_archiv = new backup_nested_element('comment_archiv', array('id'), array('userid', 'content', 'timecreated', 'timemodified', 'visibility', 'isquestion', 'isdeleted', 'seen'));
+                $comments_archiv = new backup_nested_element('comments_archiv');
+                $comment_archiv = new backup_nested_element('comment_archiv', array('id'), array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'visibility', 'isquestion', 'isdeleted', 'seen'));
                 
+                $comments = new backup_nested_element('comments');
+                $comment = new backup_nested_element('comment', array('id'), array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'visibility', 'isquestion', 'isdeleted', 'seen'));
+                    
+                    $votes = new backup_nested_element('votes');
+                    $vote = new backup_nested_element('vote', array('id'), array('userid', 'annotationid'));
+                    
+                    $reports = new backup_nested_element('reports');
+                    $report = new backup_nested_element('report', array('id'), array('courseid', 'pdfannotatorid', 'message', 'userid', 'timecreated', 'seen'));
+            
+                  
         // 3. Build the tree (mind the right order!)
         $pdfannotator->add_child($annotations);        
             $annotations->add_child($annotation);
-       
+                
+                $annotation->add_child($subscriptions);         
+                    $subscriptions->add_child($subscription);
+            
+                $annotation->add_child($comments_archiv);
+                    $comments_archiv->add_child($comment_archiv);    
+                    
                 $annotation->add_child($comments);         
                     $comments->add_child($comment);
             
+                        $comment->add_child($votes);
+                            $votes->add_child($vote);
+                    
                         $comment->add_child($reports);
                             $reports->add_child($report);
         
-//                $annotation->add_child($comments_archiv);
-//                    $comments_archiv->add_child($comment_archiv);
-        
+                
         // 4. Define db sources
         $pdfannotator->set_source_table('pdfannotator', array('id' => backup::VAR_ACTIVITYID)); // backup::VAR_ACTIVITYID is the 'course module id'.
 
 //        if ($userinfo) {
             
             // add all annotations specific to this annotator instance
-            $annotation->set_source_table('pdfannotator_annotationsneu', array('pdfannotatorid' => backup::VAR_PARENTID));
+            $annotation->set_source_table('pdfannotator_annotations', array('pdfannotatorid' => backup::VAR_PARENTID));
             
+                // add any subscriptions to this annotation 
+                $subscription->set_source_table('pdfannotator_subscriptions', array('annotationid' => backup::VAR_PARENTID));
+            
+                // add any archived comments on the annotation
+                $comment_archiv->set_source_table('pdfannotator_comments_archiv', array('annotationid' => backup::VAR_PARENTID));
+                
                 // add any comments of this annotation 
                 $comment->set_source_table('pdfannotator_comments', array('annotationid' => backup::VAR_PARENTID));
                     
+                    // add any votes for this comment
+                    $vote->set_source_table('pdfannotator_votes', array('commentid' => backup::VAR_PARENTID));
+                
                     // add any reports of this comment
                     $report->set_source_table('pdfannotator_reports', array('commentid' => backup::VAR_PARENTID));
-            
-//             $comment_archiv->set_source_table('pdfannotator_comments_archiv', array('annotationid' => backup::VAR_PARENTID));     
+                                
 //        }   
                     
         // 5. Define id annotations (some attributes are foreign keys)
         $annotation->annotate_ids('user', 'userid');
+        $subscription->annotate_ids('user', 'userid');
+        $comment_archiv->annotate_ids('user', 'userid');
+        $comment_archiv->annotate_ids('pdfannotator', 'pdfannotatorid');
         $comment->annotate_ids('user', 'userid');
+        $comment->annotate_ids('pdfannotator', 'pdfannotatorid');
+        $vote->annotate_ids('user', 'userid');
         $report->annotate_ids('user', 'userid');
         $report->annotate_ids('pdfannotator', 'pdfannotatorid');
-//        $comment_archiv->annotate_ids('user', 'userid');
 
         // 6. Define file annotations (vgl. resource activity)
         $pdfannotator->annotate_files('mod_pdfannotator', 'intro', null); // This file area does not have an itemid

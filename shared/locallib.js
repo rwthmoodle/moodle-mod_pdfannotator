@@ -13,21 +13,27 @@ require(['jquery'], function($) {
          */
         (function (){
             var top = $('#pdftoolbar').offset().top - parseFloat($('#pdftoolbar').css('marginTop').replace(/auto/, 0));
-            if($('header').length > 0){
-                var fixedTop = $('header').outerHeight();
-            }else{
-                var fixedTop = 0;
-            }
+           
+            var fixedTop = 0;
+            if($('.fixed-top').length > 0){
+                fixedTop = $('.fixed-top').outerHeight();
+            }else if($('.navbar-static-top').length > 0){
+                fixedTop = $('.navbar-static-top').outerHeight();
+            }  
+            
             var oldTop = $('#pdftoolbar').css('top');
+            
             $(window).scroll(function (event) {
                 var y = $(this).scrollTop();
-                if (y >= top + 1) 
-                {
+                
+                if (y >= top + 1 - fixedTop) {
+                    
                     $('#pdftoolbar').addClass('fixtool');
                     document.getElementById("pdftoolbar").style.top = fixedTop+"px";
                 } else {
+                    
                     $('#pdftoolbar').removeClass('fixtool');    
-                    document.getElementById("pdftoolbar").style.top = oldTop+"px";
+                    document.getElementById("pdftoolbar").style.top = oldTop;
                 }
             });
         })();

@@ -2,7 +2,7 @@
 /**
  * Defines backup_pdfannotator_activity_task class
  * 
- * Moodle creates backups of courses or their parts by executing so called backup plan.
+ * Moodle creates backups of courses or their parts by executing a so called backup plan.
  * The backup plan consists of a set of backup tasks and finally each backup task consists of one or more backup steps.
  * This file provides the activity task class.
  * 

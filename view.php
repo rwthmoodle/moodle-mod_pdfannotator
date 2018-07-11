@@ -32,6 +32,7 @@ if ($r) {
 }
 
 $course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+//$course = get_course($cm->course);
 
 //$course->pdfannotator_list = pdfannotator_instance::get_pdfannotator_instances($course->id); // array containing all pdfannotator instance objects for this course
 
@@ -59,10 +60,6 @@ if (count($files) < 1) {
 
 $pdfannotator->mainfile = $file->get_filename();
 
-// Check role of current user
-$isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
-$isstudent = has_capability('mod/pdfannotator:submit', $context);
-
 // Fullscreen is now handled with JS
 /*
 if(optional_param('full', 0, PARAM_BOOL)){
@@ -75,15 +72,11 @@ $PAGE->set_heading($course->fullname);
 // Display course name, navigation bar at the very top and "Dashboard->...->..." bar
 echo $OUTPUT->header();
 
-if ($isteacher) {
-    include($CFG->dirroot.'/mod/pdfannotator/teacherview.php');    
+// Check role of current user // XXX This is gradually to be replaced by more specified capabilities
+$isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
+$isstudent = has_capability('mod/pdfannotator:submit', $context);
 
-} else if ($isstudent) {
-    include($CFG->dirroot.'/mod/pdfannotator/studentview.php');
- 
-} else {
-    echo $OUTPUT->box(get_string('guestscantdoanything', 'pdfannotator'), 'generalbox');
-}
+include($CFG->dirroot.'/mod/pdfannotator/controller.php');
 
 // Display navigation and settings bars on the left as well as the footer
 echo $OUTPUT->footer();

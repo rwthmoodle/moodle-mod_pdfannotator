@@ -1,0 +1,53 @@
+<div id='nohiddenentries'>{{nohiddenentries}}</div>
+
+{{#annotators_with_hidden_reports}}
+
+    <div class="panel-group">
+
+        <div class="panel panel-default" id="hiddenreportpanel_{{annotatorid}}">
+
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                        <a id="hiddenreportlink_{{annotatorid}}" data-toggle="collapse" class="annotator hiddenreportlink" data-parent="#accordion1" href="#collapse4_{{annotatorid}}">{{annotatorname}} 
+                            <span id="hiddenreportcount{{annotatorid}}">({{hiddenreportcount}})</span> <img id="dropdown5_{{annotatorid}}" class="dropdown_image" src={{{pixcollapsed}}}>
+                        </a>
+                </h4>
+            </div>
+
+            <div id="collapse4_{{annotatorid}}" class="panel-collapse collapse">
+
+                <ul class="list-group zebra">
+
+                    {{#hiddenreports}}
+
+                        <li class="list-group-item r" id="hiddenreport{{hiddenreportid}}">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <span class="col-lg-10 more"><strong>{{#shortentext}} 30, {{hiddenreportsubjectline}}{{/shortentext}}</strong><br>{{hiddenreport}}</span>
+                                    <div class="col-lg-2">
+                                        <span class="delete cattwo" id="delete{{hiddenreportid}}" data-annotator="{{annotatorid}}">
+                                            <img id="linkicon" title="{{#str}}deletereport, pdfannotator{{/str}}" src={{{pixdelete}}}>
+                                        </span>
+                                        <span class="reportseinblenden" id="{{hiddenreportid}}" data-annotator="{{annotatorid}}">
+                                            <img id="linkicon" title="{{#str}}displayagain, pdfannotator{{/str}}" src={{{pixdisplay}}}>
+                                        </span>
+                                        <span>
+                                            <a href='{{{link}}}'>
+                                                <img id="linkicon" title="{{#str}}gotocomment, pdfannotator{{/str}}" src={{{pixgotox}}}>
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                    {{/hiddenreports}}
+
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+{{/annotators_with_hidden_reports}}

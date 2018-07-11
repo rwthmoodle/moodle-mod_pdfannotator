@@ -5,28 +5,28 @@
  * create_annotation
  * delete
  * read (abstract)
- * 
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes(see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
  */
-abstract class annotation {
-    
+class pdfannotator_annotation {
+
     public $id;
-    public $pdfannotatorid; // id of the pdfannotator instance
+    public $pdfannotatorid; // instance id
     public $page;
     public $userid;
     public $annotationtypeid;
     public $data;
     public $timecreated;
     public $timemodified;
-    
+
     public function __construct($id) {
         global $DB;
-        $record = $DB->get_record('pdfannotator_annotationsneu',['id' => $id],'*',MUST_EXIST);
-        
-        $this->id= $id;
+        $record = $DB->get_record('pdfannotator_annotations', ['id' => $id], '*', MUST_EXIST);
+
+        $this->id = $id;
         $this->pdfannotatorid = $record->pdfannotatorid;
         $this->page = $record->page;
         $this->userid = $record->userid;
@@ -35,9 +35,30 @@ abstract class annotation {
         $this->timecreated = $record->timecreated;
         $this->timemodified = $record->timemodified;
     }
+
+    /**
+     * Returns the name of the type of the annotation.
+     * @global type $DB
+     * @return type
+     */
+    public function get_annotationtype() {
+        global $DB;
+        $type = $DB->get_field('pdfannotator_annotationtypes', 'name', ['id' => $this->annotationtypeid]);
+
+        return $type;
+    }
+
+    /**
+     * Returns the number of page on which the annotation was created.
+     * @return type Integer
+     */
+    public function get_page_of_annotation() {
+        return $this->page;
+    }
+
     /**
      * This method creates a new record in the database table named mdl_pdfannotator_annotations and returns its id
-     * 
+     *
      * @global type $DB
      * @global type $USER
      * @param type $documentid specifies the pdf file to which this annotation belongs
@@ -46,283 +67,213 @@ abstract class annotation {
      * @param type $itemid identifies the record in the respective child class table, e.g. highlights
      * @return int (or boolean false)
      */
-    public static function create_annotation($documentid, $pageid, $type, $itemid){
-        
+    public static function create_annotation($documentid, $pageid, $type, $itemid) {
+
         global $DB;
         global $USER;
-        $dataRecord = new stdClass();
-        $dataRecord->userid = $USER->id;
-        $dataRecord->documentid = $documentid;
-        $dataRecord->pageid = $pageid;
-        $dataRecord->type = $type;
-        $dataRecord->itemid = $itemid;
-        // A: create a new record in the table named 'annotations' and return its id, which is created by autoincrement:
-        $annotationID = $DB->insert_record('pdfannotator_annotations', $dataRecord, $returnid=true);
-        return $annotationID;
-        
+        $datarecord = new stdClass();
+        $datarecord->userid = $USER->id;
+        $datarecord->documentid = $documentid;
+        $datarecord->pageid = $pageid;
+        $datarecord->type = $type;
+        $datarecord->itemid = $itemid;
+        $annotationid = $DB->insert_record('pdfannotator_annotations', $datarecord, $returnid = true);
+        return $annotationid;
     }
-    
-  
+
     /**
      * Method updates data attribute (consisting of width, color and lines)
      * in mdl_pdfannotator_drawings after a drawing was shifted in position
-     * 
+     *
      * @global type $DB
      * @param type $annotationid
      * @param type $newdata
      * @return type int 1 for success
      */
     public static function update($annotationid, $newdata) {
-        
+
         global $DB;
         $dataobject = array("id" => $annotationid, "data" => json_encode($newdata));
-        return $DB->update_record('pdfannotator_annotationsneu', $dataobject, $bulk=false);
-        
+        return $DB->update_record('pdfannotator_annotations', $dataobject, $bulk = false);
     }
-    
-        /**
-         * Method deletes the specified annotation and all comments attached to it,
-         * if the user is allowed to do so
-         * 
-         * @global type $DB
-         * @param type $annotationId
-         * @param type $cmid
-         * @return boolean
-         */
-        public static function delete($annotationId, $cmid){
-        
+
+    /**
+     * Method deletes the specified annotation and all comments attached to it,
+     * if the user is allowed to do so
+     *
+     * @global type $DB
+     * @param type $annotationId
+     * @param type $cmid
+     * @return boolean
+     */
+    public static function delete($annotationid, $cmid = null, $righttobeforgottenwasinvoked = null) {
+
         global $DB;
-        $table1 = 'pdfannotator_annotationsneu';
+        $table1 = 'pdfannotator_annotations';
         $table2 = 'pdfannotator_comments';
-        
-        if (! $DB->record_exists($table1, array('id' => $annotationId)) ) {
+
+        if (!$DB->record_exists($table1, array('id' => $annotationid))) {
             return false;
         }
-        
-        // Check user rights to delete this annotation and all its attached comments
-        $deletionAllowed = annotation::deletionAllowed($annotationId, $cmid);
-        
-        // Delete annotation
-        if ($deletionAllowed[0] === true) {
-            
-            $success = $DB->delete_records($table1, array("id" => $annotationId)); 
-            
-            if ($success == null || $success != 1) {
-                return false;
-                
-            }
-            
-            //Delete all comments of this annotation
-            //But first insert reported comments into the archive
-            $comments = $DB->get_records('pdfannotator_comments', array("annotationid" => $annotationId));
-            foreach($comments as $commentdata){
-                //if the comment was not deleted, but reported, then insert the record into the archive
-                if($commentdata->isdeleted == 0 && $DB->record_exists('pdfannotator_reports', ['commentid' => $commentdata->id])){
+
+        // Check user rights to delete this annotation and all its attached comments.
+        $deletionallowed = self::deletion_allowed($annotationid, $cmid);
+
+        // Delete annotation.
+        if ($deletionallowed[0] === true || $righttobeforgottenwasinvoked === true) {
+
+            $conditions = array('annotationid' => $annotationid, 'isquestion' => '1');
+            $questionid = $DB->get_field('pdfannotator_comments', 'id', $conditions);
+
+            // Delete all comments of this annotation.
+            // But first insert reported comments into the archive.
+            $comments = $DB->get_records('pdfannotator_comments', array("annotationid" => $annotationid));
+            foreach ($comments as $commentdata) {
+                $DB->delete_records('pdfannotator_votes', array("commentid" => $commentdata->id));
+                // If the comment was not deleted, but reported, then insert the record into the archive.
+                if ($commentdata->isdeleted == 0 && $DB->record_exists('pdfannotator_reports', ['commentid' => $commentdata->id])) {
                     unset($commentdata->id);
-                    $DB->insert_record('pdfannotator_comments_archiv',$commentdata);
+                    $DB->insert_record('pdfannotator_comments_archiv', $commentdata);
                 }
             }
-            $success = $DB->delete_records($table2, array("annotationid" => $annotationId)); 
-            
+            $success = $DB->delete_records($table2, array("annotationid" => $annotationid));
+
+            // Delete subscriptions to the question.
+            $DB->delete_records('pdfannotator_subscriptions', array('annotationid' => $annotationid));
+
+            // Delete the annotation itself.
+            $success = $DB->delete_records($table1, array("id" => $annotationid));
+
+            if ($righttobeforgottenwasinvoked) {
+                return;
+            }
+
             if ($success == null || $success != 1) {
                 return false;
-                
             }
+
             return true;
-        }else{
-            return $deletionAllowed[1];
+        } else {
+            return $deletionallowed[1];
         }
-        
-        
     }
-    
-    
+
     /**
      * Method checks whether the annotation as well as possible comments attached to it
      * belong to the current user
-     * 
+     *
      * @return
-     * 
      */
-    public static function deletionAllowed($annotationId, $cmid) {
-        
+    public static function deletion_allowed($annotationid, $cmid) {
+
         global $DB;
         $table = 'pdfannotator_annotations';
-        
+
         global $USER;
         $thisuser = $USER->id;
-        $annotationAuthor = annotation::getAuthor($annotationId);
-        
+        $annotationauthor = self::get_author($annotationid);
+
         $result = [];
-        
-        // If user has admin rights with regard to annotations/comments: Allow deletion
+
+        // If user has admin rights with regard to annotations/comments: Allow deletion.
         if (!$cm = get_coursemodule_from_id('pdfannotator', $cmid)) {
             error("Course module ID was incorrect");
         }
         $context = context_module::instance($cm->id);
-        
+
         if (has_capability('mod/pdfannotator:administrateuserinput', $context)) {
             $result[] = true;
             return $result;
         }
-        
-        // If not:
 
-        // Check user permission to delete the annotation itself
-        if ($thisuser != $annotationAuthor) {
+        // If not:
+        // Check user permission to delete the annotation itself.
+        if ($thisuser != $annotationauthor) {
             $result[] = false;
             $result[] = get_string('onlyDeleteOwnAnnotations', 'pdfannotator');
             return $result;
-        }        
-        // Check whether other people have commented this annotation
-        $attached_comments = pdfannotator_comment::find($annotationId);
-        if ($attached_comments && $attached_comments !== null) {
-            foreach ($attached_comments as $comment) {
+        }
+        // Check whether other people have commented this annotation.
+        $attachedcomments = pdfannotator_comment::find($annotationid);
+        if ($attachedcomments && $attachedcomments !== null) {
+            foreach ($attachedcomments as $comment) {
                 if ($thisuser != $comment->userid) {
                     $result[] = false;
                     $result[] = get_string('onlyDeleteUncommentedPosts', 'pdfannotator');
                     return $result;
                 }
             }
-        }  
-        
+        }
+
         $result[] = true;
         return $result;
     }
+
     /**
      * Method checks whether the annotation in question may be shifted in position.
      * It returns true if the annotation was made by the user who is trying to shift it
      * and not yet commented by other people.
-     * 
+     *
      * @global type $USER
      * @param type $annotationId
      * @return boolean
      */
-    public static function shiftingAllowed($annotationId) {
-        
+    public static function shifting_allowed($annotationid) {
+
         global $DB;
         global $USER;
-        
-        $annotationAuthor = annotation::getAuthor($annotationId);
-        
-        // Check user permission to delete the annotation itself
-        if ($USER->id != $annotationAuthor) {
+
+        $annotationauthor = self::get_author($annotationid);
+
+        // Check user permission to delete the annotation itself.
+        if ($USER->id != $annotationauthor) {
             return false;
-        }        
-        
-        // Check whether other people have commented this annotation
-        if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", array($annotationId, $USER->id))) {
+        }
+
+        // Check whether other people have commented this annotation.
+        $params = array($annotationid, $USER->id);
+        if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", $params)) {
             return false;
-        }        
+        }
         return true;
     }
-    /**
-     * Method takes the annotation id and returns the type specific table name, e.g. pdfannotator_drawings
-     * 
-     * @param type $annotationId
-     * @return string
-     */
-    public static function getTypeTable($annotationId) {
-        
-        $annotation_type = annotation::getType($annotationId);
-        
-        switch($annotation_type) {
-            case 'area':
-                $tablename = 'pdfannotator_areas';
-                break;
-            case 'drawing':
-                $tablename = 'pdfannotator_drawings';
-                break;
-            case 'highlight':
-                $tablename = 'pdfannotator_highlights';
-                break;
-            case 'point':
-                $tablename = 'pdfannotator_points';
-                break;
-            case 'strikeout':
-                $tablename = 'pdfannotator_strikeouts';
-                break;
-            case 'textbox':
-                $tablename = 'pdfannotator_textboxes';
-                break;
-        }
-        return $tablename;
-    }
+
     /**
      * Method takes an annotation's id and returns the user id of its author
-     * 
+     *
      * @global type $DB
      * @param type $itemid
      * @return type
      */
-    public static function getAuthor($annotationId){
-            
-            global $DB;
-            return $DB->get_field('pdfannotator_annotationsneu', 'userid', array('id' => $annotationId), $strictness=MUST_EXIST);
-            
+    public static function get_author($annotationid) {
+
+        global $DB;
+        return $DB->get_field('pdfannotator_annotations', 'userid', array('id' => $annotationid), $strictness = MUST_EXIST);
     }
-    /**
-     * Method takes an annotation's id and returns its type, e.g. 3 for 'highlight'
-     * 
-     * @global type $DB
-     * @param type $itemid
-     * @return type
-     */
-    public static function getType($annotationId){            
-            global $DB;     
-            return $DB->get_field('pdfannotator_annotationsneu', 'annotationtypeid', array('id' => $annotationId), $strictness=MUST_EXIST);           
-    }
-    /**
-     * Method takes an annotation's id and returns the id of the annotator instance in which it was made
-     * 
-     * @global type $DB
-     * @param type $annotationId
-     * @return type
-     */
-    public static function getDocumentID($annotationId){            
-            global $DB;
-            return $DB->get_field('pdfannotator_annotationsneu', 'documentid', array('id' => $annotationId), $strictness=MUST_EXIST);            
-    }
+
     /**
      * Method takes an annotation's id and returns the page it was made on
-     * 
+     *
      * @global type $DB
      * @param type $annotationId
      * @return type
      */
-    public static function getPageID($annotationId){
+    public static function get_pageid($annotationid) {
         global $DB;
-        return $DB->get_field('pdfannotator_annotationsneu', 'page', array('id' => $annotationId), $strictness=IGNORE_MISSING);        
+        return $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = IGNORE_MISSING);
     }
+
     /**
-     * Method takes an annotation's id and returns the content of the underlying question comemnt
-     * 
+     * Method takes an annotation's id and returns the content of the underlying question comment
+     *
      * @global type $DB
      * @param type $annotationId
      * @return type
      */
-    public static function getQuestion($annotationId){
+    public static function get_question($annotationid) {
         global $DB;
-        $question = $DB->get_record('pdfannotator_comments',['annotationid' => $annotationId,'isquestion'=>1],'content');      
+        $question = $DB->get_record('pdfannotator_comments', ['annotationid' => $annotationid, 'isquestion' => 1], 'content');
         return $question->content;
-    }
-    /**
-     * Method retrieves selected attributes of all questions, i.e. annotation with initial comments,
-     * of this user, from db.
-     * 
-     * @global type $DB
-     * @global type $USER
-     * @return type array of annotation objects
-     */
-    public static function getQuestionsOfUser() {
-        global $DB;
-        global $USER;
-        $thisuser = $USER->id;
-        $sql = "SELECT a.id, a.documentid, a.pageid, c.content, c.timecreated FROM {pdfannotator_annotationsneu} a JOIN {pdfannotator_comments} c ON c.annotationid = a.id WHERE a.userid = ? AND c.questioncomment";
-        $a = array();
-        $a[] = $thisuser;
-        $records = $DB->get_records_sql($sql, $a);
-        return $records;
     }
 
 }

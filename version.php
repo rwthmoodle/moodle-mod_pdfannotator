@@ -24,6 +24,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $plugin->component = 'mod_pdfannotator'; // Full name of the plugin (used for diagnostics)
-$plugin->version   = 2018050203; // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016112900; // Requires this Moodle version
-$plugin->cron      = 0;          // Period for cron to check this module (secs)
+$plugin->version   = 2018071100; // The current module version (Date: YYYYMMDDXX)
+$plugin->release  = 'PDF Annotator v1.0 release 1';
+$plugin->requires  = 2016112900; // Requires this Moodle version.
+$plugin->cron      = 0;          // Period for cron to check this module (secs).

@@ -1,30 +1,34 @@
 <div class='pdfannotator_index'>
     <div class="row">
-        <div class="toolbar" id="pdftoolbar" style="top:auto">
+        <div class="toolbar col-md-12" id="pdftoolbar" style="top:auto">
             <button class="cursor" type="button" title="Cursor" data-tooltype="cursor"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></button>
             
             <div class="spacer"></div>
-            <button class="comment" type="button" title="{{# str }} point, pdfannotator {{/ str }}" data-tooltype="point">{{# pix }}pinbild,pdfannotator, {{# str }} point, pdfannotator {{/ str }} {{/ pix}}</button>
+            <button class="comment" type="button" title="{{# str }} point, pdfannotator {{/ str }}" data-tooltype="point">{{# pix }}pinbild,pdfannotator, {{# str }} point, pdfannotator {{/ str }} {{/ pix}}</button>           
             <button class="pdfannotator_rectangle" type="button" title="{{# str }} rectangle, pdfannotator {{/ str }}" data-tooltype="area">{{# pix }}i/completion-manual-n,core, {{# str }} rectangle, pdfannotator {{/ str }} {{/ pix}}</button>
             <button class="pdfannotator_highlight" type="button" title="{{# str }} highlight, pdfannotator {{/ str }}" data-tooltype="highlight">{{# pix }}text_highlight_picker,pdfannotator, {{# str }} highlight, pdfannotator {{/ str }} {{/ pix}}</button>
             <button class="pdfannotator_strikeout" type="button" title="{{# str }} strikeout, pdfannotator {{/ str }}" data-tooltype="strikeout">{{# pix }}strikethrough,pdfannotator, {{# str }} strikeout, pdfannotator {{/ str }} {{/ pix}}</button>
-
+     
             <div class="spacer"></div>
 
-            <button class="text" type="button" title="{{# str }} text, pdfannotator {{/ str }}" data-tooltype="text">{{# pix }}text_color_picker,pdfannotator, {{# str }} text, pdfannotator {{/ str }} {{/ pix}}</button>
-            <select class="text-size"></select>
-            <div class="text-color"></div>
+            {{#use_studenttextbox}}
+                <button class="text" type="button" title="{{# str }} text, pdfannotator {{/ str }}" data-tooltype="text">{{# pix }}text_color_picker,pdfannotator, {{# str }} text, pdfannotator {{/ str }} {{/ pix}}</button>
+                <select class="text-size"></select>
+                <div class="text-color"></div>
 
-            <div class="spacer"></div>
+                <div class="spacer"></div>
+            {{/use_studenttextbox}}
 
-            <button class="pen" type="button" title="{{# str }} drawing, pdfannotator {{/ str }}" data-tooltype="draw">{{# pix }}editstring,pdfannotator, {{# str }} drawing, pdfannotator {{/ str }} {{/ pix}}</button>
-            <select class="pen-size"></select>
-            <div class="pen-color"></div>
+            {{#use_studentdrawing}}
+                <button class="pen" type="button" title="{{# str }} drawing, pdfannotator {{/ str }}" data-tooltype="draw">{{# pix }}editstring,pdfannotator, {{# str }} drawing, pdfannotator {{/ str }} {{/ pix}}</button>
+                <select class="pen-size"></select>
+                <div class="pen-color"></div>
 
-            <div class="spacer"></div>
+                <div class="spacer"></div>
+            {{/use_studentdrawing}}
 
             <select class="scale">
-                <option value=".5">50%</option>
+                <option value="0.5">50%</option>
                 <option value="1">100%</option>
                 <option value="1.33">133%</option>
                 <option value="1.5">150%</option>
@@ -41,7 +45,7 @@
             <a href="javascript://" title="{{# str}}fullscreen,pdfannotator{{/str}}" onclick="makeFullScreen()">{{# pix}}fullscreen,pdfannotator,{{# str}}fullscreen,pdfannotator{{/str}}{{/ pix}}</a>
             <div class="spacer"></div>
 
-            <span id="currentPage" title="{{# str }} currentPage, pdfannotator {{/ str }}">1</span>/<span id="sumPages" title="{{# str }} sumPages, pdfannotator {{/ str }}">1</span>
+            <input id="currentPage" title="{{# str }} currentPage, pdfannotator {{/ str }}" value="1"> / <span id="sumPages" title="{{# str }} sumPages, pdfannotator {{/ str }}">1</span>
 
             <div class="spacer"></div>
 
@@ -54,7 +58,17 @@
             <div id="viewer" class="pdfViewer"></div>
         </div>
         <div class="span4 col-md-4" id="comment-wrapper">
-            <h4>{{# str }} questionstitle, pdfannotator {{/ str }}</h4>
+                <h4>{{# str }} questionstitle, pdfannotator {{/ str }}</h4>
+                <div id="comment-nav">
+                    <button id="allQuestions" class="pdfannotatorJumpButton" title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}">
+                        <!--{{# pix}}file-pdf, pdfannotator, {{#str}}allquestionsimgtitle, pdfannotator{{/str}} {{/pix}}-->
+                        <!--<img alt="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}" src={{{pixopenbook}}}>-->
+                        <i title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-book fa-fw questionanswercount"></i>
+                    </button>
+                    <button id="questionsOnThisPage" class="pdfannotatorJumpButton" title="{{#str}}questionsimgtitle, pdfannotator{{/str}}">
+                        <i title="{{#str}}questionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-comments fa-fw questionanswercount"></i>
+                    </button>
+                </div>
             <div class="comment-list">
                 <div class="comment-list-container">
                     <!--<div class="comment-list-item">No comments</div>-->

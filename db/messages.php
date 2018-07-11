@@ -22,6 +22,12 @@ $messageproviders = array (
         'capability'  => 'mod/pdfannotator:administrateuserinput' // teacher capability
     ),
     
+    
+    'pdfannotator_feedback' => array (
+        'capability'  => 'mod/pdfannotator:submit', // student capability
+        'capability'  => 'mod/pdfannotator:administrateuserinput' // teacher capability
+    ),
+    
     'newquestion' => array (
         'capability'  => 'mod/pdfannotator:recievenewquestionnotifications' // all capability
     )

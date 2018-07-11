@@ -49,6 +49,63 @@ $capabilities = array(
         ),
     ),
     
+    // ********************** capabilities for viewing the overview page **********************
+    
+    // view reports of comments
+    'mod/pdfannotator:viewreports' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ),
+    ),
+    
+    // view answers to questions you wrote or subscribed to
+    'mod/pdfannotator:viewanswers' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW,
+        ),
+    ),
+    
+    // view all questions that are new in this course
+    'mod/pdfannotator:viewquestions' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ),
+    ),
+    
+    // view all self-written posts, be it questions or comments
+    'mod/pdfannotator:viewposts' => array (
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ),
+    ),
+    
+    // view all hidden entrys for deletion or redisplay
+//    'mod/pdfannotator:viewadministration' => array (
+//        'captype' => 'write',
+//        'contextlevel' => CONTEXT_MODULE,
+//        'archetypes' => array(
+//            'student' => CAP_ALLOW,
+//            'manager' => CAP_ALLOW,
+//            'editingteacher' => CAP_ALLOW,
+//        ),
+//    ),
+    
+    
+    // **********************
+    
     // get a notification about new questions
     'mod/pdfannotator:recievenewquestionnotifications' => array (
         'captype' => 'read',

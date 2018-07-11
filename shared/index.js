@@ -1,3 +1,20 @@
+
+/**
+ * Function removes the spacing between tab navigation and document tool bar
+ *
+ * @param {type} Y
+ * @return {undefined}
+ */
+function adjustPdfannotatorNavbar(Y) {
+    let navbar = document.getElementsByClassName('nav');
+    for (let i = 0; i < navbar.length; i++) {
+    (function(innerI) {
+        tab = navbar[innerI];
+        tab.classList.add('pdfannotatornavbar');
+    })(i);
+    }
+}
+
 //The MIT License (MIT)
 //
 //Copyright (c) 2016 Instructure, Inc. (https://github.com/instructure/pdf-annotate.js/blob/master/docs/index.js, 1.3.2018)
@@ -22,7 +39,7 @@
 //SOFTWARE.
 //
 //R: The first parameter has to be Y, because it is a default YUI-object, because moodle gives this object first.
-function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = null,_commid = null ){ // 3. parameter war mal _fileid
+function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _page = 1,_annoid = null,_commid = null ){ // 3. parameter war mal _fileid
     require(['jquery','core/templates','core/notification'], function($,templates,notification) {
         var currentAnnotations = [];
 /******/ (function(modules) { // webpackBootstrap
@@ -154,16 +171,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     url: "action.php",
                     data: { "documentId": documentId, "page_Number": pageNumber, "annotation": annotation, "action": 'create'}
                 }).then(function(data){
-                    try{
-                        data = JSON.parse(data);
+                    
+                    data = JSON.parse(data);
+
+                    if(data.status === "success") {
                         var index = currentAnnotations[pageNumber].indexOf(tmp);
                         currentAnnotations[pageNumber][index] = data;
                         return data;
-                    }catch(err){
-                        return {'status':'error'};
+
+                    } else if (data.status === 'error') {
+                            notification.addNotification({
+                                message: data.reason,
+                                type: "error"
+                            });
+                            setTimeout(function(){
+                            let notificationpanel = document.getElementById("user-notifications");
+                            while (notificationpanel.hasChildNodes()) {  
+                                notificationpanel.removeChild(notificationpanel.firstChild);
+                            } 
+                            }, 6000);
                     }
+                    return {'status':'error'};
                 });
-                },
+            },
+                
             /**
              * Method passes the edited annotation object along with its old id on to action.php for updating/saving
              * 
@@ -194,7 +225,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         return data; 
                 });
             },
-
             /**
              * This function sends the delete instruction to the server and notifies the user, if the deletion was successful
              * @param {type} documentId
@@ -211,21 +241,26 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 
                     if(data.status === "success") {
                             notification.addNotification({
-                                        message: M.util.get_string('commentDeleted', 'pdfannotator'),
+                                        message: M.util.get_string('annotationDeleted', 'pdfannotator'),
                                         type: "success"
                             });
 
-                    } else if (data.status == 'error') {
+                    } else if (data.status === 'error') {
                             notification.addNotification({
                                         message: M.util.get_string('deletionForbidden', 'pdfannotator') + data.reason,
                                         type: "error"
                             });
                     }
+                    setTimeout(function(){
+                    let notificationpanel = document.getElementById("user-notifications");
+                    while (notificationpanel.hasChildNodes()) {  
+                        notificationpanel.removeChild(notificationpanel.firstChild);
+                    } 
+                    }, 3000);
 
                     return data;
-                    });
+                });
             },
-
             /**
              * 
              * @param {type} documentId
@@ -242,6 +277,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id}
                 }).then(function(data){
                     data = data.substring(data.indexOf('{'),data.length);
+                    //TODO compare to data before data.substring
                     data = JSON.parse(data);
                     if(data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
@@ -258,27 +294,29 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     return $.ajax({
                         type: "POST",
                         url: "action.php",
-                        data: { "documentId": documentId, "commentId": commentId, "action": 'reportComment'} // "content": content, 
+                        data: { "documentId": documentId, "commentId": commentId, "action": 'reportComment'} 
                     }).then(function(){
                         alert('Comment has been reported');
                     });
 
 
                 } else { // delete comment if authorised to do so
-
                     return $.ajax({
                         type: "POST",
                         url: "action.php",
                         data: { "documentId": documentId, "commentId": commentId, "cmid": _cm.id, "action": 'deleteComment'}
                     }).then(function(data){
                         data = JSON.parse(data);
-
                         if(data.status === "success") {                    
                             // remove comment from DOM
                             var child = document.getElementById('comment_'+commentId);
                             if(child !== null){
                                 if(data.wasanswered){
                                     child.querySelector('.chat-message-text p').innerHTML = '<em>'+M.util.get_string('deletedComment', 'pdfannotator') + '</em>';
+                                    child.querySelector('.chat-message-meta').remove();
+                                    child.querySelector('.countVotes').remove();
+                                    child.querySelector('.comment-like-a').disabled = true;
+                                    child.querySelector('.comment-like-a').style.visibility = 'hidden';
                                 }else{
                                     var parent = child.parentNode;
                                     parent.removeChild(child);
@@ -289,6 +327,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                                 message: M.util.get_string('commentDeleted', 'pdfannotator'),
                                 type: "success"
                             });
+                            setTimeout(function(){
+                                let notificationpanel = document.getElementById("user-notifications");
+                                while (notificationpanel.hasChildNodes()) {  
+                                notificationpanel.removeChild(notificationpanel.firstChild);
+                            } 
+                            }, 3000);
 
                             // If the predecessor comment was marked as deleted, remove it from DOM as well
                             // (This is currently irrelevant, because we jump back to overview after deletion, but I'd prefer to stay in the thread.)
@@ -303,8 +347,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                                 message: M.util.get_string('deletionForbidden', 'pdfannotator'),
                                 type: "error"
                             });
-                        }
-                    });  
+                        } 
+                    });
                 }
 
             },
@@ -346,6 +390,22 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             },
 
             /**
+             * Get all information about an annotation. This function gets only information about annotations of type 'drawing' and 'textbox'.
+             * @param {type} documentId
+             * @param {type} commentId
+             * @returns {unresolved}
+             */
+            getInformation(documentId, annotationId){
+                return $.ajax({
+                    type: "POST",
+                    url: "action.php", 
+                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getInformation'}
+                }).then(function(data){
+                    return JSON.parse(data);
+                });   
+            },
+            
+            /**
              * inserts a vote into the database
              * @param {type} documentId
              * @param {type} commentId
@@ -360,36 +420,25 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     return JSON.parse(data);
                 });   
             },
-
-            /**
-             * Method collects all comments of one annotation
-             * 
-             * @param {type} documentId
-             * @param {type} annotationId
-             * @return {unresolved}
-             */
-            getComments(documentId, annotationId){
-                if (annotationId === undefined) {
-                    annotationId = 0;
-                }
+         
+            subscribeQuestion(documentId, annotationId){
                 return $.ajax({
                     type: "POST",
-                    url: "action.php", // url: "pdf-annotate/comments/read.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getComments'}
+                    url: "action.php", 
+                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'subscribeQuestion'}
                 }).then(function(data){
                     return JSON.parse(data);
-                });
+                });  
             },
-
-            getQuestions(documentId, pageNumber){
+            
+            unsubscribeQuestion(documentId, annotationId){
                 return $.ajax({
                     type: "POST",
-                    url: "action.php", // url: "pdf-annotate/comments/read.php",
-                    data: { "documentId": documentId, "page_Number": pageNumber, "action": 'getQuestions'}
+                    url: "action.php", 
+                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'unsubscribeQuestion'}
                 }).then(function(data){
                     return JSON.parse(data);
-                });
-
+                });  
             }
 
         });
@@ -429,9 +478,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
               if(visiblePageBefore) UI.renderPage(visiblePageNum - 1, RENDER_OPTIONS);
           }
           if(visiblePageNum !== oldPageNumber && $('.comment-list-form')[0].style.display === 'none' && document.querySelector('.comment-list-container p') === null){
-            UI.renderQuestions(documentId,visiblePageNum);
+                UI.renderQuestions(documentId,visiblePageNum);
           }
-          document.getElementById('currentPage').innerHTML = visiblePageNum;
+          document.getElementById('currentPage').value = visiblePageNum;
           oldPageNumber = visiblePageNum;
           
         }
@@ -448,7 +497,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
         
         //Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page
         document.getElementById('commentCancel').addEventListener('click',function (e){
-            var visiblePageNum = document.getElementById('currentPage').innerHTML;
+            var visiblePageNum = document.getElementById('currentPage').value;
             document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
@@ -465,7 +514,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
          * @returns {undefined}
          */       
 	function render() {
-	  PDFJS.getDocument(RENDER_OPTIONS.documentPath).then(function fulfilled(pdf) {
+          
+	  return PDFJS.getDocument(RENDER_OPTIONS.documentPath).then(function fulfilled(pdf) {
 	    RENDER_OPTIONS.pdfDocument = pdf;
 
 	    var viewer = document.getElementById('viewer');
@@ -475,7 +525,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	      var page = UI.createPage(i + 1);
 	      viewer.appendChild(page);
 	    }
-	    UI.renderPage(_page, RENDER_OPTIONS, true).then(function (_ref) {
+	    return UI.renderPage(_page, RENDER_OPTIONS, true).then(function (_ref) {
 	      var _ref2 = _slicedToArray(_ref, 2);
 
 	      var pdfPage = _ref2[0];
@@ -491,15 +541,18 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
               
               var pageheight100 = pdfPage.getViewport(1, 0).height;
               $('#body-wrapper').css('height',pageheight100+40);
-              document.getElementById('currentPage').innerHTML = _page;
+              document.getElementById('currentPage').value = _page;
               document.getElementById('sumPages').innerHTML = NUM_PAGES;
               
               //pick annotation, if the annotation id has been passed
               if(_annoid !== null){
                   UI.pickAnnotation(_page,_annoid,_commid);
+              }else{
+                  UI.renderAllQuestions(documentId, _page);
               }
+              
               setTimeout(UI.loadNewAnnotations, 5000);
-	    });
+            });
 	  },function rejected(err){
               let child = document.createElement('div');
               child.innerHTML = M.util.get_string('error:openingPDF', 'pdfannotator');
@@ -512,126 +565,145 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	}
 	render();
         
-	// initialize the textbox
-	(function () {
-	  var textSize = void 0;
-	  var textColor = void 0;
+        //initialize button allQuestions
+        (function (){
+            document.querySelector('#allQuestions').addEventListener('click', function(){
+                UI.renderAllQuestions(documentId);
+            });
+        })();
+        
+        //initialize button questionsOnThisPage
+        (function (){
+            document.querySelector('#questionsOnThisPage').addEventListener('click', function(){
+                var pageNumber = document.getElementById('currentPage').value;
+                UI.renderQuestions(documentId, pageNumber, 1);
+                
+            });
+        })();
+        
+        if(_toolbarSettings.use_studenttextbox === "1"|| _isadmin){
+            // initialize the textbox
+            (function () {
+            var textSize = void 0;
+            var textColor = void 0;
 
-	  function initText() {
-	    var size = document.querySelector('.toolbar .text-size');
-	    [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(function (s) {
-	      size.appendChild(new Option(s, s));
-	    });
+            function initText() {
+              var size = document.querySelector('.toolbar .text-size');
+              [8, 9, 10, 11, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96].forEach(function (s) {
+                size.appendChild(new Option(s, s));
+              });
 
-	    setText(localStorage.getItem(RENDER_OPTIONS.documentId + '/text/size') || 10, localStorage.getItem(RENDER_OPTIONS.documentId + '/text/color') || '#000000');
+              setText(localStorage.getItem(RENDER_OPTIONS.documentId + '/text/size') || 10, localStorage.getItem(RENDER_OPTIONS.documentId + '/text/color') || '#000000');
 
-	    (0, _initColorPicker2.default)(document.querySelector('.text-color'), textColor, function (value) {
-	      setText(textSize, value);
-	    });
-	  }
+              (0, _initColorPicker2.default)(document.querySelector('.text-color'), textColor, function (value) {
+                setText(textSize, value);
+              });
+            }
 
-	  function setText(size, color) {
-	    var modified = false;
+            function setText(size, color) {
+              var modified = false;
 
-	    if (textSize !== size) {
-	      modified = true;
-	      textSize = size;
-	      localStorage.setItem(RENDER_OPTIONS.documentId + '/text/size', textSize);
-	      document.querySelector('.toolbar .text-size').value = textSize;
-	    }
+              if (textSize !== size) {
+                modified = true;
+                textSize = size;
+                localStorage.setItem(RENDER_OPTIONS.documentId + '/text/size', textSize);
+                document.querySelector('.toolbar .text-size').value = textSize;
+              }
 
-	    if (textColor !== color) {
-	      modified = true;
-	      textColor = color;
-	      localStorage.setItem(RENDER_OPTIONS.documentId + '/text/color', textColor);
+              if (textColor !== color) {
+                modified = true;
+                textColor = color;
+                localStorage.setItem(RENDER_OPTIONS.documentId + '/text/color', textColor);
 
-	      var selected = document.querySelector('.toolbar .text-color.color-selected');
-	      if (selected) {
-	        selected.classList.remove('color-selected');
-	        selected.removeAttribute('aria-selected');
-	      }
+                var selected = document.querySelector('.toolbar .text-color.color-selected');
+                if (selected) {
+                  selected.classList.remove('color-selected');
+                  selected.removeAttribute('aria-selected');
+                }
 
-	      selected = document.querySelector('.toolbar .text-color[data-color="' + color + '"]');
-	      if (selected) {
-	        selected.classList.add('color-selected');
-	        selected.setAttribute('aria-selected', true);
-	      }
-	    }
+                selected = document.querySelector('.toolbar .text-color[data-color="' + color + '"]');
+                if (selected) {
+                  selected.classList.add('color-selected');
+                  selected.setAttribute('aria-selected', true);
+                }
+              }
 
-	    if (modified) {
-	      UI.setText(textSize, textColor);
-	    }
-	  }
+              if (modified) {
+                UI.setText(textSize, textColor);
+              }
+            }
 
-	  function handleTextSizeChange(e) {
-	    setText(e.target.value, textColor);
-	  }
+            function handleTextSizeChange(e) {
+              setText(e.target.value, textColor);
+            }
 
-	  document.querySelector('.toolbar .text-size').addEventListener('change', handleTextSizeChange);
+            document.querySelector('.toolbar .text-size').addEventListener('change', handleTextSizeChange);
 
-          initText();
-	})(); //initialize textbox end
+            initText();
+          })(); //initialize textbox end
+        }
+        
+        if(_toolbarSettings.use_studentdrawing === "1"|| _isadmin){
+            // initialize pen
+            (function () {
+              var penSize = void 0;
+              var penColor = void 0;
 
-	// initialize pen
-	(function () {
-	  var penSize = void 0;
-	  var penColor = void 0;
+              function initPen() {
+                var size = document.querySelector('.toolbar .pen-size');
+                for (var i = 0; i < 20; i++) {
+                  size.appendChild(new Option(i + 1, i + 1));
+                }
 
-	  function initPen() {
-	    var size = document.querySelector('.toolbar .pen-size');
-	    for (var i = 0; i < 20; i++) {
-	      size.appendChild(new Option(i + 1, i + 1));
-	    }
+                setPen(localStorage.getItem(RENDER_OPTIONS.documentId + '/pen/size') || 1, localStorage.getItem(RENDER_OPTIONS.documentId + '/pen/color') || '#000000');
 
-	    setPen(localStorage.getItem(RENDER_OPTIONS.documentId + '/pen/size') || 1, localStorage.getItem(RENDER_OPTIONS.documentId + '/pen/color') || '#000000');
+                (0, _initColorPicker2.default)(document.querySelector('.pen-color'), penColor, function (value) {
+                  setPen(penSize, value);
+                });
+              }
 
-	    (0, _initColorPicker2.default)(document.querySelector('.pen-color'), penColor, function (value) {
-	      setPen(penSize, value);
-	    });
-	  }
+              function setPen(size, color) {
+                var modified = false;
 
-	  function setPen(size, color) {
-	    var modified = false;
+                if (penSize !== size) {
+                  modified = true;
+                  penSize = size;
+                  localStorage.setItem(RENDER_OPTIONS.documentId + '/pen/size', penSize);
+                  document.querySelector('.toolbar .pen-size').value = penSize;
+                }
 
-	    if (penSize !== size) {
-	      modified = true;
-	      penSize = size;
-	      localStorage.setItem(RENDER_OPTIONS.documentId + '/pen/size', penSize);
-	      document.querySelector('.toolbar .pen-size').value = penSize;
-	    }
+                if (penColor !== color) {
+                  modified = true;
+                  penColor = color;
+                  localStorage.setItem(RENDER_OPTIONS.documentId + '/pen/color', penColor);
 
-	    if (penColor !== color) {
-	      modified = true;
-	      penColor = color;
-	      localStorage.setItem(RENDER_OPTIONS.documentId + '/pen/color', penColor);
+                  var selected = document.querySelector('.toolbar .pen-color.color-selected');
+                  if (selected) {
+                    selected.classList.remove('color-selected');
+                    selected.removeAttribute('aria-selected');
+                  }
 
-	      var selected = document.querySelector('.toolbar .pen-color.color-selected');
-	      if (selected) {
-	        selected.classList.remove('color-selected');
-	        selected.removeAttribute('aria-selected');
-	      }
+                  selected = document.querySelector('.toolbar .pen-color[data-color="' + color + '"]');
+                  if (selected) {
+                    selected.classList.add('color-selected');
+                    selected.setAttribute('aria-selected', true);
+                  }
+                }
 
-	      selected = document.querySelector('.toolbar .pen-color[data-color="' + color + '"]');
-	      if (selected) {
-	        selected.classList.add('color-selected');
-	        selected.setAttribute('aria-selected', true);
-	      }
-	    }
+                if (modified) {
+                  UI.setPen(penSize, penColor);
+                }
+              }
 
-	    if (modified) {
-	      UI.setPen(penSize, penColor);
-	    }
-	  }
+              function handlePenSizeChange(e) {
+                setPen(e.target.value, penColor);
+              }
 
-	  function handlePenSizeChange(e) {
-	    setPen(e.target.value, penColor);
-	  }
+              document.querySelector('.toolbar .pen-size').addEventListener('change', handlePenSizeChange);
 
-	  document.querySelector('.toolbar .pen-size').addEventListener('change', handlePenSizeChange);
-
-	  initPen();
-	})(); //end initialize Pen 
-
+              initPen();
+            })(); //end initialize Pen 
+        }
 	// Toolbar buttons
 	(function () {
 	  //Cursor should always be default selected
@@ -731,8 +803,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 
 	      localStorage.setItem(RENDER_OPTIONS.documentId + '/scale', RENDER_OPTIONS.scale);
 	      localStorage.setItem(RENDER_OPTIONS.documentId + '/rotate', RENDER_OPTIONS.rotate % 360);
-
-	      render();
+              _page = parseInt(document.getElementById('currentPage').value);
+              
+              let pagecontainer = document.getElementById('pageContainer'+_page);
+              let loader = document.createElement('div');
+              loader.id = "loader";
+              
+              document.body.appendChild(loader);
+	      render().then(function(){
+                  $('#content-wrapper').scrollTop(document.getElementById('pageContainer'+_page).offsetTop);
+                  document.body.removeChild(loader);
+              });
 	    }
 	  }
 
@@ -795,6 +876,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             }
             document.querySelector('a.hideComments').addEventListener('click', handleHideClick);
         })(); //end hide/show annotations button
+
+        // Jump to Page
+        (function(){
+            var currentPageInput = document.querySelector('#currentPage');
+            var oldPage = currentPageInput.value;
+            function jumpToPage(){
+                currentPageInput.removeEventListener('change',jumpToPage);
+                var newPage = currentPageInput.value;
+                // The following code causes unexpected errors (page 3 is recognized as smaller than 1 or greater than 15)
+//                if(newPage < 1 || newPage > document.querySelector('#sumPages').innerHTML){
+//                    currentPageInput.value = oldPage;
+//                    return;
+//                }
+                oldPage = newPage;
+                currentPageInput.click();
+                $('#content-wrapper').scrollTop(document.getElementById('pageContainer'+newPage).offsetTop);
+            }
+            currentPageInput.addEventListener('blur', jumpToPage);
+            currentPageInput.addEventListener('focus', function(){
+                currentPageInput.addEventListener('change',function(){
+                    currentPageInput.blur();
+                });
+            });
+        })();
 
 	// Comment annotations
 	(function (window, document) {
@@ -889,9 +994,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 
                 // create content p and append it to the contentDiv
                 var content = document.createElement('p');
+                content.className = "chat-message-p";
                 if(comment.isdeleted == 1){
-                    content.innerHTML = '<em>'+_twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content))+"</em>";
-                }else{
+                    content.innerHTML = '<em>'+_twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content))+'</em>';
+                }else if(comment.annotation.type === "drawing" || comment.annotation.type === "textbox") {
+                    content.innerHTML = '<em>'+_twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content))+'</em>';
+                } else {
                     content.innerHTML = _twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content));
                 }
                 contentDiv.appendChild(content);
@@ -907,7 +1015,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 
                     //if own comment or admin, then add delete-button
                     //has to come first
-                    if(owner  || _isadmin){
+                    if(comment.annotation.type === "drawing" || comment.annotation.type === "textbox") {
+                        //no delete or report
+                    } else if(owner  || _isadmin){
                         var deleteSpan = createDeleteButton(comment);
                         meta.appendChild(deleteSpan);
 
@@ -931,11 +1041,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     // append username
                     meta.appendChild(user);
                     metaContentContainer.appendChild(meta);
-                }  
+                }                  
                 
+                if(comment.isquestion == 1) {
+                    contentDiv.appendChild(createSubscriptionButton(comment));
+                }
                 metaContentContainer.appendChild(contentDiv);
-                child.appendChild(metaContentContainer)
-                                       
+                child.appendChild(metaContentContainer);
+                                                      
                                      
             }else {
                 //if the comment has no Annotation, only the string should be rendered.
@@ -951,8 +1064,85 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	    commentList.appendChild(child);
             //to shorten all comments (in opened discussion)
             let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
-            UI.shortenTextDynamic('.questioncomment', selector, 2.5,'...');
+            
+            if (typeof(MathJax) !== "undefined") {
+                //add the Mathjax-function and the shortenText function to the queue
+                  MathJax.Hub.Queue(['Typeset', MathJax.Hub],[function(){
+                    UI.shortenTextDynamic('.questioncomment', selector, 2.5,'...');
+                },null]);
+            }
 	  }
+          
+          function createSubscriptionButton(comment){
+            var button = document.createElement('button');
+            button.className = 'comment-subscribe-a btn-link';
+
+            var i = document.createElement('i');        
+                       
+            if(comment.issubscribed){
+                button.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
+                i.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
+                i.className = 'icon fa fa-bell-slash fa-fw';
+            } else {
+                button.title = M.util.get_string('subscribeQuestion', 'pdfannotator'); 
+                i.title = M.util.get_string('subscribeQuestion', 'pdfannotator');
+                i.className = 'icon fa fa-bell fa-fw';
+            }
+            
+            button.appendChild(i);
+                
+            button.onclick = function(e) { 
+                if(comment.issubscribed){
+                    _2.default.getStoreAdapter().unsubscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
+                        .then(function(data){
+                            if(data.status === "success") {
+                                notification.addNotification({
+                                        message: M.util.get_string('successfullyUnsubscribed', 'pdfannotator'),
+                                        type: "success"
+                                });
+                            } else if(data.status == 'error') {
+                                notification.addNotification({
+                                    message: M.util.get_string('error:unsubscribe','pdfannotator'),
+                                    type: "error"
+                                });
+                                console.error(M.util.get_string('error:unsubscribe', 'pdfannotator'));
+                            } 
+                            comment.issubscribed = false;
+                            button.title = M.util.get_string('subscribeQuestion', 'pdfannotator'); 
+                            i.title = M.util.get_string('subscribeQuestion', 'pdfannotator');
+                            i.className = 'icon fa fa-bell fa-fw';
+                            });
+                } else {
+                    _2.default.getStoreAdapter().subscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
+                        .then(function(data){
+                             if(data.status === "success") {
+                                notification.addNotification({
+                                        message: M.util.get_string('successfullySubscribed', 'pdfannotator'),
+                                        type: "success"
+                                });
+                            } else if(data.status == 'error') {
+                                notification.addNotification({
+                                    message: M.util.get_string('error:subscribe','pdfannotator'),
+                                    type: "error"
+                                });
+                                console.error(M.util.get_string('error:subscribe', 'pdfannotator'));
+                            } 
+                            comment.issubscribed =true;
+                            button.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
+                            i.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator');
+                            i.className = 'icon fa fa-bell-slash fa-fw';
+                            });                
+                } 
+                setTimeout(function () {
+                        let notificationpanel = document.getElementById("user-notifications");
+                        while (notificationpanel.hasChildNodes()) {
+                            notificationpanel.removeChild(notificationpanel.firstChild);
+                        }
+                }, 3000);
+            };            
+                
+            return button;
+          }
           
           function createVoteWrapper(comment){
               var voteDiv = document.createElement('div');
@@ -960,7 +1150,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 
                 //create an element for click
                 var likeButton = document.createElement('button');
-                
+                              
                 //disable button, if comment is deleted, user is the author of the comment or the user has voted the comment already
                 if (comment.isdeleted == 1) {
                     likeButton.disabled = true;
@@ -999,11 +1189,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                                 //update number of votes and disable button
                                 var voteDiv = document.querySelector("div#comment_"+comment.uuid+" div.votes");
                                 var button = voteDiv.querySelector("button");
-                                var img = button.querySelector(".icon");
+                                var img = button.querySelector("i");
                                 var div = voteDiv.querySelector(".countVotes");
-
-                                button.disabled = true;
-                                div.innerHTML = data.numberVotes
+                                
+                                button.disabled = true;                 
+                                div.innerHTML = data.numberVotes;
                                 if (comment.isquestion==1) {
                                     button.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  //button
                                     img.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  //img
@@ -1013,46 +1203,45 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                                     button.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator');
                                     img.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  //img
                                     img.alt = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  //img
-                                    div.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');
+                                    div.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');                                    
                                 }
                             }
                         });
                       
                 };
                 //create img for the vote-button
-                var likeImg = document.createElement('img');
-                likeImg.className = "icon voteIcon";
-                
+                var likeI = document.createElement('i');             
+                likeI.className = 'icon fa fa-chevron-up fa-lg';
+
+                           
                 if (comment.isdeleted == 1) {
-                    likeImg.alt = M.util.get_string('likeForbidden', 'pdfannotator');  
-                    likeImg.title = M.util.get_string('likeForbidden', 'pdfannotator');
+                    likeI.alt = M.util.get_string('likeForbidden', 'pdfannotator');  
+                    likeI.title = M.util.get_string('likeForbidden', 'pdfannotator');
                 } else if (comment.userid == _userid) {    // not allowed to vote own comments
-                    likeImg.alt = M.util.get_string('likeOwnComment', 'pdfannotator');  
-                    likeImg.title = M.util.get_string('likeOwnComment', 'pdfannotator');
+                    likeI.alt = M.util.get_string('likeOwnComment', 'pdfannotator');  
+                    likeI.title = M.util.get_string('likeOwnComment', 'pdfannotator');
                 } else if (comment.isvoted)  {
                     if (comment.isquestion == 1){
-                        likeImg.alt = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  
-                        likeImg.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');
+                        likeI.alt = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  
+                        likeI.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');
                     } else {
-                        likeImg.alt = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  
-                        likeImg.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator'); 
+                        likeI.alt = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  
+                        likeI.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator'); 
                     }                    
                 }else{
                     if (comment.isquestion == 1){
-                       likeImg.alt = M.util.get_string('likeQuestion', 'pdfannotator');  
-                       likeImg.title = M.util.get_string('likeQuestion', 'pdfannotator'); 
+                       likeI.alt = M.util.get_string('likeQuestion', 'pdfannotator');  
+                       likeI.title = M.util.get_string('likeQuestion', 'pdfannotator'); 
                     } else {
-                       likeImg.alt = M.util.get_string('likeAnswer', 'pdfannotator');  
-                       likeImg.title = M.util.get_string('likeAnswer', 'pdfannotator'); 
+                       likeI.alt = M.util.get_string('likeAnswer', 'pdfannotator');  
+                       likeI.title = M.util.get_string('likeAnswer', 'pdfannotator'); 
                     }
                 }
                 
-                likeImg.src = M.util.image_url('i/up','core');
-                likeButton.appendChild(likeImg);
+                likeButton.appendChild(likeI);
                 voteDiv.appendChild(likeButton);
                 
                 //create div to show the number of votes
-    //            if((comment.isdeleted == undefined) || (comment.isdeleted == 0)) {
                 if(comment.isdeleted != 1) {
                     var votes = document.createElement('div');
                     votes.className= 'countVotes';
@@ -1064,7 +1253,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     if (comment.isquestion == 1){
                         votes.title = votes.innerHTML + " " + M.util.get_string('likeCountQuestion', 'pdfannotator');
                     } else {
-                         votes.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');
+                        votes.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');
                     }
                     voteDiv.appendChild(votes);
                 }
@@ -1236,6 +1425,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	          commentList.innerHTML = '';
 	          commentForm.style.display = 'inherit';
                   
+                  var button1 = document.getElementById('allQuestions'); // to be found in index template
+                  button1.style.display = 'inline';
+                  var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                  button2.style.display = 'inline';
+                  
 	          commentForm.onsubmit = function (e) {
                       document.querySelector('#commentSubmit').disabled = true;
                       var commentVisibility= "public";
@@ -1299,11 +1493,37 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 });
 	      })();
 	    }else{
+                
+                (function () {
+	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
+	        var annotationId = target.getAttribute('data-pdf-annotate-id');
+
+	        _2.default.getStoreAdapter().getInformation(documentId, annotationId).then(function (annotation) {
+                    UI.hideLoader();
+	          commentList.innerHTML = '';
+	          commentForm.style.display = 'none';
+                  commentForm.onsubmit = null;
+                  
+                  var button1 = document.getElementById('allQuestions'); // to be found in index template
+                  button1.style.display = 'inline';
+                  var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                  button2.style.display = 'inline';
+                  
+                  var comment = {content: M.util.get_string('noCommentsupported','pdfannotator'), annotation: annotation, userid: annotation.userid, username: annotation.user, visibility: 'public', timecreated: annotation.timecreated, usevotes: 0, uuid: 1, isdeleted: 0};
+                  //render comments  
+                  insertComment(comment);
+                }, function (err){
                     commentList.innerHTML = '';
                     commentForm.style.display = 'none';
                     commentForm.onsubmit = null;
-                    insertComment({ content: M.util.get_string('noCommentsupported','pdfannotator') });
-            }
+                    insertComment({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
+                    notification.addNotification({
+                        message: M.util.get_string('error:getComments','pdfannotator'),
+                        type: "error"
+                      });
+                });
+	      })();
+             }
 	  }
 
 	  function handleAnnotationBlur(target) {
@@ -1312,8 +1532,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	      commentForm.style.display = 'none';
 	      commentForm.onsubmit = null;
 	    }
-            var visiblePageNum = document.getElementById('currentPage').innerHTML;
-            UI.renderQuestions(documentId,visiblePageNum);
+            var visiblePageNum = document.getElementById('currentPage').value;
+              UI.renderQuestions(documentId,visiblePageNum);
 	  }
 
 	  UI.addEventListener('annotation:click', handleAnnotationClick);
@@ -1952,11 +2172,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 	      if (entity.url) {
 	        result += twttr.txt.linkToUrl(entity, text, options);
 	      } else if (entity.hashtag) {
-	        result += twttr.txt.linkToHashtag(entity, text, options);
+	        result += text;//twttr.txt.linkToHashtag(entity, text, options);
 	      } else if (entity.screenName) {
-	        result += twttr.txt.linkToMentionAndList(entity, text, options);
+	        result += text;//twttr.txt.linkToMentionAndList(entity, text, options);
 	      } else if (entity.cashtag) {
-	        result += twttr.txt.linkToCashtag(entity, text, options);
+	        result += text;//twttr.txt.linkToCashtag(entity, text, options);
 	      }
 	      beginIndex = entity.indices[1];
 	    }
@@ -2884,8 +3104,41 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                             }
                         },
                     
+                        /**
+                         * Vote for a comment
+                         * @param {String} documentId The ID for the document
+                         * @param {String} commentId The ID for the comment
+                         * @return {Promise}
+                         */
+                        {key:'__getInformation',value:function __getInformation(documentId,annotationId){
+                                (0,_abstractFunction2.default)('getInformation');
+                            }
+                        },
+                        
+                        /**
+                         * Vote for a comment
+                         * @param {String} documentId The ID for the document
+                         * @param {String} commentId The ID for the comment
+                         * @return {Promise}
+                         */
                         {key:'__voteComment',value:function __voteComment(documentId,commentId){
-                                (0,_abstractFunction2.default)('voeComment');
+                                (0,_abstractFunction2.default)('voteComment');
+                            }
+                        },
+                        
+                        /**
+                         * Subscribe to a question
+                         * @param {String} documentId The ID for the document
+                         * @param {String} commentId The ID for the comment
+                         * @return {Promise}
+                         */
+                        {key:'__subscribeQuestion',value:function __subscribeQuestion(documentId,annotationId){
+                                (0,_abstractFunction2.default)('subscribeQuestion');
+                            }
+                        },
+                        
+                        {key:'__unsubscribeQuestion',value:function __unsubscribeQuestion(documentId,annotationId){
+                                (0,_abstractFunction2.default)('unsubscribeQuestion');
                             }
                         },
                                     
@@ -2921,7 +3174,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         {key:'addComment',get:function get(){return this.__addComment;},set:function set(fn){this.__addComment=function addComment(documentId,annotationId,content){return fn.apply(undefined,arguments).then(function(comment){(0,_event.fireEvent)('comment:add',documentId,annotationId,comment);return comment;});};}},
                         {key:'reportComment',get:function get(){return this.__reportComment;},set:function set(fn){this.__reportComment=function reportComment(documentId,commentId,reason,content){return fn.apply(undefined,arguments).then(function(comment){(0,_event.fireEvent)('comment:report',documentId,commentId,reason,content);return comment;});};}},
                         {key:'deleteComment',get:function get(){return this.__deleteComment;},set:function set(fn){this.__deleteComment=function deleteComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:delete',documentId,commentId);}return success;});};}},
-                        {key:'voteComment',get:function get(){return this.__voteComment;},set:function set(fn){this.__voteComment=function voteComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:vote',documentId,commentId);}return success;});};}}
+                        {key:'getInformation',get:function get(){return this.__getInformation;},set:function set(fn){this.__getInformation=function getInformation(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('annotation:getInformation',documentId,annotationId);}return success;});};}},
+                        {key:'voteComment',get:function get(){return this.__voteComment;},set:function set(fn){this.__voteComment=function voteComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:vote',documentId,commentId);}return success;});};}},
+                        {key:'subscribeQuestion',get:function get(){return this.__subscribeQuestion;},set:function set(fn){this.__subscribeQuestion=function subscribeQuestion(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:subscribe',documentId,annotationId);}return success;});};}},
+                        {key:'unsubscribeQuestion',get:function get(){return this.__unsubscribeQuestion;},set:function set(fn){this.__unsubscribeQuestion=function unsubscribeQuestion(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:unsubscribe',documentId,annotationId);}return success;});};}}
+                        
                     ]);return StoreAdapter;
                 }(); //Ende StoreAdapter
                 exports.default=StoreAdapter;
@@ -2999,9 +3256,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         var headertitle = document.createElement('h3');
                         headertitle.id = "myModalLabel";
                         headertitle.innerHTML = M.util.get_string('decision','pdfannotator');
-                        modalheader.appendChild(headerClose);
+                        headertitle.style.display = "inline-block";
                         modalheader.appendChild(headertitle);
-
+                        modalheader.appendChild(headerClose);   
 
 
                         var modalbody = document.createElement('div');
@@ -3010,14 +3267,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         bodytext.innerHTML = M.util.get_string('decision:overlappingAnnotation','pdfannotator');
                         modalbody.appendChild(bodytext);
 
-
-
-                        var modalfooter = document.createElement('div');
-                        modalfooter.className = "modal-footer";
-
                         modalcontent.appendChild(modalheader);
                         modalcontent.appendChild(modalbody);
-                        modalcontent.appendChild(modalfooter);
                         
                         modaldialog.appendChild(modalcontent);
                         modal.appendChild(modaldialog);
@@ -3092,8 +3343,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
 
                         }
                     }else{
-                        // Emit annotation:blur if clickNode is no longer clicked
-                        if(clickNode&&clickNode!==target){
+                        // Emit annotation:blur if clickNode is no longer clicked, but not if another node is clicked
+                        if(clickNode && !target){
                             emitter.emit('annotation:blur',clickNode);
                         }// Emit annotation:click if target was clicked
                         if(target){
@@ -3113,8 +3364,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                //if the click is on an input field nothing should happen. 
-                if(e.target.tagName === 'INPUT'){
+                //if the click is on an input field or link nothing should happen. 
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT'){
                     return;
                 }
                 //R: if the click is on the Commentlist nothing should happen.
@@ -3550,7 +3801,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                     svg.setAttribute('data-pdf-annotate-document',data.documentId);
                     svg.setAttribute('data-pdf-annotate-page',data.pageNumber);// Make sure annotations is an array
                     if(!Array.isArray(data.annotations)||data.annotations.length===0){return resolve(svg);}// Append annotation to svg
-                    data.annotations.forEach(function(a){(0,_appendChild2.default)(svg,a,viewport);});
+                    
+                    data.annotations.forEach(function(a){
+                        (0,_appendChild2.default)(svg,a,viewport);
+                    });
                     resolve(svg);
                 });
             }
@@ -3775,13 +4029,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             * @param {Object} a The annotation definition
             * @return {SVGElement} A svg to be rendered
             */function renderPoint(a){
-               let viewport = JSON.parse(document.querySelector('.annotationLayer').getAttribute('data-pdf-annotate-viewport'));
-               if(!viewport && a.viewport){
-                   viewport = a.viewport;
-               }
-               if(viewport.scale > 1){
-                   viewport.scale = 1;
-               }
+               
                let posX = a.x;
                let posY = a.y;
                
@@ -4198,7 +4446,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             var _shortText = __webpack_require__(39);
             var _newAnnotations = __webpack_require__(40);
             var _ajaxloader=__webpack_require__(36);
-            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, loadNewAnnotations : _newAnnotations.load};
+            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, renderAllQuestions: _questionsRenderer.renderAllQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, loadNewAnnotations : _newAnnotations.load};
             module.exports=exports['default'];
     /***/},
     /** 29 */
@@ -4245,6 +4493,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             var _utils=__webpack_require__(6);
             var _ajaxloader= __webpack_require__(36);
             var _renderPoint= __webpack_require__(17);
+            var _questionsRenderer = __webpack_require__(38);
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             function _toConsumableArray(arr){if(Array.isArray(arr)){for(var i=0,arr2=Array(arr.length);i<arr.length;i++){arr2[i]=arr[i];}return arr2;}else{return Array.from(arr);}}
             var _enabled=false;
@@ -4260,48 +4509,52 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 destroyEditOverlay();
                 overlay=document.createElement('div');
                 var anchor=document.createElement('a');
-                var parentNode=(0,_utils.findSVGContainer)(target).parentNode;
-                var id=target.getAttribute('data-pdf-annotate-id');
-                var rect=(0,_utils.getAnnotationRect)(target);
-                var styleLeft=rect.left-OVERLAY_BORDER_SIZE;
-                var styleTop=rect.top-OVERLAY_BORDER_SIZE;
-                overlay.setAttribute('id','pdf-annotate-edit-overlay');
-                overlay.setAttribute('data-target-id',id);
-                overlay.style.boxSizing='content-box';
-                overlay.style.position='absolute';
-                overlay.style.top=styleTop+'px';
-                overlay.style.left=styleLeft+'px';
-                overlay.style.width=rect.width+'px';
-                overlay.style.height=rect.height+'px';
-                overlay.style.border=OVERLAY_BORDER_SIZE+'px solid '+_utils.BORDER_COLOR;
-                overlay.style.borderRadius=OVERLAY_BORDER_SIZE+'px';
-                overlay.style.zIndex=22;
-                anchor.innerHTML='x';
-                anchor.setAttribute('href','javascript://');
-                anchor.style.background='#fff';
-                anchor.style.borderRadius='20px';
-                anchor.style.border='1px solid #bbb';
-                anchor.style.color='#bbb';
-                anchor.style.fontSize='12px';
-                anchor.style.padding='0px 3px 7px';
-                anchor.style.textAlign='center';
-                anchor.style.textDecoration='none';
-                anchor.style.position='absolute';
-                anchor.style.top='-10px';
-                anchor.style.right='-10px';
-                anchor.style.width='11px';
-                anchor.style.height='11px';
-                overlay.appendChild(anchor);
-                parentNode.appendChild(overlay);
-                document.addEventListener('click',handleDocumentClick);
-                document.addEventListener('keyup',handleDocumentKeyup);
-                document.addEventListener('mousedown',handleDocumentMousedown);
-                anchor.addEventListener('click',deleteAnnotation);
-                anchor.addEventListener('mouseover',function(){anchor.style.color='#35A4DC';anchor.style.borderColor='#999';anchor.style.boxShadow='0 1px 1px #ccc';});
-                anchor.addEventListener('mouseout',function(){anchor.style.color='#bbb';anchor.style.borderColor='#bbb';anchor.style.boxShadow='';});
-                overlay.addEventListener('mouseover',function(){if(!isDragging){anchor.style.display='';}});
-                overlay.addEventListener('mouseout',function(){anchor.style.display='none';});
-                overlayOld = {x: overlay.style.top, y: overlay.style.left};
+                var node = (0,_utils.findSVGContainer)(target);
+                if(node){
+                    var parentNode=node.parentNode;
+                    var id=target.getAttribute('data-pdf-annotate-id');
+                    var rect=(0,_utils.getAnnotationRect)(target);
+                    var styleLeft=rect.left-OVERLAY_BORDER_SIZE;
+                    var styleTop=rect.top-OVERLAY_BORDER_SIZE;
+                    overlay.setAttribute('id','pdf-annotate-edit-overlay');
+                    overlay.setAttribute('data-target-id',id);
+                    overlay.style.boxSizing='content-box';
+                    overlay.style.position='absolute';
+                    overlay.style.top=styleTop+'px';
+                    overlay.style.left=styleLeft+'px';
+                    overlay.style.width=rect.width+'px';
+                    overlay.style.height=rect.height+'px';
+                    overlay.style.border=OVERLAY_BORDER_SIZE+'px solid '+_utils.BORDER_COLOR;
+                    overlay.style.borderRadius=OVERLAY_BORDER_SIZE+'px';
+                    overlay.style.zIndex=22;
+                    anchor.innerHTML='x';
+                    anchor.setAttribute('href','javascript://');
+                    anchor.style.background='#fff';
+                    anchor.style.borderRadius='20px';
+                    anchor.style.border='1px solid #bbb';
+                    anchor.style.color='#bbb';
+                    anchor.style.fontSize='12px';
+                    anchor.style.padding='0px 3px 7px';
+                    anchor.style.textAlign='center';
+                    anchor.style.textDecoration='none';
+                    anchor.style.position='absolute';
+                    anchor.style.top='-10px';
+                    anchor.style.right='-10px';
+                    anchor.style.width='11px';
+                    anchor.style.height='11px';
+                    anchor.style.boxSizing = 'content-box';
+                    overlay.appendChild(anchor);
+                    parentNode.appendChild(overlay);
+                    document.addEventListener('click',handleDocumentClick);
+                    document.addEventListener('keyup',handleDocumentKeyup);
+                    document.addEventListener('mousedown',handleDocumentMousedown);
+                    anchor.addEventListener('click',deleteAnnotation);
+                    anchor.addEventListener('mouseover',function(){anchor.style.color='#35A4DC';anchor.style.borderColor='#999';anchor.style.boxShadow='0 1px 1px #ccc';});
+                    anchor.addEventListener('mouseout',function(){anchor.style.color='#bbb';anchor.style.borderColor='#bbb';anchor.style.boxShadow='';});
+                    overlay.addEventListener('mouseover',function(){if(!isDragging){anchor.style.display='';}});
+                    overlay.addEventListener('mouseout',function(){anchor.style.display='none';});
+                    overlayOld = {x: overlay.style.top, y: overlay.style.left};
+                }
             }/**
             * Destroy the edit overlay if it exists.
             */function destroyEditOverlay(){
@@ -4354,6 +4607,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                             // destroy Commentsfield
                             document.querySelector('.comment-list-container').innerHTML = '';
                             document.querySelector('.comment-list-form').setAttribute('style', 'display:none');
+                            var visiblePageNum = document.getElementById('currentPage').value;
+                            _questionsRenderer.renderQuestions(_documentObject.annotatorid,visiblePageNum);
                         }else{
                             
                         }
@@ -4569,6 +4824,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                               message: M.util.get_string('editNotAllowed','pdfannotator'),
                               type: "error"
                             });
+                            setTimeout(function(){
+                                let notificationpanel = document.getElementById("user-notifications");
+                                while (notificationpanel.hasChildNodes()) {  
+                                    notificationpanel.removeChild(notificationpanel.firstChild);
+                                } 
+                            }, 4000);
                             //show comments
                             _event.fireEvent('annotation:click',target[0]);
                         }else{
@@ -5446,6 +5707,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             */function renderPage(pageNumber,renderOptions, reset = false){
                if(reset){
                    listOfPagesLoaded = [];
+                   currentAnnotations = [];
                }
                if(listOfPagesLoaded.indexOf(pageNumber) !== -1){
                    return;
@@ -5462,9 +5724,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         var pdfPage=_ref2[0];
                         var annotations=_ref2[1];
                         currentAnnotations[pageNumber] = annotations.annotations;
-                        if($('.comment-list-form')[0].style.display === 'none' && document.querySelector('.comment-list-container p') === null){
-                            _renderQuestions.renderQuestions(documentId,pageNumber);
-                        }
+                        
                         var page=document.getElementById('pageContainer'+pageNumber);
                         var svg=page.querySelector('.annotationLayer');
                         var canvas=page.querySelector('.canvasWrapper canvas');
@@ -5567,7 +5827,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             }
             
             /**
-             * This functino closes the comment wrapper
+             * This function closes the comment wrapper
              * @param {type} documentId The id of the document (for render the questions afterwards)
              * @param {type} pageNumber The page number (for render the questions afterwards)
              * @param {type} handleSubmitClick Handler to remove
@@ -5607,6 +5867,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             function openComment(e,cancelClick,submitClick,toolbarClick,submitBlur,_type){ 
                 //save e for later 
                 _e = e;
+                
+                var button1 = document.getElementById('allQuestions'); // to be found in index template
+                button1.style.display = 'inline';
+                var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                button2.style.display = 'inline';
                 
                 //title 
                 $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
@@ -5712,28 +5977,40 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             'use strict';
             Object.defineProperty(exports,"__esModule",{value:true});
             exports.renderQuestions=renderQuestions;
+            exports.renderAllQuestions = renderAllQuestions;
             var _event=__webpack_require__(4);
-            var _shortText=__webpack_require__(39);
+            var _shortText=__webpack_require__(39);     
             var _PDFJSAnnotate=__webpack_require__(1);
             var _PDFJSAnnotate2=_interopRequireDefault(_PDFJSAnnotate);
+            
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             
             /**
              * This function renders on the right side the questions of all annotations of a specific page.
+             * 
              * @param {type} documentId the Id of the pdf
              * @param {type} pageNumber the requested pagenumber
-             * @return void
+             * @param {type} activeCall specifies that the function was called by click on button with id='questionsOnThisPage'
+             * @return {undefined}
              */
-            function renderQuestions (documentId, pageNumber){
+            function renderQuestions (documentId, pageNumber, activeCall = null){
                 _PDFJSAnnotate2.default.getStoreAdapter().getQuestions(documentId,pageNumber).then(function(questions){
                     
                     let container = document.querySelector('.comment-list-container');
                     let title = $('#comment-wrapper > h4')[0];
-                    title.innerHTML = M.util.get_string('questionstitle','pdfannotator');
+                    title.innerHTML = M.util.get_string('questionstitle','pdfannotator') + pageNumber;
+                    
+                    var button1 = document.getElementById('allQuestions'); // to be found in index template
+                    button1.style.display = 'block';
+                    var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                    button2.style.display = 'none';
                     
                     //only if form is not shown, otherwise the questions should not be rendered
-                    if(document.querySelector('.comment-list-form').style.display === 'none'){
-                    
+                    if(document.querySelector('.comment-list-form').style.display === 'none' || activeCall){
+                        
+                        if(activeCall) {
+                           document.querySelector('.comment-list-form').style.display = 'none';
+                        }
                         container.innerHTML = '';
 
                         if(questions.length < 1){
@@ -5748,9 +6025,15 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                                 questionText.innerHTML = question.content;
                                 let questionAnswercount = document.createElement('span');
                                 questionAnswercount.innerHTML = question.answercount;
-                                questionAnswercount.className = 'questionanswercount badge';
+                                questionAnswercount.className = 'questionanswercount';
+                                
+                                let questionPix = document.createElement('i');
+                                questionPix.classList = "icon fa fa-comment fa-fw questionanswercount";
+                                questionPix.title = M.util.get_string('answers', 'pdfannotator');
+                                
                                 questionWrapper.appendChild(questionText);
                                 questionWrapper.appendChild(questionAnswercount);
+                                questionWrapper.appendChild(questionPix);
                                 container.appendChild(questionWrapper);
                                 (function(questionObj,questionDOM){
                                     questionDOM.onclick = function(e){
@@ -5770,6 +6053,70 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         type: "error"
                     });
                 });  
+            }
+            /**
+             * Function renders overview column for all questions in this document
+             * 
+             * @param {type} documentId
+             * @return {undefined}
+             */
+            function renderAllQuestions (documentId) {
+                _PDFJSAnnotate2.default.getStoreAdapter().getQuestions(documentId).then(function(questions){
+                    let container = document.querySelector('.comment-list-container');
+                    let title = $('#comment-wrapper > h4')[0];
+                    title.innerHTML = M.util.get_string('allquestionstitle','pdfannotator') + questions.pdfannotatorname;
+                    
+                    container.innerHTML = '';
+
+                    questions = questions.questions;
+                    
+                    var button1 = document.getElementById('allQuestions'); // to be found in index.mustache template
+                    button1.style.display = 'none';
+                    var button2 = document.getElementById('questionsOnThisPage'); // to be found in index.mustache template
+                    button2.style.display = 'block';
+                    
+                    if(document.querySelector('.comment-list-form').style.display !== 'none') {
+                        document.querySelector('.comment-list-form').style.display = 'none';
+                    }
+                    
+                    if(questions.length < 1){
+                        container.innerHTML = M.util.get_string('noquestions_view','pdfannotator');
+                    }else{
+                        for(var page in questions){
+                            let questionWrapper = document.createElement('div');
+                            questionWrapper.className = 'chat-message comment-list-item questions page';
+                            let questionText = document.createElement('span');
+                            questionText.innerHTML = M.util.get_string('page', 'pdfannotator')+ ' ' +page;
+                            let questionAnswercount = document.createElement('span');
+                            questionAnswercount.innerHTML = questions[page].length;
+                            questionAnswercount.className = 'questionanswercount';
+                           
+                            let questionPix = document.createElement('i');
+                            questionPix.classList = "icon fa fa-comments fa-fw questionanswercount";
+                            questionPix.title = M.util.get_string('questionsimgtitle','pdfannotator');
+                            questionWrapper.appendChild(questionText);
+                            questionWrapper.appendChild(questionAnswercount);
+                            questionWrapper.appendChild(questionPix);
+                            container.appendChild(questionWrapper);
+                            (function(page,questionDOM){
+                                questionDOM.onclick = function(e){
+                                    $('#content-wrapper').scrollTop(document.getElementById('pageContainer'+page).offsetTop);
+                                    var pageinputfield = document.getElementById('currentPage');
+                                    if(pageinputfield.value === page) {
+                                        renderQuestions(documentId, page, 1);
+                                    }
+                                    
+                                };
+                            })(page,questionWrapper);
+                        }
+                    }
+                    
+                }, function (err){
+                    notification.addNotification({
+                        message: M.util.get_string('error:getAllQuestions', 'pdfannotator'),
+                        type: "error"
+                    });
+                }); 
             }
         },
     /* 39 *//*OWN Module! To shorten a specific text*/
@@ -5814,15 +6161,18 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
             */
             function shortenText(selector, maxLength = 80, ellipsesText = '...'){
                 var showChar = maxLength;
-                var ellipsestext = ellipsesText;
                 var moretext = M.util.get_string('showmore', 'pdfannotator');
                 var lesstext = M.util.get_string('showless', 'pdfannotator');
                 $(selector).each(function() {
                     var content = $(this).html();
-                    if(content.length > (showChar + ellipsesText.length)) {
-                        var c = content.substr(0, showChar); // first half of string
-                        var h = content.slice(showChar); // second half of string
-                        var html = c + '<span class="moreellipses">' + ellipsestext+ '&nbsp;</span><span class="morecontent"><span>' + h + '</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
+                    //determine if the message should be shortend, here only the characters without the html should be considered
+                    var contentWithoudTags = this.innerText; 
+                    if(contentWithoudTags.length > (showChar + ellipsesText.length)) {
+                        //for the clip-function you should import textclipper.js
+                        var c = clip(content,showChar, {html:true, indicator: ''});//clipped content, the indicator is nothing, because we add the ellipsesText manually in the html
+                        var h = content; // complete content
+                        var html = '<span id="content">' + c + '</span><span class="moreellipses">' + ellipsesText+ '&nbsp;</span><span class="morecontent"><span class="completeContent">' + h + '</span><span class="clippedContent">'+c+'</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
+                        
                         $(this).html(html);
                     }
 
@@ -5832,15 +6182,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                         if($(this).hasClass("less")) {
                             $(this).removeClass("less");
                             $(this).html(moretext);
+                            $(selector+" #content").html($(selector+" .morecontent .clippedContent").html());
                         } else {
                             $(this).addClass("less");
                             $(this).html(lesstext);
+                            
+                            $(selector+" #content").html($(selector+" .morecontent .completeContent").html());
                         }
                         $(this).parent().prev().toggle();
-                        $(this).prev().toggle();
                         return false;
                 });
-            };  
+            };
             
             /**
              * This function shortens the text. The length of the string is determined by the size of the parent and the given divisor.
@@ -5850,15 +6202,15 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
              * @param {type} ellipsesText text which should be displayed to point out that the text was shortened
              * @returns {undefined}
              */
-            function shortenTextDynamic(parentselector, selector, divisor, ellipsesText = '...'){
+            function shortenTextDynamic(parentselector, selector, divisor){
                 
-                if(parentselector != null){
+                if(parentselector !== null){
                     
                     let minCharacters = 80;
                     let maxCharacters = 120;
                     
                     let parent = document.querySelector(parentselector);
-                    if(parent == null){
+                    if(parent === null){
                         return;
                     }
                     let nCharactersToDisplay = parent.offsetWidth / divisor;
@@ -5912,7 +6264,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                        return false;
                }
            }
-
            /**
             * This function edits the SVG-Object of the annotation in the DOM
             * @param {type} type type of annotation
@@ -5947,10 +6298,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
              * It loads only the annotations of the current shown page.
              */
             function loadNewAnnotations(){
-                //determine which page is shown, to only load these annotation.
-                var pageNumber = document.getElementById('currentPage').innerHTML;
+                //determine which page is shown, to only load these annotations.
+                var pageNumber = document.getElementById('currentPage').value;
                 var page=document.getElementById('pageContainer'+pageNumber);
-                if(page == null){
+                if(page === null){
                     setTimeout(loadNewAnnotations, 5000);
                     return;
                 }
@@ -5959,7 +6310,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                 var viewport = metadata.viewport;
                 var documentId = metadata.documentId;
                 //Sometimes the page is not loaded yet, than try again in 5secs
-                if(isNaN(documentId) || documentId == null){
+                if(isNaN(documentId) || documentId === null){
                     setTimeout(loadNewAnnotations, 5000);
                     return;
                 }
@@ -5975,8 +6326,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _page = 1,_annoid = 
                             var annotation = newAnnotations[pageNumber][annotationID];
                             for(var oldAnnoid in oldAnnotations[pageNumber]){
                                 var oldAnno = oldAnnotations[pageNumber][oldAnnoid];
-
-                                if(oldAnno !== undefined && annotation.uuid == oldAnno.uuid){
+                                annotation.uuid = parseInt(annotation.uuid);
+                                oldAnno.uuid = parseInt(oldAnno.uuid);
+                                if(oldAnno !== undefined && annotation.uuid === oldAnno.uuid){
                                     if(!isAnnotationsPosEqual(annotation,oldAnno)){
                                         var node = document.querySelector('[data-pdf-annotate-id="'+oldAnno.uuid+'"]');
                                         if(node !== null){

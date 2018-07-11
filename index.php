@@ -1,26 +1,27 @@
 <?php
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen (see README.md)
+ * @copyright 2018 Ahmad Obeid (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once('../../config.php');
 require_once('locallib.php');
- 
+
 $id = required_param('id', PARAM_INT);           // Course ID
- 
-// Ensure that the course specified is valid
-if (!$course = $DB->get_record('course', array('id'=> $id))) {
+
+// Ensure that the course specified is valid.
+if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('Course ID is incorrect');
 }
 
-//$course = $DB->get_record('course', array('id'=>$id), '*', MUST_EXIST);
+// $course = $DB->get_record('course', array('id'=>$id), '*', MUST_EXIST);
 require_course_login($course, true);
 $PAGE->set_pagelayout('incourse');
 
 $params = array(
     'context' => context_course::instance($course->id)
 );
+$context = $params['context'];
 $event = \mod_pdfannotator\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
@@ -31,6 +32,11 @@ $strsectionname  = get_string('sectionname', 'format_'.$course->format);
 $strname         = get_string('name');
 $strintro        = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
+$strsubscribe    = get_string('subscribe', 'pdfannotator');
+$strunsubscribe  = get_string('unsubscribe', 'pdfannotator');
+$strsubscribed   = get_string('subscribed', 'pdfannotator');
+$stryes          = get_string('yes');
+$strno           = get_string('no');
 
 $PAGE->set_url('/mod/pdfannotator/index.php', array('id' => $course->id));
 $PAGE->set_title($course->shortname.': '.$strpdfannotators);
@@ -51,7 +57,7 @@ $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
     $table->head  = array ($strsectionname, $strname, $strlastmodified, $strintro);
-    $table->align = array ('center', 'left', 'left', 'left');
+    $table->align = array ('center', '', 'left', 'left');
 } else {
     $table->head  = array ($strlastmodified, $strname, $strintro);
     $table->align = array ('left', 'left', 'left');
@@ -63,7 +69,7 @@ $currentsection = '';
 
 foreach ($pdfannotators as $pdfannotator) {
     $cm = $modinfo->cms[$pdfannotator->coursemodule];
-    $infor=get_number_of_new_activities($pdfannotator->id);
+    $infor = get_number_of_new_activities($pdfannotator->id);
     if ($usesections) {
         $printsection = '';
         if ($pdfannotator->section !== $currentsection) {
@@ -80,20 +86,46 @@ foreach ($pdfannotators as $pdfannotator) {
     }
 
     $extra = empty($cm->extra) ? '' : $cm->extra;
-    
     $icon = '<img src="'.$cm->get_icon_url().'" class="activityicon" alt="'.$cm->get_module_type_name().'" /> ';
-   
-
-    $class = $pdfannotator->visible ? '' : 'class="dimmed"'; // hidden modules are dimmed
-    $newinfo=" ";
-    $lastmodified=get_datetime_of_last_modification($pdfannotator->id);
-    if($infor >0)
-        $newinfo= "<img src=\"pix/new.png\">($infor)</img>";
-    else if($lastmodified>=strtotime("-1 day"))
-        $newinfo= "<img src=\"pix/new.gif\"></img>";
+    $visible = $pdfannotator->visible;
+    $class = $visible ? '' : 'class="dimmed"'; // Hidden modules are dimmed.
+    $newinfo = " ";
+    $actions = array();
+    // Settings if user have capabilty.
+    $manageurl = new \moodle_url('/course/mod.php', array('sesskey' => \sesskey()));
+    // Edit.
+    $hascapability = has_capability('mod/pdfannotator:administrateuserinput', $context);
+    if ($hascapability) {
+        $actions['edit'] = array(
+            'url' => new \moodle_url('/course/modedit.php', array('update' => $cm->id)),
+            'icon' => new \pix_icon('t/edit', new \lang_string('edit')),
+            'string' => new \lang_string('edit')
+        );
+        // Show/Hide.
+        if ($visible) {
+            $actions['hide'] = array(
+                'url' => new \moodle_url($manageurl, array('hide' => $cm->id)),
+                'icon' => new \pix_icon('t/hide', new \lang_string('hide')),
+                'string' => new \lang_string('hide'));
+        } else {
+            $actions['show'] = array(
+                'url' => new \moodle_url($manageurl, array('show' => $cm->id)),
+                'icon' => new \pix_icon('t/show', new \lang_string('show')),
+                'string' => new \lang_string('show')
+            );
+        }
+    }
+    $setting = render_listitem_actions($actions);
+    $lastmodified = get_datetime_of_last_modification($pdfannotator->id);
+    if ($infor > 0) {
+        $newinfo = "<img src=\"pix/new.png\">($infor)</img>";
+    } else if ($lastmodified >= strtotime("-1 day")) {
+            $newinfo = "<img src=\"pix/new.gif\"></img>";
+    }
     $table->data[] = array (
         $printsection,
-        "<a $class $extra href=\"view.php?id=$cm->id\">".$icon.format_string($pdfannotator->name).$newinfo."</a>", userdate($lastmodified),
+        "<div style=\"float:left\"><a $class $extra href=\"view.php?id=$cm->id\">".$icon.format_string($pdfannotator->name)
+        .$newinfo."</a></div><div style=\"float:right\">".$setting."</div>" , userdate($lastmodified),
         format_module_intro('pdfannotator', $pdfannotator, $cm->id));
 }
 
