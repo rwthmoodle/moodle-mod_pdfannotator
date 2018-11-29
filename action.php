@@ -409,7 +409,7 @@ if ($action === 'deleteComment') {
 if ($action === 'editComment') {
 
     require_capability('mod/pdfannotator:edit', $context);
-            
+
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);

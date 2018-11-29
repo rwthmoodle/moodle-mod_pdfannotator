@@ -64,8 +64,7 @@ class overview implements \renderable, \templatable {
     public function __construct($thisannotator, $courseid, $newsspan = 3, $viewreports = false, $viewanswers = false, $viewquestions = false, $viewposts = false) {
 
         $this->openannotator = $thisannotator;
-        $this->courseid = $courseid; //$course->id;
-        // $this->newsspan = $newsspan;
+        $this->courseid = $courseid;
 
         $this->viewreports = $viewreports;
         $this->viewanswers = $viewanswers;

@@ -464,11 +464,11 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         if ($dbman->field_exists($table, $field)) {
             $dbman->change_field_default($table, $field);
         }
-        
+    
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2018111901, 'pdfannotator');
     }
-    
+
     if ($oldversion < 2018112100) {
 
         // Define field modifiedby to be added to pdfannotator_annotations.
@@ -497,7 +497,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        
+    
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2018112100, 'pdfannotator');
     }

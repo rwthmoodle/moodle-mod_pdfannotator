@@ -97,7 +97,7 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         ),
     ),
-    
+
     'mod/pdfannotator:editanypost' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
