@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-//R: The first parameter has to be Y, because it is a default YUI-object (von moodle vorgegeben)
+//R: The first parameter has to be Y, because it is a default YUI-object (demanded by moodle)
 function setCharts(Y, names, otherquestions, myquestions, otheranswers, myanswers) {
     Highcharts.setOptions({
         colors: ['rgb(0,84,159)', 'rgb(142,186,229)', 'rgb(87,171,39)', 'rgb(184,214,152)']

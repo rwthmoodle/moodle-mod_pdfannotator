@@ -1,8 +1,8 @@
 /**
- * This file is for shortign text.
+ * This file is for shortening text.
  * 
  * Written by [Arend van Beelen jr.](https://github.com/arendjr) @ [Speakap](https://www.speakap.com)
- * Published on https://github.com/arendjr/text-clipper
+ * Published on https://github.com/arendjr/text-clipper under the MIT licence
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes (see README.md)

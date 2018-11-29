@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * In this file, incoming AJAX request from the Store Adapter in index.js are handled.
  * These requests concern the creation, retrieval and deletion of annotations
@@ -21,17 +36,20 @@ require_once('reportform.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 
 $documentid = required_param('documentId', PARAM_PATH);
-$action = required_param('action', PARAM_TEXT); // '$action' determines what is to be done; see below:
+$action = required_param('action', PARAM_ALPHA); // ...'$action' determines what is to be done; see below.
 
 $pdfannotator = $DB->get_record('pdfannotator', array('id' => $documentid), '*', MUST_EXIST);
 $cm = get_coursemodule_from_instance('pdfannotator', $documentid, $pdfannotator->course, false, MUST_EXIST);
-require_course_login($pdfannotator->course, true, $cm);
+$context = context_module::instance($cm->id);
 
+require_course_login($pdfannotator->course, true, $cm);
+require_capability('mod/pdfannotator:view', $context);
+require_sesskey();
 
 /* * ****************************************** 1. HANDLING ANNOTATIONS ****************************************** */
 /* * ************************************************************************************************************* */
 
-/* * ****************************************** Retrieve all annotations from db for display ****************************************** */
+/* * ******************************* Retrieve all annotations from db for display ******************************* */
 
 if ($action === 'read') {
 
@@ -48,7 +66,7 @@ if ($action === 'read') {
 
         $entry = json_decode($record->data); // StdClass Object containing data that is specific to the respective annotation type.
         // Add general annotation data.
-        $entry->type = get_name_of_annotationtype($record->annotationtypeid);
+        $entry->type = pdfannotator_get_annotationtype_name($record->annotationtypeid);
         // The following 3 lines can be removed after deletion of the original annotation tables.
         if ($entry->type == 'pin') {
             $entry->type = 'point';
@@ -66,41 +84,40 @@ if ($action === 'read') {
     echo json_encode($data);
 }
 
-/* * ************************************ Select a single annotation from db for shifting ****************************************** */
+/* * **************************** Select a single annotation from db for shifting ********************************** */
 
 if ($action === 'readsingle') {
 
-    global $DB;
+    global $DB, $USER;
     $annotationid = required_param('annotationId', PARAM_INT);
     $page = optional_param('page_Number', 1, PARAM_INT);
 
-    $records = $DB->get_records('pdfannotator_annotations', array('id' => $annotationid));
-    foreach ($records as $record) {
-        $annotation = json_decode($record->data);
-        // Add general annotation data.
-        $annotation->type = get_name_of_annotationtype($record->annotationtypeid);
-        // The following 3 lines can be removed after deletion of the original annotation tables.
-        if ($annotation->type == 'pin') {
-            $annotation->type = 'point';
-        }
-        $annotation->class = "Annotation";
-        $annotation->page = $record->page;
-        $annotation->uuid = $record->id;
-        $data = array('documentId' => $documentid, 'annotation' => $annotation);
-        echo json_encode($data);
-        return;
+    $record = $DB->get_record('pdfannotator_annotations', array('id' => $annotationid), '*', MUST_EXIST);
+
+    $annotation = json_decode($record->data);
+    // Add general annotation data.
+    $annotation->type = pdfannotator_get_annotationtype_name($record->annotationtypeid);
+    // The following 3 lines can be removed after deletion of the original annotation tables.
+    if ($annotation->type == 'pin') {
+        $annotation->type = 'point';
     }
+    $annotation->class = "Annotation";
+    $annotation->page = $record->page;
+    $annotation->uuid = $record->id;
+    $data = array('documentId' => $documentid, 'annotation' => $annotation);
+    echo json_encode($data);
+    return;
 }
 
-/* * ****************************************** Save (1) and display (2) a new annotation ****************************************** */
+/* * ********************************** Save (1) and display (2) a new annotation ********************************** */
 
 if ($action === 'create') {
 
     global $DB;
     global $USER;
-    
-    $context = context_module::instance($cm->id);
-    
+
+    require_capability('mod/pdfannotator:create', $context);
+
     $isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
 
     $table = "pdfannotator_annotations";
@@ -112,7 +129,7 @@ if ($action === 'create') {
     $annotation = json_decode($annotationjs, true);
     // 1.2 Determine the type of the annotation.
     $type = $annotation['type'];
-    $typeid = get_id_of_annotationtype($type);
+    $typeid = pdfannotator_get_annotationtype_id($type);
     // 1.3 Set the type-specific data of the annotation.
     $data = [];
     switch ($type) {
@@ -123,8 +140,8 @@ if ($action === 'create') {
             $data['height'] = $annotation['height'];
             break;
         case 'drawing':
-            $studentdrawingsallowed = $DB->get_field('pdfannotator', 'use_studentdrawing', array('id' => $documentid), $strictness=MUST_EXIST);
-            if ($studentdrawingsallowed !== 1 && !$isteacher) {
+            $studentdrawingsallowed = $DB->get_field('pdfannotator', 'use_studentdrawing', ['id' => $documentid], $strictness = MUST_EXIST);
+            if ($studentdrawingsallowed != 1 && !$isteacher) {
                 echo json_encode(['status' => 'error', 'reason' => get_string('studentdrawingforbidden', 'pdfannotator')]);
                 return;
             }
@@ -145,8 +162,8 @@ if ($action === 'create') {
             $data['rectangles'] = $annotation['rectangles'];
             break;
         case 'textbox':
-            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', array('id' => $documentid), $strictness=MUST_EXIST);
-            if ($studenttextboxesallowed !== 1 && !$isteacher) {
+            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', array('id' => $documentid), $strictness = MUST_EXIST);
+            if ($studenttextboxesallowed != 1 && !$isteacher) {
                 echo json_encode(['status' => 'error', 'reason' => get_string('studenttextboxforbidden', 'pdfannotator')]);
                 return;
             }
@@ -186,6 +203,7 @@ if ($action === 'create') {
 /* * ****************************************** Update an annotation ****************************************** */
 
 if ($action === 'update') {
+    require_capability('mod/pdfannotator:edit', $context);
 
     // 1. Get the id of the annotation that is to be shifted in position.
     $annotationid = required_param('annotationId', PARAM_INT);
@@ -194,8 +212,9 @@ if ($action === 'update') {
     $datajs = required_param('annotation', PARAM_TEXT);
     $data = json_decode($datajs, true);
 
-    // 3. Check whether the current user is allowed to shift this annotation, i.e. whether it's his and hasn't been commented by other people.
-    if (pdfannotator_annotation::shifting_allowed($annotationid)) {
+    // 3. Check whether the current user is allowed to shift this annotation,
+    // i.e. whether it's theirs or they are an admin.
+    if (pdfannotator_annotation::shifting_allowed($annotationid, $context)) {
 
         $annotation = $data['annotation'];
         $type = $annotation['type'];
@@ -203,7 +222,8 @@ if ($action === 'update') {
 
         // 4. If so, update the annotations 'data' attribute in mdl_pdfannotator_annotations.
         // Note that while only part of the data may change, the whole JSON-string has to be construced anew.
-        // e.g. drawing: Only the 'lines' actually change, but the database stores them together with width and color in a single JSON-string called 'data'.
+        // e.g. drawing: Only the 'lines' actually change, but the database stores them together with width
+        // and color in a single JSON-string called 'data'.
         switch ($type) {
 
             case 'area':
@@ -235,16 +255,15 @@ if ($action === 'update') {
                 break;
         }
 
-        $success = pdfannotator_annotation::update($annotationid, $newdata);
+        $result = pdfannotator_annotation::update($annotationid, $newdata);
 
         // 5. If the updated data received from the Store Adapter could successfully be inserted in db, send it back for display.
-        if ($success != null && $success == 1) {
-            echo json_encode($data);
+        if ($result['status'] == 'success') {
+            echo json_encode($result);
         } else {
             echo json_encode(['status' => 'error']);
         }
     } else {
-
         echo json_encode(['status' => 'error']);
     }
 }
@@ -252,6 +271,8 @@ if ($action === 'update') {
 /* * ****************************************** Delete an annotation ****************************************** */
 
 if ($action === 'delete') {
+
+    require_capability('mod/pdfannotator:delete', $context);
 
     // Get current user.
     global $USER;
@@ -271,12 +292,17 @@ if ($action === 'delete') {
     }
 }
 
-/* * ****************************************** Retrieve all questions of a specific page or document ****************************************** */
+/* * ********************************** Retrieve all questions of a specific page or document ********************************** */
 
 if ($action === 'getQuestions') {
 
     $pageid = optional_param('page_Number', -1, PARAM_INT); // Default is 1.
-    if ($pageid == -1) {
+    $pattern = optional_param('pattern', '', PARAM_TEXT);
+
+    if ($pattern !== '') {
+        $questions = pdfannotator_comment::get_questions_search($documentid, $pattern);
+        echo json_encode($questions);
+    } else if ($pageid == -1) {
         $questions = pdfannotator_comment::get_all_questions($documentid);
         $pdfannotatorname = $DB->get_field('pdfannotator', 'name', array('id' => $documentid), $strictness = MUST_EXIST);
         $result = array('questions' => $questions, 'pdfannotatorname' => $pdfannotatorname);
@@ -287,50 +313,37 @@ if ($action === 'getQuestions') {
     }
 }
 
-/* * ****************************************** 2. HANDLING COMMENTS ****************************************** */
-/* * ************************************************************************************************************* */
+/* * *************************************** 2. HANDLING COMMENTS ****************************************** */
+/* * ******************************************************************************************************* */
 
-/* * ****************************************** Save a new comment and return it for display ****************************************** */
+/* * **************************** Save a new comment and return it for display ***************************** */
 
 if ($action === 'addComment') {
 
+    require_capability('mod/pdfannotator:create', $context);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     // Get the annotation to be commented.
-    $annotationid = required_param('annotationId', PARAM_TEXT);
-    $context = context_module::instance($cm->id);
+    $annotationid = required_param('annotationId', PARAM_INT);
     $PAGE->set_context($context);
 
     // Get the comment data.
     $content = required_param('content', PARAM_TEXT);
-    $visibility = required_param('visibility', PARAM_TEXT);
-    $isquestion = required_param('isquestion', PARAM_TEXT);
+    $visibility = required_param('visibility', PARAM_ALPHA);
+    $isquestion = required_param('isquestion', PARAM_INT);
 
     // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
-    $commentid = pdfannotator_comment::create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context);
-
-    // Get username or label 'anonymous' // XXX Could perhaps be delegated to a moodle setting.
-    $username = $USER->username;
-    if ($visibility === 'anonymous') {
-        $username = get_string('anonymous', 'pdfannotator');
-    }
+    $comment = pdfannotator_comment::create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context);
+    $commentid = $comment->uuid;
 
     // If successful, create a comment array and return it as json.
-    if (isset($commentid) && $commentid !== false && $commentid > 0) {
+    if ($comment) {
+        $isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
+        $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+        $templatable = new comment($comment, $isteacher, $cm, $context);
+        $data = $templatable->export_for_template($myrenderer);
 
-        global $USER;
-        $comment = [];
-        $comment['class'] = 'Comment';
-        $comment['uuid'] = $commentid;
-        $comment['annotation'] = $annotationid;
-        $comment['content'] = $content;
-        $comment['userid'] = $USER->id;
-        $comment['username'] = $username;
-        $timestamp = pdfannotator_comment::get_timestamp($commentid);
-        $comment['timecreated'] = get_user_date_time($timestamp);
-        $comment['visibility'] = $visibility;
-        $comment['isquestion'] = $isquestion;
-        $comment['usevotes'] = pdfannotator_instance::use_votes($documentid);
-
-        echo json_encode($comment);
+        echo json_encode($data);
     } else {
         if ($commentid == -1) {
             echo json_encode(['status' => '-1']);
@@ -340,32 +353,27 @@ if ($action === 'addComment') {
     }
 }
 
-/* * ****************************************** Retrieve information about a specific annotation from db ****************************************** */
+/* * ******************************* Retrieve information about a specific annotation from db ******************************* */
 
-if ($action === 'getInformation') {
+if ($action === 'getInformation') { // This concerns only textbox and drawing.
 
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     $annotationid = required_param('annotationId', PARAM_INT);
 
-    // Get the annotation information only if it is a drawing or textbox.
-    $annotationobject = new pdfannotator_annotation($annotationid);
+    $comment = pdfannotator_annotation::get_information($annotationid);
+    if ($comment) {
+        $isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
+        $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+        $templatable = new comment($comment, $isteacher, $cm, $context);
+        $data = $templatable->export_for_template($myrenderer);
 
-    if ($annotationobject->get_annotationtype() === "drawing" || $annotationobject->get_annotationtype() === "textbox") {
-        $returnanno = [];
-        $returnanno['type'] = $annotationobject->get_annotationtype();
-        $returnanno['class'] = "Annotation";
-        $returnanno['page'] = $annotationobject->get_page_of_annotation();
-        $returnanno['uuid'] = $annotationid;
-        $returnanno['user'] = get_username($annotationobject->userid);
-        $returnanno['userid'] = $annotationobject->userid;
-        $returnanno['timecreated'] = userdate($annotationobject->timecreated, $format = '', $timezone = 99, $fixday = true, $fixhour = true);
-        ;
-        echo json_encode($returnanno);
+        echo json_encode($data);
     } else {
         echo json_encode(['status' => 'error']);
     }
 }
 
-/* * ****************************************** Retrieve all comments for a specific annotation from db ****************************************** */
+/* * ********************************* Retrieve all comments for a specific annotation from db ********************************* */
 
 if ($action === 'getComments') {
 
@@ -373,23 +381,49 @@ if ($action === 'getComments') {
 
     // Create an array of all comment objects on the specified page and annotation.
     $comments = pdfannotator_comment::read($documentid, $annotationid);
-    echo json_encode($comments);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
+    $isteacher = has_capability('mod/pdfannotator:administrateuserinput', $context);
+    $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+    $templatable = new comment($comments, $isteacher, $cm, $context);
+
+    $data = $templatable->export_for_template($myrenderer);
+
+    echo json_encode($data);
 }
 
 /* * ****************************************** Delete a comment ****************************************** */
 
 if ($action === 'deleteComment') {
 
+    require_capability('mod/pdfannotator:delete', $context);
+
     $commentid = required_param('commentId', PARAM_INT);
 
-    $context = context_module::instance($cm->id);
+    $data = pdfannotator_comment::delete_comment($commentid, $cm->id);
+    echo json_encode($data);
+}
 
-    pdfannotator_comment::delete_comment($commentid, $context);
+/* * ****************************************** Edit a comment ****************************************** */
+
+if ($action === 'editComment') {
+
+    require_capability('mod/pdfannotator:edit', $context);
+            
+    $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
+
+    $commentid = required_param('commentId', PARAM_INT);
+    $content = required_param('content', PARAM_TEXT);
+
+    $data = pdfannotator_comment::update($commentid, $content, $editanypost);
+    echo json_encode($data);
 }
 
 /* * ****************************************** Vote for a comment ****************************************** */
 
 if ($action === 'voteComment') {
+
+    require_capability('mod/pdfannotator:vote', $context);
 
     global $DB;
 
@@ -407,6 +441,9 @@ if ($action === 'voteComment') {
 /* * ****************************************** Subscribe to a question  ****************************************** */
 
 if ($action === 'subscribeQuestion') {
+
+    require_capability('mod/pdfannotator:subscribe', $context);
+
     global $DB;
     $annotationid = required_param('annotationid', PARAM_INT);
 
@@ -422,6 +459,9 @@ if ($action === 'subscribeQuestion') {
 /* * ****************************************** Unsubscribe from a question  ****************************************** */
 
 if ($action === 'unsubscribeQuestion') {
+
+    require_capability('mod/pdfannotator:subscribe', $context);
+
     global $DB;
     $annotationid = required_param('annotationid', PARAM_INT);
 
@@ -434,17 +474,18 @@ if ($action === 'unsubscribeQuestion') {
     }
 }
 
-
 /* * ****************************************** 3. HANDLING REPORTS (teacheroverview) ****************************************** */
 /* * ************************************************************************************************************* */
 
-/* * ************************************** 3.1 Mark a report as seen and don't display it any longer ******************************** */
+/* * ********************************* 3.1 Mark a report as seen and don't display it any longer *************************** */
 
 if ($action === 'markReportAsSeen') {
-    
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/overview.php');
-    require_once($CFG->dirroot.'/mod/pdfannotator/model/pdfannotator.php');
-    
+
+    require_capability('mod/pdfannotator:administrateuserinput', $context);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/overview.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
+
     global $DB;
     $reportid = required_param('reportid', PARAM_INT);
     $openannotator = required_param('openannotator', PARAM_INT);
@@ -462,13 +503,15 @@ if ($action === 'markReportAsSeen') {
 }
 
 
-/* * ************************************** 3.2 Mark a hidden report as unseen and display it once more ****************************** */
+/* * ********************************* 3.2 Mark a hidden report as unseen and display it once more ************************* */
 
 if ($action === 'markReportAsUnseen') {
-    
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/overview.php');
-    require_once($CFG->dirroot.'/mod/pdfannotator/model/pdfannotator.php');
-    
+
+    require_capability('mod/pdfannotator:administrateuserinput', $context);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/overview.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
+
     global $DB;
     $reportid = required_param('reportid', PARAM_INT);
     $openannotator = required_param('openannotator', PARAM_INT);
@@ -490,6 +533,8 @@ if ($action === 'markReportAsUnseen') {
 
 if ($action === 'deleteReport') {
 
+    require_capability('mod/pdfannotator:administrateuserinput', $context);
+
     global $DB;
 
     $reportid = required_param('reportid', PARAM_INT);
@@ -501,18 +546,20 @@ if ($action === 'deleteReport') {
     }
 }
 
-/******************************************** 3. HANDLING ANSWERS TO ONE'S QUESTIONS (studentoverview) *******************************************/
-/****************************************************************************************************************/
+/* * ********************************* 4. HANDLING ANSWERS TO ONE'S QUESTIONS (studentoverview) ********************************* */
+/* * ************************************************************************************************************* */
 
-/* * ****************************************** Mark a question as seen and don't display it any longer ****************************************** */
+/* * ********************************** Mark a question as seen and don't display it any longer ********************************* */
 
 // Students can mark answers to their own questions as seen on their personal overview page.
 
 if ($action === 'markAnswerAsSeen') {
-    
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/overview.php');
-    require_once($CFG->dirroot.'/mod/pdfannotator/model/pdfannotator.php');
-    
+
+    require_capability('mod/pdfannotator:viewanswers', $context);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/overview.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
+
     global $DB;
 
     $answerid = required_param('answerid', PARAM_INT);
@@ -522,8 +569,8 @@ if ($action === 'markAnswerAsSeen') {
 
         $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
         $templatable = new overviewUpdateHiddenAnswers($pdfannotator->course, $openannotator);
-        $newdata = $templatable->export_for_template($myrenderer);       
-        
+        $newdata = $templatable->export_for_template($myrenderer);
+
         echo json_encode(['status' => 'success', 'answerid' => $answerid, 'pdfannotatorid' => $documentid, 'newdata' => $newdata]);
     } else {
         echo json_encode(['status' => 'error']);
@@ -532,10 +579,12 @@ if ($action === 'markAnswerAsSeen') {
 
 
 if ($action === 'markAnswerAsUnseen') {
-    
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/overview.php');
-    require_once($CFG->dirroot.'/mod/pdfannotator/model/pdfannotator.php');
-    
+
+    require_capability('mod/pdfannotator:viewanswers', $context);
+
+    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/overview.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
+
     global $DB;
 
     $answerid = required_param('answerid', PARAM_INT);
@@ -553,4 +602,104 @@ if ($action === 'markAnswerAsUnseen') {
     } else {
         echo json_encode(['status' => 'error']);
     }
+}
+
+/* * ******************************* 5. SETTING TIME SPAN FOR DISPLAYING NEW QUESTIONS (overview) ******************************* */
+/* * ************************************************************************************************************* */
+
+if ($action === 'setNewsspan') {
+
+    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/overview.php');
+    require_once($CFG->dirroot.'/mod/pdfannotator/model/pdfannotator.php');
+
+    global $DB;
+
+    $newsspan = required_param('newsspan', PARAM_INT);
+
+    $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+    $templatable = new overviewUpdateNewQuestions($pdfannotator->course, $pdfannotator, $newsspan);
+    $newdata = $templatable->export_for_template($myrenderer);
+
+    echo json_encode(['status' => 'success', 'pdfannotatorid' => $documentid, 'newdata' => $newdata]);
+
+}
+
+
+/******************************************** 6. HANDLE PRINT REQUEST FOR ANNOTATIONS *******************************************/
+/****************************************************************************************************************/
+
+if ($action === 'getPrintUrl') {
+
+    require_capability('mod/pdfannotator:printdocument', $context);
+
+    $contextid = $context->id;
+
+    $filename = $pdfannotator->name . ".pdf";
+
+    // ... e.g.: http://localhost/moodle/pluginfile.php/445/mod_pdfannotator/content/0/Testklausur_2018_Folien.pdf.
+    $printurl = "$CFG->wwwroot/pluginfile.php/$contextid/mod_pdfannotator/content/0/$filename?forcedownload=1";
+
+    if (true) {
+        echo json_encode(['status' => 'success', 'printurl' => $printurl]);
+    } else {
+        echo json_encode(['status' => 'error']);
+    }
+
+}
+
+if ($action === 'getCommentsToPrint') {
+
+    require_capability('mod/pdfannotator:printcomments', $context);
+
+    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/printview.php');
+
+    global $DB;
+
+    // The model retrieves and selects data.
+    $conversations = pdfannotator_instance::get_conversations($documentid);
+
+    if ($conversations === -1) { // Sth. went wrong with the database query.
+        echo json_encode(['status' => 'error']);
+        return;
+
+    } else if (empty($conversations)) { // There are no comments that could be printed.
+        echo json_encode(['status' => 'empty']);
+        return;
+
+    } else { // Everything is fine.
+        $documentname = pdfannotator_get_instance_name($documentid);
+
+        $posts = [];
+        $count = 0;
+        foreach ($conversations as $conversation) {
+            $post = new stdClass();
+            $post->answeredquestion = pdfannotator_handle_latex($conversation->answeredquestion);
+            $post->page = $conversation->page;
+            $post->annotationtypeid = $conversation->annotationtypeid;
+            $post->author = $conversation->author;
+            $post->timemodified = $conversation->timemodified;
+            $post->answers = [];
+
+            $answercount = 0;
+            foreach ($conversation->answers as $ca) {
+                $answer = new stdClass();
+                $answer->answer = pdfannotator_handle_latex($ca->answer);
+                $answer->author = $ca->author;
+                $answer->timemodified = $ca->timemodified;
+                $post->answers[$answercount] = $answer;
+                $answercount++;
+            }
+
+            $posts[$count] = $post;
+            $count++;
+        }
+
+        $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+        $templatable = new printview($documentname, $posts);
+        $newdata = $templatable->export_for_template($myrenderer);// Viewcontroller takes model's data and arranges it for display.
+
+        echo json_encode(['status' => 'success', 'pdfannotatorid' => $documentid, 'newdata' => $newdata]);
+
+    }
+
 }

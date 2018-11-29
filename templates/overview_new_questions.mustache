@@ -1,9 +1,12 @@
 
 <div id='noquestions'>{{noquestions}}</div>
 
-{{#annotators_with_questions}}
+    
 
     <div class="panel-group">
+
+
+        {{#annotators_with_questions}}
 
         <div class="panel panel-default" id="questionpanel_{{annotatorid}}">
 
@@ -40,6 +43,8 @@
 
         </div>
 
+        {{/annotators_with_questions}}
+
     </div>
 
-{{/annotators_with_questions}}
+

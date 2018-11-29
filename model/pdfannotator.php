@@ -1,24 +1,37 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes(see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/renderable.php');
 
 /**
  * This class represents an instance of the pdfannotator module.
- *
  */
 class pdfannotator_instance {
 
     private $id;
     private $coursemodule;
     private $name;
-    private $answers; // questions asked by the current user
+    private $answers; // Questions asked by the current users
     private $latestquestions;
     private $reports;
     private $hiddenanswers;
@@ -79,6 +92,11 @@ class pdfannotator_instance {
         return $DB->record_exists('pdfannotator', array('id' => $documentid, 'usevotes' => '1'));
     }
 
+    public static function useprint($documentid) {
+        global $DB;
+        return $DB->record_exists('pdfannotator', array('id' => $documentid, 'useprint' => '1'));
+    }
+
     /*     * **************************** (attribute) getter methods ***************************** */
 
     public function get_id() {
@@ -127,47 +145,43 @@ class pdfannotator_instance {
      * @global type $USER
      * @return type array of annotation objects
      */
-    public function set_answers($rerender = null) {
+    public function set_answers() {
 
         global $DB, $USER;
 
-        $sql = "SELECT c.id AS answerid, c.content AS answer, a.id AS annoid, a.page, q.content AS answeredquestion "
+        $sql = "SELECT c.id AS answerid, c.content AS answer, a.id AS annoid, a.page, q.content AS answeredquestion, q.isdeleted AS questiondeleted "
                 . "FROM {pdfannotator_subscriptions} s "
                 . "JOIN {pdfannotator_annotations} a ON a.id = s.annotationid "
                 . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id "
                 . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
-                . "WHERE s.userid = ? AND q.isquestion AND NOT c.isquestion AND a.pdfannotatorid = ? AND NOT c.isdeleted AND NOT c.seen";
+                . "WHERE s.userid = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND a.pdfannotatorid = ? AND NOT c.isdeleted = 1 AND NOT c.seen = 1";
 
         $entries = $DB->get_records_sql($sql, array($USER->id, $this->id));
-
         foreach ($entries as $entry) {
-            if ($rerender) {
-                $entry->link = "/moodle/mod/pdfannotator/view.php?id={$this->coursemodule}&page={$entry->page}&annoid={$entry->annoid}&commid={$entry->answerid}";
-            } else {
-                $entry->link = new moodle_url('/mod/pdfannotator/view.php', 
-                        array('id' => $this->coursemodule, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->answerid));
+            $entry->link = (new moodle_url('/mod/pdfannotator/view.php',
+                        array('id' => $this->coursemodule, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->answerid)))->out();            
+            if ($entry->questiondeleted == 1) {
+                $entry->answeredquestion = get_string('deletedComment', 'pdfannotator');
             }
             $this->answers[] = $entry;
         }
     }
 
-    public function set_reports($courseid, $rerender = null) {
+    public function set_reports($courseid) {
 
         global $DB;
 
         // Retrieve reports from db as an array of stdClass objects, representing a report record each.
-        $sql = "SELECT r.id as reportid, r.commentid, r.message as report, a.page, c.annotationid, c.userid AS commentauthor, c.content AS reportedcomment, c.timecreated AS commenttime, c.visibility "
+        $sql = "SELECT r.id as reportid, r.commentid, r.message as report, a.page, c.annotationid, c.userid AS commentauthor, "
+                . "c.content AS reportedcomment, c.timecreated AS commenttime, c.visibility "
                 . "FROM {pdfannotator_reports} r JOIN {pdfannotator_comments} c ON r.commentid = c.id "
                 . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
                 . "WHERE r.courseid = ? AND r.pdfannotatorid = ? AND r.seen = ?";
         $reports = $DB->get_records_sql($sql, array($courseid, $this->id, 0));
 
         foreach ($reports as $report) {
-            if ($rerender) {
-                $report->link = "/moodle/mod/pdfannotator/view.php?id={$this->coursemodule}&page={$report->page}&annoid={$report->annotationid}&commid={$report->commentid}";
-            } else {
-                $report->link = new moodle_url('/mod/pdfannotator/view.php', array('id' => $this->coursemodule, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid));
-            }
+            $report->link = (new moodle_url('/mod/pdfannotator/view.php',
+                        array('id' => $this->coursemodule, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();            
             $this->reports[] = $report;
 
             /*
@@ -176,7 +190,7 @@ class pdfannotator_instance {
               $report->commentauthor = get_string('anonymous', 'pdfannotator');
               } else { // The try catch might be unnecessary if you tick 'anonymise userinfo' during backup.
               try {
-              $report->commentauthor = get_username($report->commentauthor);
+              $report->commentauthor = pdfannotator_get_username($report->commentauthor);
               } catch (Exception $ex) {
               $report->commentauthor = get_string('unknownuser', 'pdfannotator');
               }
@@ -184,7 +198,7 @@ class pdfannotator_instance {
               $report->commenttime = userdate($report->commenttime, $format = '', $timezone = 99, $fixday = true, $fixhour = true);
 
               // optional: who reported it and when? (->adjust SQL)
-              $report->userid = get_username($report->userid);
+              $report->userid = pdfannotator_get_username($report->userid);
               $report->timereported = userdate($report->timecreated, $format = '', $timezone = 99, $fixday = true, $fixhour = true);
              */
         }
@@ -227,15 +241,14 @@ class pdfannotator_instance {
                 $timestring = "-3 days";
         }
 
-        $sql = "SELECT a.id as annotationid, a.page, c.id as commentid, c.content FROM {pdfannotator_annotations} a "
+        $sql = "SELECT a.id as annoid, a.page, c.id as commentid, c.content FROM {pdfannotator_annotations} a "
                 . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
-                . "WHERE c.isquestion AND a.pdfannotatorid = ? AND c.timecreated >= ?";
+                . "WHERE c.isquestion = 1 AND a.pdfannotatorid = ? AND c.timecreated >= ?";
 
         $newquestions = $DB->get_records_sql($sql, array($this->id, strtotime($timestring))); // strtotime("-1 week");
-
-        foreach ($newquestions as $question) {
-            $params = array('id' => $this->coursemodule, 'page' => $question->page, 'annoid' => $question->annotationid, 'commid' => $question->commentid);
-            $question->link = new moodle_url('/mod/pdfannotator/view.php', $params);
+        foreach ($newquestions as $question) {           
+            $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $this->coursemodule, 
+                'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();           
             $this->latestquestions[] = $question;
         }
     }
@@ -257,7 +270,7 @@ class pdfannotator_instance {
         $userposts = $DB->get_records_sql($sql, array($userid, $this->id));
         foreach ($userposts as $userpost) {
             $params = array('id' => $this->coursemodule, 'page' => $userpost->page, 'annoid' => $userpost->annotationid, 'commid' => $userpost->commid);
-            $link = new moodle_url('/mod/pdfannotator/view.php', $params);
+            $link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
             $this->userposts[] = array('content' => $userpost->content, 'link' => $link);
         }
     }
@@ -268,7 +281,7 @@ class pdfannotator_instance {
      * @global type $USER
      * @param type $rerender
      */
-    public function set_hidden_answers($rerender = null) {
+    public function set_hidden_answers() {
 
         global $DB, $USER;
 
@@ -276,36 +289,84 @@ class pdfannotator_instance {
                 . "FROM {pdfannotator_comments} q "
                 . "JOIN {pdfannotator_annotations} a ON q.annotationid = a.id "
                 . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
-                . "WHERE a.userid = ? AND q.isquestion AND a.pdfannotatorid = ? AND NOT c.isquestion AND NOT c.isdeleted AND c.seen";
+                . "WHERE a.userid = ? AND q.isquestion = 1 AND a.pdfannotatorid = ? "
+                . "AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND c.seen = 1";
         $hiddenentries = $DB->get_records_sql($sql2, array($USER->id, $this->id));
 
-        foreach ($hiddenentries as $hiddenentry) {
-            if ($rerender) {
-                $hiddenentry->link = "/moodle/mod/pdfannotator/view.php?id={$this->coursemodule}&page={$hiddenentry->page}&annoid={$hiddenentry->annoid}&commid={$hiddenentry->hiddenentrysid}";
-            } else {
-                $hiddenentry->link = new moodle_url('/mod/pdfannotator/view.php', array('id' => $this->coursemodule, 'page' => $hiddenentry->page, 'annoid' => $hiddenentry->annoid, 'commid' => $hiddenentry->hiddenentrysid));
-            }
+        foreach ($hiddenentries as $hiddenentry) {            
+            $hiddenentry->link = (new moodle_url('/mod/pdfannotator/view.php',
+                        array('id' => $this->coursemodule, 'page' => $hiddenentry->page, 'annoid' => $hiddenentry->annoid, 'commid' => $hiddenentry->hiddenentrysid)))->out();            
             $this->hiddenanswers[] = $hiddenentry;
         }
     }
 
-    public function set_hidden_reports($rerender = null) {
+    public function set_hidden_reports() {
         global $DB;
 
         $sql = "SELECT r.*, c.annotationid, c.userid AS commentauthor, c.content AS commentcontent, c.timecreated AS commenttime, c.visibility, a.page "
-                . "FROM {pdfannotator_reports} r JOIN {pdfannotator_comments} c ON r.commentid = c.id JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
+                . "FROM {pdfannotator_reports} r "
+                . "JOIN {pdfannotator_comments} c ON r.commentid = c.id JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
                 . "WHERE r.pdfannotatorid = ? AND r.seen = ?";
         $hiddenreports = $DB->get_records_sql($sql, array($this->id, 1));
 
         foreach ($hiddenreports as $report) {
-            if ($rerender) {
-                $link = "/moodle/mod/pdfannotator/view.php?id={$this->coursemodule}&page={$report->page}&annoid={$report->annotationid}&commid={$report->commentid}";
-            } else {
-                $params = array('id' => $this->coursemodule, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid);
-                $link = new moodle_url('/mod/pdfannotator/view.php', $params);
-            }
-            $this->hiddenreports[] = array('hiddenreportsubjectline' => $report->commentcontent, 'hiddenreport' => $report->message, 'hiddenreportid' => $report->id, 'link' => $link);
+            $params = array('id' => $this->coursemodule, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid);
+            $link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
+            $this->hiddenreports[] = ['hiddenreportsubjectline' => $report->commentcontent, 'hiddenreport' => $report->message, 'hiddenreportid' => $report->id, 'link' => $link];
         }
     }
 
+    public static function get_conversations($pdfannotatorid) {
+
+        global $DB;
+
+        $sql = "SELECT q.id, q.content AS answeredquestion, q.timemodified, q.userid, q.visibility, a.id AS annoid, a.page, a.annotationtypeid "
+                . "FROM {pdfannotator_annotations} a "
+                . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id "
+                . "WHERE q.isquestion = 1 AND a.pdfannotatorid = ? AND NOT q.isdeleted = 1 "
+                . "ORDER BY a.page ASC";
+
+        try {
+            $questions = $DB->get_records_sql($sql, array($pdfannotatorid));
+        } catch (Exception $ex) {
+            return -1;
+        }
+
+        foreach ($questions as $question) {
+
+            $question->timemodified = pdfannotator_get_user_datetime($question->timemodified);
+            if ($question->visibility === 'anonymous') {
+                $question->author = get_string('anonymous', 'pdfannotator');
+            } else {
+                $question->author = pdfannotator_get_username($question->userid);
+            }
+
+            $sql = "SELECT c.id, c.content AS answer, c.userid, c.timemodified, c.visibility FROM {pdfannotator_comments} c "
+                . "WHERE c.pdfannotatorid = ? AND c.annotationid = ? AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1";
+
+            try {
+                $answers = $DB->get_records_sql($sql, array($pdfannotatorid, $question->annoid));
+            } catch (Exception $ex) {
+                return -1;
+            }
+
+            foreach ($answers as $answer) {
+                $answer->timemodified = pdfannotator_get_user_datetime($answer->timemodified);
+                if ($answer->visibility === 'anonymous') {
+                    $answer->author = get_string('anonymous', 'pdfannotator');
+                } else {
+                    $answer->author = pdfannotator_get_username($answer->userid);
+                }
+                unset($answer->visibility);
+                unset($answer->userid);
+            }
+            unset($question->visibility);
+            unset($question->userid);
+            unset($question->annoid);
+
+            $question->answers = $answers;
+
+        }
+        return $questions;
+    }
 }

@@ -1,0 +1,96 @@
+{{# comments }}
+    <div class="{{ wrapperClass }}" id="comment_{{ uuid }}">
+
+        {{# usevotes }}
+            <div class="votes">
+                <button class="comment-like-a btn-link" title="{{ voteBtn }}" alt="{{ voteBtn }}">
+                    <i class="icon fa fa-chevron-up fa-lg" title="{{ voteBtn }}" alt="{{ voteBtn }}"></i>
+                </button>
+        <!--        {{^ isdeleted }} -->
+                    <div class="countVotes" title="{{ voteTitle }}"> {{{ votes }}} </div>
+        <!--        {{/ isdeleted }} -->
+            </div>
+        {{/ usevotes }}
+
+        <div class="chat-message-container">
+            {{^ isdeleted }}
+                <div class="chat-message-meta">
+                        
+                    {{ #delete }}
+                        <span class="comment-delete-button">
+                            <button title="{{# str }} delete, pdfannotator {{/ str }}" alt="{{# str }} delete, pdfannotator {{/ str }}" class="comment-delete-a btn-link" >
+                                {{# pix }}delete,pdfannotator, {{# str }} delete, pdfannotator {{/ str }} {{/ pix}}                                
+                            </button>
+                        </span>
+                    {{ /delete }}
+                    {{ #report }}
+                        <span class="comment-report-button">
+                            <form action="view.php" method="POST">
+                                <input type="hidden" name="coursemodule" value="{{ cm }}">
+                                <input type="hidden" name="commentid" value="{{ uuid }}">
+                                <input type="hidden" name="action" value="report">
+                                <input type="hidden" name="id" value="{{ cmid }}">
+                                    <button class="comment-report-a btn-link" title="{{# str }} toreport, pdfannotator {{/ str }}">
+                                        {{# pix }}flagged,pdfannotator, {{# str }} toreport, pdfannotator {{/ str }} {{/ pix}}                                        
+                                    </button>
+                            </form>
+                        </span>  
+                    {{ /report }}
+                    {{ #edit }}
+                        <span class="comment-edit-button">
+                            <button id="editButton{{ uuid }}" title="{{# str }} edit, pdfannotator {{/ str }}" class="comment-edit-a btn-link" >
+                                  {{# pix }}i/edit,core, {{# str }} edit, pdfannotator {{/ str }} {{/ pix}}                      
+                            </button>
+                        </span>
+                    {{ /edit }}
+                    <span class="time"> {{ timecreated }} </span>
+                    <span class="user"> {{ username }} </span>
+                </div>
+            {{/ isdeleted }}
+            <div class="chat-message-text">
+                <p id="chatmessage{{ uuid }}" class="chat-message-p"> {{{ content }}}</p>
+                
+    <!--            {{# edited}}
+                    <p><em>{{# str }} editedComment, pdfannotator {{/ str }}{{timemodified}}</em></p>
+                {{/edited}}
+    -->
+                <form id="edit{{ uuid }}" class="edit-comment-form" style="display:none;">
+                    <textarea id="editarea{{ uuid }}" placeholder="" cols="40" rows="3"></textarea>                  
+                    <input id="commentSubmit" class="owner" type="submit" value="{{# str }} editButton, pdfannotator {{/ str }}">
+                    <input id="commentCancel" class="owner" type="reset" value="{{# str }} cancelButton, pdfannotator {{/ str }}" >
+                </form>
+
+                {{# isquestion }}
+                    {{^ type }}  <!-- is not textbox or drawing -->
+                        {{# issubscribed }}
+                            <button class="comment-subscribe-a btn-link" title="{{# str }} unsubscribeQuestion, pdfannotator {{/ str }}">
+                                <i title="{{# str }} unsubscribeQuestion, pdfannotator {{/ str }}" class="icon fa fa-bell-slash fa-fw"></i>
+                            </button>     
+                        {{/ issubscribed }}
+                        {{^ issubscribed }}
+                            <button class="comment-subscribe-a btn-link" title="{{# str }} subscribeQuestion, pdfannotator {{/ str }}">
+                                <i title="{{# str }} subscribeQuestion, pdfannotator {{/ str }}" class="icon fa fa-bell fa-fw"></i>
+                            </button>     
+                        {{/ issubscribed }}
+                    {{/ type }}
+                {{/ isquestion }}
+            </div>
+            {{^ isdeleted }}
+                <em class="edited">            
+                    {{# edited}}
+                        <div>
+                            <span id="timemodified_{{ uuid }}">{{# str }} editedComment, pdfannotator {{/ str }}{{timemodified}}</span>
+                            <span id="modifiedby_{{ uuid }}">{{modifiedby}}</span>
+                        </div>
+                    {{/edited}}
+                    {{# repositioned}}
+                        <div>
+                            <span id="timemoved_{{ uuid }}">{{# str }} repositionedAnnotation, pdfannotator {{/ str }}{{timemoved}}</span>
+                            <span id="movedby_{{ uuid }}">{{movedby}}</span>
+                        </div>
+                    {{/repositioned}}
+                </em>
+            {{/ isdeleted }}
+        </div>
+    </div>
+{{/ comments }}

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -15,19 +29,17 @@ require_once($CFG->libdir . '/filelib.php');
 
 class mod_pdfannotator_mod_form extends moodleform_mod {
 
-    function definition() {
+    public function definition() {
 
         global $CFG, $USER, $COURSE;
-        $mform = $this->_form;
+        $mform =& $this->_form;
         $config = get_config('mod_pdfannotator');
 
-        $this->context = context_system::instance();
-
         $mform->addElement('hidden', 'idcreator', $USER->id);
-        $mform->setType('idcreator', PARAM_TEXT);
+        $mform->setType('idcreator', PARAM_INT);
 
         $mform->addElement('hidden', 'idCourse', $COURSE->id);
-        $mform->setType('idCourse', PARAM_TEXT);
+        $mform->setType('idCourse', PARAM_INT);
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->setType('general', PARAM_TEXT);
@@ -50,50 +62,41 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $element->setAttributes($attributes);
 
         // Add a filemanager for drag-and-drop file upload.
-        //$fileoptions = array('subdirs' => 0, 'maxbytes' => 0, 'areamaxbytes' => 10485760, 'maxfiles' => 1,
-        //                     'accepted_types' => '.pdf', 'return_types' => 1 | 2); // FILE_INTERNAL | FILE_EXTERNAL wurde durch 1|2 ersetzt, da moodle FILE_INTERNAL bzw. FILE_EXTERNAL hier nicht kennt (komischerweise)
-        $filemanager_options = array();
-        $filemanager_options['accepted_types'] = '.pdf';
-        $filemanager_options['maxbytes'] = 0;
-        $filemanager_options['maxfiles'] = 1; //nur eine Datei kann hochgeladen werden
-        $filemanager_options['mainfile'] = true;
+        // $fileoptions = array('subdirs' => 0, 'maxbytes' => 0, 'areamaxbytes' => 10485760, 'maxfiles' => 1,
+        // 'accepted_types' => '.pdf', 'return_types' => 1 | 2); // FILE_INTERNAL | FILE_EXTERNAL was replaced by 1|2, because moodle doesnt't identify FILE_INTERNAL, FILE_EXTERNAL here. (Why??)
+        $filemanageroptions = array();
+        $filemanageroptions['accepted_types'] = '.pdf';
+        $filemanageroptions['maxbytes'] = 0;
+        $filemanageroptions['maxfiles'] = 1; // Upload only one file.
+        $filemanageroptions['mainfile'] = true;
 
-        $mform->addElement('filemanager', 'files', get_string('setting_fileupload', 'pdfannotator'), null, $filemanager_options); // params: 1. type of the element, 2. (html) elementname, 3. label
+        $mform->addElement('filemanager', 'files', get_string('setting_fileupload', 'pdfannotator'), null, $filemanageroptions); // Params: 1. type of the element, 2. (html) elementname, 3. label.
         $mform->addHelpButton('files', 'setting_fileupload', 'pdfannotator');
 
-        $choices = array(
-            1 => '1 ' . get_string('day'),
-            2 => '2 ' . get_string('days'),
-            3 => '3 ' . get_string('days'),
-            7 => '1 ' . get_string('week'),
-            14 => '2 ' . get_string('weeks'),
-            21 => '3 ' . get_string('weeks'),
-            28 => '4 ' . get_string('weeks'),
-        );
-
-        $mform->addElement('select', 'newsspan', get_string('setting_choosetimespanfornews', 'pdfannotator'), $choices);
-        $mform->setDefault('newsspan', $config->newsspan);
-
         $mform->addElement('advcheckbox', 'usevotes', get_string('setting_usevotes', 'pdfannotator'), get_string('usevotes', 'pdfannotator'), null, array(0, 1));
-        $mform->setType('usevotes', PARAM_TEXT);
+        $mform->setType('usevotes', PARAM_BOOL);
         $mform->setDefault('usevotes', $config->usevotes);
         $mform->addHelpButton('usevotes', 'setting_usevotes', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'use_studenttextbox', get_string('setting_use_studenttextbox', 'pdfannotator'), get_string('use_studenttextbox', 'pdfannotator'), null, array(0, 1));
-        $mform->setType('use_studenttextbox', PARAM_TEXT);
+        $mform->addElement('advcheckbox', 'use_studenttextbox', get_string('setting_use_studenttextbox', 'pdfannotator'),
+                get_string('use_studenttextbox', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('use_studenttextbox', PARAM_BOOL);
         $mform->setDefault('use_studenttextbox', $config->use_studenttextbox);
         $mform->addHelpButton('use_studenttextbox', 'setting_use_studenttextbox', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'use_studentdrawing', get_string('setting_use_studentdrawing', 'pdfannotator'), get_string('use_studentdrawing', 'pdfannotator'), null, array(0, 1));
-        $mform->setType('use_studentdrawing', PARAM_TEXT);
+        $mform->addElement('advcheckbox', 'use_studentdrawing', get_string('setting_use_studentdrawing', 'pdfannotator'),
+                get_string('use_studentdrawing', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('use_studentdrawing', PARAM_BOOL);
         $mform->setDefault('use_studentdrawing', $config->use_studentdrawing);
         $mform->addHelpButton('use_studentdrawing', 'setting_use_studentdrawing', 'pdfannotator');
 
-//        $mform->addElement('checkbox', 'allowanonymous', get_string('setting_anonymous', 'pdfannotator'));
-//        $mform -> setType('anonymous_enabled', PARAM_TEXT);
-//        $mform->setDefault('anonymous_enabled', true);
-//        
-        // add legacy files flag only if used
+        // XXX second checkbox or change to select.
+        $mform->addElement('advcheckbox', 'useprint', get_string('setting_useprint', 'pdfannotator'), get_string('useprint', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('useprint', PARAM_BOOL);
+        $mform->setDefault('useprint', $config->useprint);
+        $mform->addHelpButton('useprint', 'setting_useprint', 'pdfannotator');
+
+        // Add legacy files flag only if used.
         if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
             $options = array(RESOURCELIB_LEGACYFILES_DONE => get_string('legacyfilesdone', 'pdfannotator'),
                 RESOURCELIB_LEGACYFILES_ACTIVE => get_string('legacyfilesactive', 'pdfannotator'));
@@ -103,39 +106,24 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
-        //-------------------------------------------------------
+        // -------------------------------------------------------
         $mform->addElement('hidden', 'revision'); // Hard-coded as 1; should be changed if version becomes important.
         $mform->setType('revision', PARAM_INT);
         $mform->setDefault('revision', 1);
     }
 
-    function data_preprocessing(&$default_values) { // Loads the old file in the filemanager.
+    // Loads the old file in the filemanager.
+    public function data_preprocessing(&$defaultvalues) {
         if ($this->current->instance) {
-            $contextID = $this->context->id;
-            if ($contextID == 1) {
-                $contextID = context_module::instance($this->_cm->id)->id;
-            }
+            $contextid = $this->context->id;
             $draftitemid = file_get_submitted_draft_itemid('files');
-            file_prepare_draft_area($draftitemid, $contextID, 'mod_pdfannotator', 'content', 0, array('subdirs' => true));
-            $default_values['files'] = $draftitemid;
-
-            // Disable filemanager to prevent managers from exchanging the file and possibly distorting the meaning of users' comments.
-            $mform = $this->_form;
-            $mform->addElement('hidden', 'editing', 1);
-            $mform->setType('editing', PARAM_TEXT);
-            $mform->disabledIf('files', 'editing'); // Would be nice to still see file name.
+            file_prepare_draft_area($draftitemid, $contextid, 'mod_pdfannotator', 'content', 0, array('subdirs' => true));
+            $defaultvalues['files'] = $draftitemid;
+            $this->_form->disabledIf('files', 'update', 'notchecked', 2);
         }
     }
 
-    function definition_after_data() {
-        if ($this->current->instance) {
-            return;
-        }
-
-        parent::definition_after_data();
-    }
-
-    function validation($data, $files) {
+    public function validation($data, $files) {
         global $USER;
 
         $errors = parent::validation($data, $files);
@@ -160,7 +148,8 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
             // Set a default main file.
             if (!$mainfile) {
                 $file = reset($files);
-                file_set_sortorder($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename(), 1);
+                file_set_sortorder($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(),
+                                   $file->get_filepath(), $file->get_filename(), 1);
             }
         }
         return $errors;

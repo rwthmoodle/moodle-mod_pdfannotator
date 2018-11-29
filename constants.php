@@ -14,19 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
-/**
- * Version information for mod/pdfannotator
- *
- * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_pdfannotator'; // Full name of the plugin (used for diagnostics).
-$plugin->version   = 2018112200; // The current module version (Date: YYYYMMDDXX).
-$plugin->release  = 'PDF Annotator v1.1 release 1';
-$plugin->requires  = 2016112900; // Requires this Moodle version.
-$plugin->cron      = 0;          // Period for cron to check this module (secs).
+/**
+ * Request URL for transforming latex code into a png image
+ * The latex data needs to be added after chl=
+ */
+define('LATEX_TO_PNG_REQUEST',   'https://chart.googleapis.com/chart?cht=tx&chl=');
+
+/**
+ * Prefix needed for encode64 imaged
+ */
+define('IMAGE_PREFIX', 'data:image/png;base64,');

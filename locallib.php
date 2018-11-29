@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 CiL RWTH Aachen
@@ -43,8 +57,8 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf_viewer.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00007"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00001"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00011"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
 
     if (has_capability('mod/pdfannotator:administrateuserinput', $context)) {
         $administratesuserinput = true;
@@ -55,13 +69,14 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $toolbarsettings = new stdClass();
     $toolbarsettings->use_studenttextbox = $pdfannotator->use_studenttextbox;
     $toolbarsettings->use_studentdrawing = $pdfannotator->use_studentdrawing;
+    $toolbarsettings->useprint = $pdfannotator->useprint;
     // Pass parameters from PHP to JavaScript.
     $params = array($cm, $documentobject, $USER->id, $administratesuserinput, $toolbarsettings, $page, $annoid, $commid);
     $PAGE->requires->js_init_call('adjustPdfannotatorNavbar', null, true);
     $PAGE->requires->js_init_call('startIndex', $params, true);
     // The renderer renders the original index.php / takes the template and renders it.
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
-    echo $myrenderer->render_index(new index($pdfannotator, $administratesuserinput));
+    echo $myrenderer->render_index(new index($pdfannotator, $administratesuserinput, $file));
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
 
@@ -69,32 +84,52 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     die;
 }
 
-function get_pdfannotator_instance_name($id) {
+function pdfannotator_get_instance_name($id) {
 
     global $DB;
     return $DB->get_field('pdfannotator', 'name', array('id' => $id), $strictness = MUST_EXIST);
 }
 
-function get_coursename($documentid) {
+/*function pdfannotator_get_coursename($documentid) {
     global $DB;
     $sql = "SELECT c.fullname FROM {course} c JOIN {pdfannotator} p ON p.course = c.id WHERE p.id = $documentid";
     $record = $DB->get_record_sql($sql, array());
     return $record->fullname;
+}*/
+
+/**
+ * Function is called when a pdfannotator instance is created. It checks whether
+ * the annotationtypes table has already been filled. If not, it does so.
+ *
+ * @global type $DB
+ */
+function pdfannotator_set_annotationtypes() {
+    global $DB;
+    $table = "pdfannotator_annotationtypes";
+    $condition = [];
+    $types = $DB->record_exists($table, $condition);
+    if (!$types) {
+        $DB->insert_record($table, array("name" => 'area'), false, false);
+        $DB->insert_record($table, array("name" => 'drawing'), false, false);
+        $DB->insert_record($table, array("name" => 'highlight'), false, false);
+        $DB->insert_record($table, array("name" => 'pin'), false, false);
+        $DB->insert_record($table, array("name" => 'strikeout'), false, false);
+        $DB->insert_record($table, array("name" => 'textbox'), false, false);
+    }
 }
 
-function get_course_name_by_id($courseid) {
-
+function pdfannotator_get_course_name_by_id($courseid) {
     global $DB;
     return $DB->get_field('course', 'fullname', array('id' => $courseid), $strictness = MUST_EXIST);
 }
 
-function get_username($userid) {
+function pdfannotator_get_username($userid) {
     global $DB;
     $user = $DB->get_record('user', array('id' => $userid));
     return fullname($user);
 }
 
-function get_id_of_annotationtype($typename) {
+function pdfannotator_get_annotationtype_id($typename) {
     global $DB;
     if ($typename == 'point') {
         $typename = 'pin';
@@ -105,7 +140,7 @@ function get_id_of_annotationtype($typename) {
     }
 }
 
-function get_name_of_annotationtype($typeid) {
+function pdfannotator_get_annotationtype_name($typeid) {
     global $DB;
     $result = $DB->get_records('pdfannotator_annotationtypes', array('id' => $typeid));
     foreach ($result as $r) {
@@ -113,12 +148,109 @@ function get_name_of_annotationtype($typeid) {
     }
 }
 
-function get_typename_of_annotationtype($annotationid) {
-
+/* function pdfannotator_get_typename_of_annotation($annotationid) {
     global $DB;
     $result = $DB->get_records('pdfannotator_annotations', array('id' => $annotationid));
+    return pdfannotator_get_annotationtype_name($result[$annotationid]->annotationtypeid);
+} */
 
-    return get_name_of_annotationtype($result[$annotationid]->annotationtypeid);
+function pdfannotator_handle_latex($subject) {
+
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
+
+    // Look for these formulae: $$ ... $$, \( ... \) and \[ ... \]
+    // !!! keep indentation!
+    $pattern = <<<'SIGN'
+~(?:\$\$.*?\$\$)|(?:\\\(.*?\\\))|(?:\\\[.*?\\\])~
+SIGN;
+    // Working, but less readable, alternative: $pattern = '~(?:\\$\\$.*?\\$\\$)|(?:\\\\\\(.*?\\\\\\))|(?:\\\\\\[.*?\\\\\\])~';
+
+    $matches = array();
+    $hits = preg_match_all($pattern, $subject, $matches, PREG_OFFSET_CAPTURE);
+
+    if ($hits == 0) {
+        return $subject;
+    }
+
+    $textstart = 0;
+    $formulalength = 0;
+    $formulaoffset = 0;
+    $result = [];
+    $matches = $matches[0];
+    foreach ($matches as $match) {
+        $formulalength = strlen($match[0]);
+        $formulaoffset = $match[1];
+        $result[] = trim(substr($subject, $textstart, $formulaoffset - $textstart));
+        $result[] = pdfannotator_process_latex($match[0]);
+        $textstart = $formulaoffset + $formulalength;
+    }
+    if ($textstart != strlen($subject) - 1) {
+        $result[] = trim(substr($subject, $textstart, strlen($subject) - $textstart));
+    }
+    return $result;
+}
+
+/**
+ * Function takes a latex code string, modifies and url encodes it for the Google Api to process,
+ * and returns the resulting image along with its height
+ *
+ * @param type $string
+ * @return type
+ */
+function pdfannotator_process_latex($string) {
+    $string = str_replace('\xrightarrow', '\rightarrow', $string);
+    $string = str_replace('\xlefttarrow', '\leftarrow', $string);
+
+    $pos = strpos($string, '\\[');
+    if ($pos !== false) {
+        $string = substr_replace($string, '', $pos, strlen('\\['));
+    }
+
+    $pos = strpos($string, '\\(');
+    if ($pos !== false) {
+        $string = substr_replace($string, '', $pos, strlen('\\('));
+    }
+
+    $string = str_replace('\\]', '', $string);
+
+    $string = str_replace('\\)', '', $string);
+
+    $string = str_replace('\begin{aligned}', '', $string);
+    $string = str_replace('\end{aligned}', '', $string);
+
+    $string = str_replace('\begin{align*}', '', $string);
+    $string = str_replace('\end{align*}', '', $string);
+
+    // Find any backslash preceding a ( or [ and replace it with \backslash
+    $pattern = '~\\\\(?=[\\\(\\\[])~';
+    $string = preg_replace($pattern, '\\backslash', $string);
+
+    $length = strlen($string);
+
+    $im = null;
+    if ($length <= 200) { // Google API constraint XXX find better alternative if possible.
+        $latexdata = urlencode($string);
+        $requesturl = LATEX_TO_PNG_REQUEST . $latexdata;
+        $im = @file_get_contents($requesturl); // '@' suppresses warnings so that one failed google request doesn't prevent the pdf from being printed,
+                                               // but just the one formula from being presented as a picture.
+    }
+    if ($im != null) {
+        $array = [];
+        try {
+            list($width, $height) = getimagesize($requesturl); // XXX alternative: acess height by decoding the string (saving the extra server request)?
+            if ($height != null) {
+                $imagedata = IMAGE_PREFIX . base64_encode($im); // Image.
+                $array['image'] = $imagedata;
+                $array['imageheight'] = $height;
+                return $array;
+            }
+        } catch (Exception $ex) {
+            return $string;
+        }
+    } else {
+        return $string;
+    }
 }
 
 function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext, $anonymous = false) {
@@ -151,7 +283,7 @@ function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagete
     return $messageid;
 }
 
-function format_notification_message_text($course, $cm, $context, $modulename, $pdfannotatorname, $paramsforlanguagestring, $messagetype) {
+function pdfannotator_format_notification_message_text($course, $cm, $context, $modulename, $pdfannotatorname, $paramsforlanguagestring, $messagetype) {
     global $CFG;
     $formatparams = array('context' => $context->get_course_context());
     $posttext = format_string($course->shortname, true, $formatparams) .
@@ -176,7 +308,7 @@ function format_notification_message_text($course, $cm, $context, $modulename, $
  * @param stdClass $coursemodule
  * @param string $assignmentname
  */
-function format_notification_message_html($course, $cm, $context, $modulename, $pdfannotatorname, $report, $messagetype) {
+function pdfannotator_format_notification_message_html($course, $cm, $context, $modulename, $pdfannotatorname, $report, $messagetype) {
     global $CFG, $USER;
     $formatparams = array('context' => $context->get_course_context());
     $posthtml = '<p><font face="sans-serif">' .
@@ -197,23 +329,6 @@ function format_notification_message_html($course, $cm, $context, $modulename, $
     $posthtml .= '</font><hr />';
     $posthtml .= '<font face="sans-serif"><p>' . get_string('unsubscribe_notification', 'pdfannotator', $linktonotificationsettingspage) . '</p></font>';
     return $posthtml;
-}
-
-function embed_my_pdf($fullurl, $title, $clicktoopen) {
-    global $CFG, $PAGE;
-    $code = <<<EOT
-            <div class="resourcecontent resourcepdf">
-  <object id="resourceobject" data="http://localhost/moodle/mod/pdfannotator/pdf-annotate/index.php?fileid=$fullurl" type="application/pdf" width="800" height="600">
-    <param name="src" value="$fullurl" />
-    $clicktoopen
-  </object>
-</div>
-EOT;
-
-    // The size is hardcoded in the object above intentionally because it is adjusted by the following function on-the-fly.
-    $PAGE->requires->js_init_call('M.util.init_maximised_embed', array('resourceobject'), true);
-
-    return $code;
 }
 
 /**
@@ -255,7 +370,6 @@ function pdfannotator_get_clicktodownload($file, $revision) {
  */
 function pdfannotator_print_header($pdfannotator, $cm, $course) {
     global $PAGE, $OUTPUT;
-
     $PAGE->set_title($course->shortname . ': ' . $pdfannotator->name);
     $PAGE->set_heading($course->fullname);
     $PAGE->set_activity_record($pdfannotator);
@@ -326,7 +440,7 @@ function pdfannotator_print_filenotfound($pdfannotator, $cm, $course) {
     global $DB, $OUTPUT;
 
     pdfannotator_print_header($pdfannotator, $cm, $course);
-    //   pdfannotator_print_heading($pdfannotator, $cm, $course);//TODO Methode ist noch nicht definiert
+    // pdfannotator_print_heading($pdfannotator, $cm, $course);//TODO Method is not defined.
     pdfannotator_print_intro($pdfannotator, $cm, $course);
     echo $OUTPUT->notification(get_string('filenotfound', 'pdfannotator'));
 
@@ -343,7 +457,7 @@ function pdfannotator_print_filenotfound($pdfannotator, $cm, $course) {
  *
  * @global type $DB
  */
-function get_number_of_new_activities($annotatorid) {
+function pdfannotator_get_number_of_new_activities($annotatorid) {
 
     global $DB;
 
@@ -369,7 +483,7 @@ function get_number_of_new_activities($annotatorid) {
  * @return datetime $timemodified
  * The timestamp can be transformed into a readable string with this moodle method: userdate($timestamp, $format = '', $timezone = 99, $fixday = true, $fixhour = true);
  */
-function get_datetime_of_last_modification($annotatorid) {
+function pdfannotator_get_datetime_of_last_modification($annotatorid) {
 
     global $DB;
 
@@ -395,7 +509,6 @@ function get_datetime_of_last_modification($annotatorid) {
             if (!empty($entry->last_comment) && ($entry->last_comment > $timemodified)) {
                 $timemodified = $entry->last_comment;
             }
-
             return $timemodified;
         }
     }
@@ -440,7 +553,7 @@ function pdfannotator_set_mainfile($data) {
     }
 }
 
-function render_listitem_actions(array $actions = null) {
+function pdfannotator_render_listitem_actions(array $actions = null) {
     $menu = new action_menu();
     $menu->attributes['class'] .= ' course-item-actions item-actions';
     $hasitems = false;
@@ -453,19 +566,19 @@ function render_listitem_actions(array $actions = null) {
     if (!$hasitems) {
         return '';
     }
-    return render_action_menu($menu);
+    return pdfannotator_render_action_menu($menu);
 }
 
-function render_action_menu($menu) {
+function pdfannotator_render_action_menu($menu) {
     global $OUTPUT;
     return $OUTPUT->render($menu);
 }
 
-function spdfannotator_subscribe_all($annotatorid) {
+function pdfannotator_subscribe_all($annotatorid) {
     global $DB;
     $sql = "SELECT id FROM {pdfannotator_annotations} "
             . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
-            . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name=? OR name=?)";
+            . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
     $params = [$annotatorid, 'drawing', 'textbox'];
     $ids = $DB->get_fieldset_sql($sql, $params);
     foreach ($ids as $annotationid) {
@@ -476,14 +589,41 @@ function spdfannotator_subscribe_all($annotatorid) {
 function pdfannotator_unsubscribe_all($annotatorid) {
     global $DB, $USER;
     $sql = "SELECT a.id FROM {pdfannotator_annotations} a JOIN {pdfannotator_subscriptions} s "
-            . "ON s.annotationid= a.id AND s.userid = ? WHERE pdfannotatorid = ?";
+            . "ON s.annotationid = a.id AND s.userid = ? WHERE pdfannotatorid = ?";
     $ids = $DB->get_fieldset_sql($sql, [$USER->id, $annotatorid]);
     foreach ($ids as $annotationid) {
         pdfannotator_comment::delete_subscription($annotationid);
     }
 }
 
-function get_user_date_time($timestamp) {
+/**
+ * Checks wether a user has subscribed to all questions in an annotator.
+ * Returns 1 if all questions are subscribed, 0 if no questions are subscribed and -1 if at least one but not all questions are subscribed.
+ * @global type $DB
+ * @global type $USER
+ * @param type $annotatorid
+ */
+function pdfannotator_subscribed($annotatorid) {
+    global $DB, $USER;
+    $sql = "SELECT COUNT(*) FROM {pdfannotator_annotations} a JOIN {pdfannotator_subscriptions} s "
+            . "ON s.annotationid = a.id AND s.userid = ? WHERE a.pdfannotatorid = ?";
+    $subscriptions = $DB->count_records_sql($sql, [$USER->id, $annotatorid]);
+    $sql = "SELECT COUNT(*) FROM {pdfannotator_annotations} "
+            . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
+            . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
+    $params = [$annotatorid, 'drawing', 'textbox'];
+    $annotations = $DB->count_records_sql($sql, $params);
+
+    if ($subscriptions === 0) {
+        return 0;
+    } else if ($subscriptions === $annotations) {
+        return 1;
+    } else {
+        return -1;
+    }
+}
+
+function pdfannotator_get_user_datetime($timestamp) {
     $userdatetime = userdate($timestamp, $format = '', $timezone = 99, $fixday = true, $fixhour = true); // Method in lib/moodlelib.php
     return $userdatetime;
 }

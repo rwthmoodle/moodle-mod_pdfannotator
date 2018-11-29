@@ -1,5 +1,18 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
@@ -37,9 +50,9 @@ class pdfannotator_reportform extends moodleform {
         // Comment id.
         $mform->addElement('hidden', 'commentid');
         $mform->setType('commentid', PARAM_INT);
-        // action = 'report'
+        // Action = 'report'.
         $mform->addElement('hidden', 'action');
-        $mform->setType('action', PARAM_TEXT);
+        $mform->setType('action', PARAM_ALPHA);
 
         // Add a headline.
         $mform->addElement('header', 'bookwithmessagetitle', get_string('subtitleforreportcommentform', 'pdfannotator'));
@@ -52,7 +65,7 @@ class pdfannotator_reportform extends moodleform {
         $this->add_action_buttons($cancel = true, get_string('reportsendbutton', 'pdfannotator'));
     }
 
-    function display() {
+    public function display() {
         $this->_form->display();
     }
 

@@ -8,10 +8,10 @@
 function adjustPdfannotatorNavbar(Y) {
     let navbar = document.getElementsByClassName('nav');
     for (let i = 0; i < navbar.length; i++) {
-    (function(innerI) {
-        tab = navbar[innerI];
-        tab.classList.add('pdfannotatornavbar');
-    })(i);
+        (function(innerI) {
+            tab = navbar[innerI];
+            tab.classList.add('pdfannotatornavbar');
+        })(i);
     }
 }
 
@@ -40,6 +40,8 @@ function adjustPdfannotatorNavbar(Y) {
 //
 //R: The first parameter has to be Y, because it is a default YUI-object, because moodle gives this object first.
 function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _page = 1,_annoid = null,_commid = null ){ // 3. parameter war mal _fileid
+
+    // Require amd modules.
     require(['jquery','core/templates','core/notification'], function($,templates,notification) {
         var currentAnnotations = [];
 /******/ (function(modules) { // webpackBootstrap
@@ -107,12 +109,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var UI = _2.default.UI; 
-	var documentId = _documentObject.annotatorid;// the id of the pdfannotator
+	var documentId = _documentObject.annotatorid;// The id of the pdfannotator.
 
 	var PAGE_HEIGHT = void 0;
 	var RENDER_OPTIONS = {
-	  documentId: _documentObject.annotatorid,// the id of the pdfannotator
-          documentPath: _documentObject.fullurl,// the path to pdf
+	  documentId: _documentObject.annotatorid,// The id of the pdfannotator.
+          documentPath: _documentObject.fullurl,// The path to pdf.
 	  pdfDocument: null,
 	  scale: parseFloat(localStorage.getItem(documentId + '/scale'), 10) || 1.0,
 	  rotate: parseInt(localStorage.getItem(documentId + '/rotate'), 10) || 0
@@ -131,7 +133,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "page_Number": pageNumber, "action": 'read'}
+                    data: { "documentId": documentId, "page_Number": pageNumber, "action": 'read', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });
@@ -148,7 +150,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'readsingle'}
+                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'readsingle', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });
@@ -169,9 +171,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "page_Number": pageNumber, "annotation": annotation, "action": 'create'}
+                    data: { "documentId": documentId, "page_Number": pageNumber, "annotation": annotation, "action": 'create', sesskey: M.cfg.sesskey}
                 }).then(function(data){
-                    
                     data = JSON.parse(data);
 
                     if(data.status === "success") {
@@ -194,7 +195,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     return {'status':'error'};
                 });
             },
-                
+
             /**
              * Method passes the edited annotation object along with its old id on to action.php for updating/saving
              * 
@@ -209,14 +210,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentid, "annotationId": annotationId, "annotation": annotation, "action": 'update'}
+                    data: { "documentId": documentid, "annotationId": annotationId, "annotation": annotation, "action": 'update', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                         data = JSON.parse(data);
                         if(data.status == 'error') {
                             console.error(M.util.get_string('error:editAnnotation', 'pdfannotator'));
                             return false;
                         }
-                        for(var anno in currentAnnotations[page]){
+                        for (var anno in currentAnnotations[page]){
                             if(currentAnnotations[page][anno].uuid == annotationId){
                                 currentAnnotations[page][anno]=annotationJS.annotation;
                                 break;
@@ -235,27 +236,33 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotation": annotation, "cmid": _cm.id, "action": 'delete'}
+                    data: { "documentId": documentId, "annotation": annotation, "cmid": _cm.id, "action": 'delete', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     data = JSON.parse(data);
-
                     if(data.status === "success") {
                             notification.addNotification({
                                         message: M.util.get_string('annotationDeleted', 'pdfannotator'),
                                         type: "success"
                             });
-
+                            
+                            var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
+                            if(node){
+                                node.parentNode.removeChild(node);
+                                document.querySelector('.comment-list-container').innerHTML = '';
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                                UI.renderQuestions(documentId,$('#currentPage').val());     
+                            }
                     } else if (data.status === 'error') {
-                            notification.addNotification({
+                            notification.addNotification({                                   
                                         message: M.util.get_string('deletionForbidden', 'pdfannotator') + data.reason,
                                         type: "error"
                             });
                     }
                     setTimeout(function(){
-                    let notificationpanel = document.getElementById("user-notifications");
-                    while (notificationpanel.hasChildNodes()) {  
-                        notificationpanel.removeChild(notificationpanel.firstChild);
-                    } 
+                        let notificationpanel = document.getElementById("user-notifications");
+                        while (notificationpanel.hasChildNodes()) {  
+                            notificationpanel.removeChild(notificationpanel.firstChild);
+                        } 
                     }, 3000);
 
                     return data;
@@ -274,10 +281,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id}
+                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, sesskey: M.cfg.sesskey}
                 }).then(function(data){
-                    data = data.substring(data.indexOf('{'),data.length);
-                    //TODO compare to data before data.substring
+                    data = data.substring(data.indexOf('{'),data.length);    
+                //TODO compare to data before data.substring
                     data = JSON.parse(data);
                     if(data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
@@ -286,15 +293,32 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     return data;
                 });
             },
+            
+            /**
+             * Updates db after a comment has been edited
+             * 
+             * @param {type} documentId
+             * @param {type} commentId
+             * @param {type} content
+             * @returns {unresolved}
+             */
+            editComment(documentId, commentId, content) {
+                return $.ajax({
+                    type: "POST",
+                    url: "action.php",
+                    data: { "documentId": documentId, "commentId": commentId, "content": content, "action": "editComment", "cmid":_cm.id, sesskey: M.cfg.sesskey}
+                }).then(function(data){
+                    return JSON.parse(data);      
+                });
+            },
 
             deleteComment(documentId, commentId, action) {
-
                 if (action) { // report comment to manager
 
                     return $.ajax({
                         type: "POST",
                         url: "action.php",
-                        data: { "documentId": documentId, "commentId": commentId, "action": 'reportComment'} 
+                        data: { "documentId": documentId, "commentId": commentId, "action": 'reportComment', sesskey: M.cfg.sesskey} 
                     }).then(function(){
                         alert('Comment has been reported');
                     });
@@ -304,7 +328,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     return $.ajax({
                         type: "POST",
                         url: "action.php",
-                        data: { "documentId": documentId, "commentId": commentId, "cmid": _cm.id, "action": 'deleteComment'}
+                        data: { "documentId": documentId, "commentId": commentId, "cmid": _cm.id, "action": 'deleteComment', sesskey: M.cfg.sesskey}
                     }).then(function(data){
                         data = JSON.parse(data);
                         if(data.status === "success") {                    
@@ -312,17 +336,18 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                             var child = document.getElementById('comment_'+commentId);
                             if(child !== null){
                                 if(data.wasanswered){
-                                    child.querySelector('.chat-message-text p').innerHTML = '<em>'+M.util.get_string('deletedComment', 'pdfannotator') + '</em>';
-                                    child.querySelector('.chat-message-meta').remove();
-                                    child.querySelector('.countVotes').remove();
-                                    child.querySelector('.comment-like-a').disabled = true;
-                                    child.querySelector('.comment-like-a').style.visibility = 'hidden';
+                                    $('#comment_'+commentId+' .chat-message-text p').html('<em>'+M.util.get_string('deletedComment', 'pdfannotator') + '</em>');
+                                    $('#comment_'+commentId+' .chat-message-meta').remove();
+                                    $('#comment_'+commentId+' .countVotes').remove();
+                                    $('#comment_'+commentId+' .comment-like-a').attr("disabled","disabled");
+                                    $('#comment_'+commentId+' .comment-like-a').css("visibility", "hidden");
+                                    $('#comment_'+commentId+' .edited').remove();
                                 }else{
                                     var parent = child.parentNode;
                                     parent.removeChild(child);
                                 }
                             }
-                            // 
+                             
                             notification.addNotification({
                                 message: M.util.get_string('commentDeleted', 'pdfannotator'),
                                 type: "success"
@@ -336,12 +361,21 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 
                             // If the predecessor comment was marked as deleted, remove it from DOM as well
                             // (This is currently irrelevant, because we jump back to overview after deletion, but I'd prefer to stay in the thread.)
-                            data.followups.forEach(function(element){                         
+                            data.followups.forEach(function(element){ 
                                 var id = 'comment_'+ element;
                                 var child = document.getElementById(id);
                                 var parent = child.parentNode;
                                 parent.removeChild(child);
                             });
+                            // if the annotation is deleted as well, remove it from the pdf
+                            if(data.deleteannotation !== 0) {                                                               
+                                var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
+                                node.parentNode.removeChild(node);
+                                document.querySelector('.comment-list-container').innerHTML = '';
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                                UI.renderQuestions(documentId,$('#currentPage').val());                                
+                            }
+                            
                         } else {
                             notification.addNotification({
                                 message: M.util.get_string('deletionForbidden', 'pdfannotator'),
@@ -367,7 +401,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getComments'}
+                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getComments', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });
@@ -379,18 +413,18 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
              * @param {type} pageNumber
              * @returns {unresolved} array of comments objects (only questions) with an additional attribute 'answercount'
              */
-            getQuestions(documentId, pageNumber){
+            getQuestions(documentId, pageNumber, pattern){
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "page_Number": pageNumber, "action": 'getQuestions'}
+                    data: { "documentId": documentId, "page_Number": pageNumber, "action": 'getQuestions', "pattern": pattern, sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });
             },
 
             /**
-             * Get all information about an annotation. This function gets only information about annotations of type 'drawing' and 'textbox'.
+             * Get all information about an annotation. This function only retrieves information about annotations of types 'drawing' and 'textbox'.
              * @param {type} documentId
              * @param {type} commentId
              * @returns {unresolved}
@@ -399,7 +433,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php", 
-                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getInformation'}
+                    data: { "documentId": documentId, "annotationId": annotationId, "action": 'getInformation', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });   
@@ -415,7 +449,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php", 
-                    data: { "documentId": documentId, "commentid": commentId, "action": 'voteComment'}
+                    data: { "documentId": documentId, "commentid": commentId, "action": 'voteComment', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });   
@@ -425,7 +459,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php", 
-                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'subscribeQuestion'}
+                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'subscribeQuestion', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });  
@@ -435,17 +469,36 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 return $.ajax({
                     type: "POST",
                     url: "action.php", 
-                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'unsubscribeQuestion'}
+                    data: { "documentId": documentId, "annotationid": annotationId, "action": 'unsubscribeQuestion', sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);
                 });  
-            }
-
-        });
+            },
             
-  
-        /* ************** END Store Adapter!! **********************************/
+            getCommentsToPrint(documentId, getUrl = false){
+                if (!getUrl) {
+                    return $.ajax({
+                    type: "POST",
+                    url: "action.php", //?XDEBUG_SESSION_START=netbeans-xdebug", 
+                    data: { "documentId": documentId, "action": 'getCommentsToPrint', sesskey: M.cfg.sesskey}
+                    }).then(function(data){
+                        return JSON.parse(data);
+                    });
+                } else {
+                    return $.ajax({
+                    type: "POST",
+                    url: "action.php", 
+                    data: { "documentId": documentId, "action": 'getPrintUrl', sesskey: M.cfg.sesskey}
+                    }).then(function(data){
+                        return JSON.parse(data);
+                    });
+                }
 
+            }
+            
+        });
+
+        /* ************** END Store Adapter!! **********************************/
 
 	_2.default.setStoreAdapter(MyStoreAdapter);
 	PDFJS.workerSrc = 'shared/pdf.worker.js';
@@ -473,7 +526,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
               if(visiblePageBefore) UI.renderPage(visiblePageNum - 1, RENDER_OPTIONS);
 	    });
 	  }else{
-              //Anyway if the other pages are not loaded, they should be loaded
+              // Anyway if the other pages are not loaded, they should be loaded.
               if(visiblePageAfter) UI.renderPage(visiblePageNum + 1, RENDER_OPTIONS);
               if(visiblePageBefore) UI.renderPage(visiblePageNum - 1, RENDER_OPTIONS);
           }
@@ -482,11 +535,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
           }
           document.getElementById('currentPage').value = visiblePageNum;
           oldPageNumber = visiblePageNum;
-          
         }
-        
-        //Add EventListener to GUI-Elements
-        //add scroll event to dynamically load the single pages of the pdf
+
+        // Add EventListener to GUI-Elements.
+        // Add scroll event to dynamically load the single pages of the pdf.
         var scrollTimer = null;
 	document.getElementById('content-wrapper').addEventListener('scroll', function (e) {
 	  if(scrollTimer) {
@@ -494,27 +546,264 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
           }
           scrollTimer = setTimeout(handleScroll, 500, e);
 	});
-        
-        //Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page
+
+        // Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page.
         document.getElementById('commentCancel').addEventListener('click',function (e){
             var visiblePageNum = document.getElementById('currentPage').value;
             document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
             document.querySelector('.comment-list-container').innerHTML = '';
-            //disable and then enable to delete overlay and directly add the function to create an overlay
+            // Disable and then enable to delete overlay and directly add the function to create an overlay.
             UI.disableEdit();
             UI.enableEdit();
             UI.renderQuestions(documentId,visiblePageNum);
         });
-        
+
+        // Initialise the print option for printing the document or its discussions.
+           (function (){
+            if(_toolbarSettings.useprint === "1"|| _isadmin){
+
+                $('#pdfannotator_print_button').click(function () {
+                    openDocumentCallback();
+                    setTimeout(function(){
+                                    // Activate cursor icon ('hand') again.
+                                    document.getElementById('pdfannotator_cursor').click(); 
+                                }, 2000); // Wait 2 seconds to prevent race condition.
+                });
+
+                $('#pdfannotator_printannotations_button').click(function () {
+                    openCommentsCallback();
+                    setTimeout(function(){
+                                    // See above.
+                                    document.getElementById('pdfannotator_cursor').click(); 
+                                }, 2000); // See above.
+                }); // end of click event handler
+
+                // either:
+                function openDocumentCallback() {
+                    var url = document.getElementById('myprinturl').innerHTML;
+                    location.href = url;
+                }
+
+                // or:
+                function openCommentsCallback() {
+                    _2.default.getStoreAdapter().getCommentsToPrint(RENDER_OPTIONS.documentId)
+                        .then(function(data){
+
+                            if(data.status === "success") {
+
+                                // annotation type images
+                                var mypin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAgCAYAAAD5VeO1AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAISSURBVEhL7ZTvS1NRGMf9i/pHeln/QC/LfshqZG+E0LJSUkhsYW5zuiYYrGzDbOgYmxKz3Svmr93ubZutlKYoZIzS+Oa5PIwdz7n3HoWIoA98X+x5zvOBu/OjBX+Q/3Ipf1/+rX4AvbRjZ3f/B1W9cZXnrW34IgVcDmm4M2nauTaio/2Zbve8cJSH0hY6JlYQfftVmu5JA2PZMq2WI5XPGzXcjC1Lpc3pemlg5v0mTYlI5ddHNalMlrYRDQeHv2iSR5BXat/RGV8XJLfjhp3j9QcJE3mzRtM8gnx8roShzGdOcDGoo+V8yM6FwALXC+e2EEgZNM0jyINpE4F0lROce5hryM/ez3A9loHX6zTNI8iza1u4l7C44cGZTzjjT9jpf1Pher1TJcRyH2maR5CzzWkd5j/dLb6IjvrPQ5rmEeSMp7Mf0D9dlsqaMzhbRV9ylaZEpHKGf0zDcPaLVMrCNrIt/I5Wy3GUszfkksvfczVcwOZenVbLcZQzxufL6E2agnggVTk6IUVa5YyrnMEeruPy1uACdd3xlM8Va+h8UWyIe5IWXhWq1HXHU864Mao35L6IRlVvlOSRjGVfJHZ6Hk3Jb6MMJTk7Of7oEjqerx09bPtU9UZJzvBHF3ElVKBfaijLb8UW7ZwEZfnd+DLao+qbyVCWP54uoi/h/I7IUJbH8xt4kvK+lc0oy0/DvyoHfgN0wePwx9o1ZAAAAABJRU5ErkJggg==';
+                                var myhighlight = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAdCAYAAABbjRdIAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAS1SURBVEhLfVbfcxRFEO7dvducSMVLIGVUKgEjSCGlhVW+UMWL5Yt/nVW++OijpahPgFaBhJRFISCiBAwJEsLJRSNJiEHOY7M//L7umdvNnUlf9fVs78z3TffMTk/w8XftIo5CqUNrtUDqIWwUSC0UiWAjPMNIGARQEYGlKaBSFJKjkcNmsFmeS4ZGmouksFt4TlPYLJcEGnxy6Y9iqB6BDERKCiIlM9IIDFQSBY4IhjxKWDjCDH9UkqQkIZlqrvb5ViZhrCRGFDMyhBRDh9AeUmt+2gZso24+Wj5X35sGOt5wygDIE9ZcCo3ULNPKAexMbRCEJMgArRJWnyt9dVwfHi15QMYHpE1n4TpDywgHdTe/H6ftCi55wppbE24MC9k6+QFxLZLYReCj8up9fK/9KiQ9LG4w4JNHI+tXnR2spZPr4dpQbhxNC6z32Tr5Pjb+/3BDz8qc0mGzcjNTEANmP+5CKsW3bTwnZf19ZqhGwvFuR3uyHqmqJ+Y3ZiS7iZLiTyMmAcf34RoZOoX64GcJdTOrEuVZJjPffCmt+3fN0SclYSDt3271CIir+MrjnXhQdk0ZicNtEd35+QfZ+9KITEwddZ5BYX8OaS/OOZwqrik6oeFmhj76ssIjf7Yfyl/tlrzz3inn2VlWHj2QeKhhOA7X4/PIc0eQpUzPQH3WsdLtPJPZ69/LiZPvS60em3MXWVq4LZNvHFMcYlSPOI3BnFXFn5ObVy/JoSPHZXT/y86zs2ysP5bOs6dy4ODhQUz8GERFShLK4vysbKw9llcnp5xnd7l/95auaRhFzrMdbzuZO8p5mlOao2OSbiUyffYLmZ/9EeViy70ZlO6/HV1XplDH8494FQlZIpQDijKktYk+yujYuK4Tt/3C7Z9k+szn0lqc13f98gBrNX7goDRe2KPjiUM8QpkWErIW+Zd0WjG0DpTh5qg1IJz9L1dnZObbr2R1Zdl57Rvk9zd19O0BDD95PoNse/HLvWVPCL+Xftl8siZXLp6RG5cvSOefTY1273BThkf26bgqjmEZaYgi2nP4l6lXVNnNjXVHMSjLrUWZPnda15NREcOPrRJpGzaszqAksZKeJIlukp2EUTdH9sv4a5My9sqETo7j7Gpg2iOFBl/fXC8arFcsK9BqWQ/yVCLJ5OmTVZnDccWUUbhpXn/zuH5/9bihKSJgopMEIW48CfQ5Ljtmc+niDhKcvrGGCw9JXPHDQapksK1fr8nKwwWZAOihI2/J8tI9Wbp3R949+YF+5MiMEvlsWEYsOpKQ3MgyXHhwu/rs2qqSWVQksbqUdv6W+StnpcBNyUdz4tSHujsDt2m4hzRNtCAhae9G5a5wjEoJQRYyz35WZRoK+X3ueo+I0nhxWOI9TfQRHehVI0CKEpcyqicinscmT/Dp5ZXC3x+0wnqL2bOu+TqnlQCHnMbEUwjR2EdbbgLgKTAvpxohiWFtErg3cga2i8oOGjbzrG1cMKFdjSSTLnxs0+oz/RoV+9k4i87hVfBDC7kk6Vcl1DQZaDWFfrfxvV+bfu2Rom/w0flHSKNLHXJm1wKzetdHyrTKMoUsFawXTvwxxB2p36tuFKwP2roXYH3GkjSX/wAPXk0w5HWeHQAAAABJRU5ErkJggg==';
+                                var mystrikeout = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAdCAIAAADU74AfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAASsSURBVEhLjZb5T1pLGIbn//+lSZOm16JtjFetRa3AZRMFqqjIJjsoLoiHfTmAoIDY9hmGEmpvTM2EjN+873O+2b5zxNv94j/e8tJhdfmktnba+BJqbkeapljrv0Tbnmw7Ux1XuuPKdPcyXX7pEyHOKBqU6HHhhQAHmnjvLX88qq3465+Dza1IyxTTrYmOM93dy957Lnrfcr2Dy/7hZd93JX/pEyHOKBqU6HHhhQAHmlg6rCjc9lnLHG/bUx3S8V708B9d9/03D4H8Q/D2UTX6RIgzigYlelx4FRSaWD6uSVykZYm3HanOfvb+INc7vu6f5h/ChcczbRArDuOlYaIkf+kTIc4oGpToceGFAAeaWD2tk7Y5rjPgPr/n4Sc3D6HCY1QbJEvDdGWUrT6d16aNPhHijKJBiR4XXghwoImNYGMnqtuTMjuGmVT4bkA66crTRX181RzftJ5v9WmjT4Q4o2hQoseFFwIcaGIr0mTj2EeWnGciYoLkctkYg7hrfy92ftBKXflLI0KcUTQo0ePCCwEONLETbZEz28d6MxGejJREChMWoD8bcUbRoESPCy8EONCEJa6zZRwLFpvVYTo8/xWcagqKEj0uvBDgQBO2RJulVQmy5KwRk3odpxoalOhxqTThQBOkyiqwwBwLHshctN9x/mh2w7htWFxcXd+wOt2hxKXJ6lRDKNHjwgsBDjSxm+6QMEc3Xhxma0/53xP0HocNBoP/LFNojfL1R18wvrT0kYgaRYkeF14IcKAJV6bD9nMf2DimUNCfZ7jrSg+zxbE3i9CSV2Wg0NW/6HHhhQAHmmA5ubNyEcvDXGPM4ZiZI+mbhYUF47ZpFlHN6T7M3jZUHz0uvBDgQJsnjl4QSQcif6BnQRq4C01X/V/E0f8RS8Mcs54jau1ndkNBPUdB/p0NzRp6XGq7p0RKnlpHzio3lwMxbyCX5ZV/FRR6PFecH6Whx4V3uo7sDBWUEsIRpa5kqk/c3BeH8brat7u8bJHiOj0+TR+rIZToceGVhzzXgyYoyFQ6SlPkbpAqj7gG80v5ekOJHhdeCHCgCa43lYMlkBOfHEmVy9//4cILAQ40YY7pu+lp4eFR7BrnK//H3F80ebZbkys4SVCVHzjQBAXd9qs4cu659qnKFLqyun5V6b9guX1B8vpqsaNBiR4XXghwoAljuEn55TUkC9pk7hJaHrGDG5tfLY59FkujdThM3+mbbS6ILl8YDUr0uPBCgANNrAcagFXRZWkpIYFb+XrhYpkcHsw7Vle21KMi5OpD90n0g8Gw9mUrrkkNSvS4VLmFA02snNR451LQrUn5XmaYNeYohAsD27eQ4yC0709umu2bJvsnTua60eYNRAp9RtGgVDi8EOBAE5+OqqunDWO4paC7ma7nXL5a1euQm0DdP6Np8pc+EeKMokGJXuEgwIEmPhyUeSWuBaZQkqfG8YLn4VQnssDMVqpGnwhxRtGgRK9wEOBAE+/cpUU+UY5rPEF+ovAdENPZNflZkelSlll1/KrRJ0KcUTQo0ePCCwEONPHGpb3zlGCTMKvA0honXFOUbwK+WOTXD7moRp8IcUbRoESPCy8EOG9c2k8N39Uo7RdC/gAAAABJRU5ErkJggg==';
+                                var myarea = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAdCAYAAAC5UQwxAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB5SURBVEhLY/hPZzBwFr76+P3/1cfvaYJBZsMA3MKw3v3/GULm0wSDzIYBFAsd67djdSElGGQmTguRJagF0M0dtZBiMGohlEc9MGohlEc9MGohlEc9MGohlEc9MGohlEc9gNdCurdpYK0samOsFtK9XUovQGcL//8HABAZtWaLsIHAAAAAAElFTkSuQmCC';
+
+                                // pdf and data to process
+                                var doc = new jsPDF();
+                                var count = 15; // initial header space    
+                                var data = data['newdata'];
+                                var title = data['documentname'];
+
+                                // print title
+                                doc.setFontSize(16);            
+                                doc.setTextColor(0,84,159);
+                                doc.text(35, count, title);
+
+                                doc.setTextColor(0,0,51);
+                                doc.setFontSize(12);
+                                data = data['posts'];
+                                if (data === null) {
+                                    doc.text(35, 27, M.util.get_string('emptypdf', 'pdfannotator') + " " + page);
+                                    data = 0;
+                                }
+
+                                var count = 27;
+                                var page = '0';
+
+                                for (var i = 0; i < data.length; i++) {
+                                    (function (innerI){
+                                        var post = data[innerI];
+                                        // Add page number each time it changes.
+                                        if (page !== post['page']) {
+                                            page = post['page'];
+                                            doc.setFontType("bold");
+                                            doc.setTextColor(0,84,159);
+                                            if (count >= 280) {
+                                                doc.addPage();
+                                                count = 27;
+                                            }
+                                            doc.text(15, count, M.util.get_string('page', 'pdfannotator') + " " + page);
+                                            doc.setFontType("normal");
+                                            count += 5;
+                                        };
+                                        // Add icon to each question depending on its annotation type and increment count by 5 or 7.
+                                        addIcon(post['annotationtypeid']);
+
+                                        // Add question in RWTH dark blue.
+                                        var question = post['answeredquestion'];
+                                        var author = post['author'];
+                                        var timeasked = post['timemodified'];
+                                        doc.setTextColor(0,84,159);
+                                        breakLines(author, timeasked, question);                                            
+
+                                        // Add answers to the question in black (extremely dark blue which looks better).
+                                        doc.setTextColor(0,0,51);
+                                        var answers = post['answers'];
+                                        var answer;
+                                        for (var z = 0; z < answers.length; z++) {
+                                            (function (innerZ){
+                                                answer = answers[innerZ];
+                                                count+= 5;
+                                                breakLines(answer['author'], answer['timemodified'], answer['answer']);
+                                            })(z);
+                                        }
+                                    })(i);
+                                    count += 10;
+                                }
+                                var printtitle = title + "_" + M.util.get_string('comments', 'pdfannotator');
+                                doc.save(printtitle + ".pdf");
+                                /**
+                                 * Take a user's post (i.e. an individual question or answer), determine whether
+                                 * it contains latex formulae images or not and place its text and/or images on the pdf
+                                 */
+                                function breakLines(author=null, timemodified=null, post, characters = 150) {
+
+                                    if (typeof post === "string") { // Answer contains text only.
+                                        printTextblock(author, timemodified, post);        
+                                    }
+
+                                    if (typeof post === "object") { // Answer is an array of text (optional) and a png image of a latex formula.
+                                        // 1. print the author right away
+                                        printAuthor(author, timemodified);
+                                        // 2. Print text and - if present - images (latex formulae).
+                                        post.forEach(printItem);
+                                    }
+                                }
+                                /**
+                                 * Take a text block, split it into pieces no larger than 150 characters
+                                 * and print one piece per line                                      
+                                 */
+                                function printTextblock(author=null, timemodified=null, text, characters = 150) {
+                                    if (author !== null) {
+                                        printAuthor(author, timemodified);
+                                    }
+                                    var stringarray = doc.splitTextToSize(text, characters);
+                                    var textbit;
+                                    for (var j = 0; j < stringarray.length; j++) {
+                                         textbit = stringarray[j];
+                                         if (count >= 280) {
+                                             doc.addPage();
+                                             count = 27;
+                                         }
+                                         doc.text(35, count, stringarray[j]);
+                                         count += 5;
+                                    }
+                                }
+                                function printItem(item, index) {
+                                    if (typeof item === "object") { //item.includes('data:image/png;base64,')) {
+                                        printImage(item);
+                                    } else {
+                                        printTextblock(null, null, item);
+                                    }
+                                }
+                                /**
+                                 * Take an image, calculate its height in millimeters and print it on the pdf
+                                 */
+                                function printImage(data) {
+                                    var img = data['image'];
+                                    var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
+                                    if ( (count+height) >= 280 ) {
+                                        doc.addPage();
+                                        count = 27;
+                                    }
+                                    doc.addImage(img, 'PNG', 35, count, 0, 0); // image data, format, offset to the left, offset to the top, width, height
+                                    count += (5 + height);
+                                }
+                                /**
+                                 * Print the author in bold
+                                 * @param {type} author
+                                 * @returns {undefined}
+                                 */
+                                function printAuthor(author, timemodified=null) {
+                                    doc.setFontType("bold");
+                                    if (timemodified !== null) {
+                                        doc.text(120, count, timemodified);
+                                    }
+                                    if (author.length > 37) {
+                                        count += 5;
+                                    }
+                                    doc.text(35, count, author);
+                                    doc.setFontType("normal");
+                                    count += 5;
+                                }
+                                /**
+                                 * Place an icon before each question, depending on the question's type of annotation
+                                 * Increment the height variable so that the next line does not overlap with the currnet one
+                                 */
+                                function addIcon(annotationtype) {
+                                    if (count >= 280) {
+                                        doc.addPage();
+                                        count = 27;
+                                    }
+                                    var height = 5;
+                                    switch(annotationtype) {
+                                        case '1':
+                                            doc.addImage(myarea, 'PNG', 15, count, 5, 5);
+                                            break;
+                                        case '3':
+                                            doc.addImage(myhighlight, 'PNG', 15, count, 5, 5);
+                                            break;
+                                        case '4':
+                                            doc.addImage(mypin, 'PNG', 15, count, 5, 7);
+                                            height = 7;
+                                            break;
+                                        case '5':
+                                            doc.addImage(mystrikeout, 'PNG', 15, count, 5, 5);
+                                            break;
+                                        default:
+                                            doc.addImage(mypin, 'PNG', 15, count, 5, 7);
+                                            height = 7;
+                                    } 
+                                    count+= height;
+                                }
+
+                            } else if (data.status === 'empty') {
+                                notification.addNotification({
+                                    message: M.util.get_string('infonocomments','pdfannotator'),
+                                    type: "info"
+                                });
+                                setTimeout(function(){
+                                    let notificationpanel = document.getElementById("user-notifications");
+                                    while (notificationpanel.hasChildNodes()) {  
+                                        notificationpanel.removeChild(notificationpanel.firstChild);
+                                    } 
+                                }, 3000);
+
+                            } else if(data.status === 'error') {
+                                notification.addNotification({
+                                    message: M.util.get_string('error:printcomments','pdfannotator'),
+                                    type: "error"
+                                });
+                                setTimeout(function(){
+                                    let notificationpanel = document.getElementById("user-notifications");
+                                    while (notificationpanel.hasChildNodes()) {  
+                                        notificationpanel.removeChild(notificationpanel.firstChild);
+                                    } 
+                                }, 3000);
+                            } 
+                        });  
+                    } // end of function openCommentsCallback
+            } // if
+        })();
+
         /**
          * First function to render the pdf document. Renders only the first page 
          * and triggers the function to sync the annotations.
          * @returns {undefined}
          */       
 	function render() {
-          
+
 	  return PDFJS.getDocument(RENDER_OPTIONS.documentPath).then(function fulfilled(pdf) {
 	    RENDER_OPTIONS.pdfDocument = pdf;
 
@@ -563,6 +852,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
               document.getElementById('viewer').appendChild(child);
           });
 	}
+        
 	render();
         
         //initialize button allQuestions
@@ -580,6 +870,40 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 
             });
         })();
+        
+        //initialize searchForm
+        (function(){
+            // hide form and show/hide it after click on the search icon
+            $('#searchForm').hide();
+            $('#searchButton').click( function (e) {
+                $('#searchForm').toggle();
+                $('#searchPattern').val('');
+                $('#searchClear').hide();
+                $('#searchPattern').focus();
+            });
+            // Search if the user typed
+            $('#searchPattern').keyup( function(e) {
+                if($('#searchPattern').val().length > 0){
+                    $('#searchClear').show();
+                } else {
+                    $('#searchClear').hide();
+                }
+                let pageNumber = document.getElementById('currentPage').value;
+                UI.renderQuestions(documentId, pageNumber, 1);            
+            });
+            
+            //Clear-Button
+            $('#searchForm').submit (function(e) {
+                $('#searchPattern').val('');
+                $('#searchClear').hide();
+                let pageNumber = document.getElementById('currentPage').value;
+                UI.renderQuestions(documentId, pageNumber, 1); 
+                return false;
+            });
+            
+        })();
+        
+
         
         if(_toolbarSettings.use_studenttextbox === "1"|| _isadmin){
             // initialize the textbox
@@ -704,7 +1028,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
               initPen();
             })(); //end initialize Pen 
         }
-	// Toolbar buttons
+	// Toolbar buttons (defined in index.mustache) are given event listeners:
 	(function () {
 	  //Cursor should always be default selected
 	  var tooltype = 'cursor';
@@ -790,7 +1114,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 	  document.querySelector('.toolbar').addEventListener('click', handleToolbarClick);
 	})(); //end Toolbar buttons
 
-	// Scale/rotate
+	// Scale
         
 	(function () {
 	  function setScaleRotate(scale, rotate) {
@@ -884,6 +1208,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             function jumpToPage(){
                 currentPageInput.removeEventListener('change',jumpToPage);
                 var newPage = currentPageInput.value;
+                
                 // The following code causes unexpected errors (page 3 is recognized as smaller than 1 or greater than 15)
 //                if(newPage < 1 || newPage > document.querySelector('#sumPages').innerHTML){
 //                    currentPageInput.value = oldPage;
@@ -900,7 +1225,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 });
             });
         })();
-
+        
 	// Comment annotations
 	(function (window, document) {
 	  var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
@@ -913,185 +1238,75 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 	    return ['point', 'highlight', 'area', 'strikeout'].indexOf(type) > -1;
 	  }
           
+                   
           /*
            * Function inserts a comment into the HTML DOM for display
            * A comment consists of its content as well as a delete button, wrapped up in a shared div
            * 
            * @return {Element}
            */
-	  function insertComment(comment) { 
-            //if not admin, all existing comments should not be allowed to delete.
-            if(!_isadmin){
-                document.querySelectorAll('.comment-delete-a').forEach(function(comment){
-                    comment.disabled = true;
-                    comment.title = M.util.get_string('deletionForbidden', 'pdfannotator');
-                    let img = comment.querySelector('img');
-                    img.alt = M.util.get_string('deletionForbidden', 'pdfannotator');
-                    img.title = M.util.get_string('deletionForbidden', 'pdfannotator');
-                });
+	  function insertComments(comments, markCommentid = undefined) {
+            if(!comments.comments){
+               comments = {comments: [comments]};
             }
-            var username = '';
-            
-            // if there is content
-            if(comment.annotation !== undefined){
-                
-                var owner = _userid == comment.userid;
-                
-                switch (comment.visibility) {
-                    case 'public':
-                        username = owner ? M.util.get_string('me', 'pdfannotator') : comment.username;
-                        break;
-                    case 'anonymous':
-                        username = comment.username;
-                        break;
-                    case 'private':
-                        if (owner) {
-                            username = 'privat';
+            (function(templates, data) {
+                templates.render('mod_pdfannotator/comment', data)
+                    .then(function(html,js){
+                        if(data.comments.length === 1 && !data.comments[0].isquestion) {
+                            $('.comment-list-container').append(html);
                         } else {
-                            return;
-                        }
-                        break;
-                }
-                
-                // get comment's date-time according to user timezone (which may differ from author time zone)
-                var myDateTime = comment.timecreated;
-                
-                // create wrapper element for content and delete button
-                var child = document.createElement('div');
-                if(owner){
-                    if(comment.visibility === 'private') {
-                        child.className = 'chat-message comment-list-item private';
-                    } else if (comment.visibility === 'anonymous') {
-                        child.className = 'chat-message comment-list-item owner anonymous';
-                    } else {
-                        child.className = 'chat-message comment-list-item owner';
-                    }
-                }else{
-                    child.className = 'chat-message comment-list-item';
-                }
-                if(comment.usevotes) {
-                    child.className += ' usevotes';
-                }
-                child.id = 'comment_'+comment.uuid;
-                                
-                if(comment.isquestion == 1){
-                    child.className += ' questioncomment';
-                    var questionmark = document.createElement('img');
-                    questionmark.src = M.util.image_url('/a/help')//;'/moodle/pix/a/help.svg';
-                    questionmark.alt = 'question mark';
-                    questionmark.width = 25;
-                    questionmark.height = 25;
-                }
-                
-                if (comment.usevotes) {
-                    var voteDiv = createVoteWrapper(comment);
-                    child.appendChild(voteDiv); 
-                }
-                              
-                 // create wrapper for content
-                var contentDiv = document.createElement('div');
-                contentDiv.className = "chat-message-text";
-                
-                // create content p and append it to the contentDiv
-                var content = document.createElement('p');
-                content.className = "chat-message-p";
-                if(comment.isdeleted == 1){
-                    content.innerHTML = '<em>'+_twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content))+'</em>';
-                }else if(comment.annotation.type === "drawing" || comment.annotation.type === "textbox") {
-                    content.innerHTML = '<em>'+_twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content))+'</em>';
-                } else {
-                    content.innerHTML = _twitterText2.default.autoLink(_twitterText2.default.htmlEscape(comment.content));
-                }
-                contentDiv.appendChild(content);
-                
-                //create a wrapper for meta and contentDiv and append it to child div
-                var metaContentContainer = document.createElement('div');
-                metaContentContainer.className = "chat-message-container";
-                
-                //create wrapper for meta-data, e.g. username, time and deletebutton
-                if (comment.isdeleted != 1) {
-                    var meta = document.createElement('div');
-                    meta.className = 'chat-message-meta';
+                            templates.replaceNodeContents('.comment-list-container', html, js);
+                        }                      
+                                                          
+                    }).then(function() {
+                        
+                        data.comments.forEach(function(comment) {
+                            createVoteHandler(comment);
+                            createEditFormHandler(comment);
+                            createSubscriptionHandler(comment);
+                            createDeleteHandler(comment);
+                            let pattern = $('#searchPattern').val();
+                            if(pattern !== '' && comment.content.search(new RegExp(pattern, "i")) !== -1){
+                                $('#comment_'+comment.uuid).addClass('mark');
+                            }
+                            
 
-                    //if own comment or admin, then add delete-button
-                    //has to come first
-                    if(comment.annotation.type === "drawing" || comment.annotation.type === "textbox") {
-                        //no delete or report
-                    } else if(owner  || _isadmin){
-                        var deleteSpan = createDeleteButton(comment);
-                        meta.appendChild(deleteSpan);
+                            let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
+                            // To shorten all comments (in opened discussion).
+                            // UI.mathJaxAndShortenText(selector, 2.5, comment.isquestion);
 
-                    } else {
-                        //you can only report comments, annotations cannot be reported! 
-                        //create wrapper element for report form 
-                        var reportSpan = createReportButton(comment);
-                        meta.appendChild(reportSpan);
-                    }
-
-                    //create time span
-                    var time = document.createElement('span');
-                    time.className = 'time';
-                    time.innerHTML = myDateTime;
-                    meta.appendChild(time);
-
-                    //create user span
-                    var user = document.createElement('span');
-                    user.className = 'user';
-                    user.innerHTML = username;
-                    // append username
-                    meta.appendChild(user);
-                    metaContentContainer.appendChild(meta);
-                }                  
-                
-                if(comment.isquestion == 1) {
-                    contentDiv.appendChild(createSubscriptionButton(comment));
-                }
-                metaContentContainer.appendChild(contentDiv);
-                child.appendChild(metaContentContainer);
-                                                      
-                                     
-            }else {
-                //if the comment has no Annotation, only the string should be rendered.
-                var child = document.createElement('p');
-                child.className = 'noCommentssupported';
-                if(comment.content !== undefined){
-                    child.innerHTML = comment.content;
-                }else{
-                    child.innerHTML = M.util.get_string('noCommentsupported','pdfannotator');
-                }
-            }
-            // append child/comment wrapper to commentList
-	    commentList.appendChild(child);
-            //to shorten all comments (in opened discussion)
-            let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
+                        });
+                        fixCommentForm();
+                        renderMathJax();
+                        
+                        //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
+                        //$("chat-message+:contains('text')").addClass('mark');
+                        //if the target has the attribute markCommentid a specific comment should be marked with an red border
+                        //after 3 sec the border should disappear
+                        if(markCommentid !== undefined && markCommentid !== null){
+                          //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
+                            $('#comment_'+markCommentid).addClass('mark');
+                            markCommentid = undefined;
+                            setTimeout(function(){
+                                if(document.querySelector('#comment_'+markCommentid)){
+                                    document.querySelector('#comment_'+markCommentid).style.border = "none";
+                                }
+                            },3000);
+                        }else{
+                            //otherwise the inputfield of the form should be focused
+                          commentText.focus();
+                        }                       
+                        
+                    }); // add a catch
+            })(templates, comments);
             
-            if (typeof(MathJax) !== "undefined") {
-                //add the Mathjax-function and the shortenText function to the queue
-                  MathJax.Hub.Queue(['Typeset', MathJax.Hub],[function(){
-                    UI.shortenTextDynamic('.questioncomment', selector, 2.5,'...');
-                },null]);
-            }
 	  }
           
-          function createSubscriptionButton(comment){
-            var button = document.createElement('button');
-            button.className = 'comment-subscribe-a btn-link';
+          function createSubscriptionHandler(comment){
 
-            var i = document.createElement('i');        
-                       
-            if(comment.issubscribed){
-                button.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
-                i.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
-                i.className = 'icon fa fa-bell-slash fa-fw';
-            } else {
-                button.title = M.util.get_string('subscribeQuestion', 'pdfannotator'); 
-                i.title = M.util.get_string('subscribeQuestion', 'pdfannotator');
-                i.className = 'icon fa fa-bell fa-fw';
-            }
-            
-            button.appendChild(i);
-                
-            button.onclick = function(e) { 
+            var button = $('#comment_'+comment.uuid+' .comment-subscribe-a');
+            var i = $('#comment_'+comment.uuid+' .comment-subscribe-a i');
+            button.click(function(e) {
                 if(comment.issubscribed){
                     _2.default.getStoreAdapter().unsubscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
                         .then(function(data){
@@ -1108,9 +1323,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                 console.error(M.util.get_string('error:unsubscribe', 'pdfannotator'));
                             } 
                             comment.issubscribed = false;
-                            button.title = M.util.get_string('subscribeQuestion', 'pdfannotator'); 
-                            i.title = M.util.get_string('subscribeQuestion', 'pdfannotator');
-                            i.className = 'icon fa fa-bell fa-fw';
+                            button.attr("title", M.util.get_string('subscribeQuestion', 'pdfannotator')); 
+                            i.attr("title", M.util.get_string('subscribeQuestion', 'pdfannotator')); 
                             });
                 } else {
                     _2.default.getStoreAdapter().subscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
@@ -1128,54 +1342,33 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                 console.error(M.util.get_string('error:subscribe', 'pdfannotator'));
                             } 
                             comment.issubscribed =true;
-                            button.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator'); 
-                            i.title = M.util.get_string('unsubscribeQuestion', 'pdfannotator');
-                            i.className = 'icon fa fa-bell-slash fa-fw';
+                            button.attr("title", M.util.get_string('unsubscribeQuestion', 'pdfannotator')); 
+                            i.attr("title", M.util.get_string('unsubscribeQuestion', 'pdfannotator'));                            
                             });                
-                } 
+                }
+                i.toggleClass("fa-bell");
+                i.toggleClass("fa-bell-slash");
                 setTimeout(function () {
                         let notificationpanel = document.getElementById("user-notifications");
                         while (notificationpanel.hasChildNodes()) {
                             notificationpanel.removeChild(notificationpanel.firstChild);
                         }
                 }, 3000);
-            };            
-                
-            return button;
+            });            
           }
           
-          function createVoteWrapper(comment){
-              var voteDiv = document.createElement('div');
-                voteDiv.className = 'votes';
-                
-                //create an element for click
-                var likeButton = document.createElement('button');
-                              
-                //disable button, if comment is deleted, user is the author of the comment or the user has voted the comment already
+          function createVoteHandler(comment){
+               
+                // Create an element for click.
+                var likeButton = $('#comment_'+comment.uuid+' .comment-like-a');
                 if (comment.isdeleted == 1) {
-                    likeButton.disabled = true;
-                    likeButton.title = M.util.get_string('likeForbidden', 'pdfannotator'); 
-                    likeButton.style.visibility = 'hidden';
-                } else if (comment.userid == _userid) {
-                    likeButton.disabled = true;
-                    likeButton.title = M.util.get_string('likeOwnComment', 'pdfannotator'); 
-                } else if (comment.isvoted)  {
-                    likeButton.disabled = true;
-                    if (comment.isquestion == 1){
-                        likeButton.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator'); 
-                    } else {
-                        likeButton.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator'); 
-                    }                    
-                }else{
-                    if (comment.isquestion == 1){
-                        likeButton.title = M.util.get_string('likeQuestion', 'pdfannotator'); 
-                    } else {
-                        likeButton.title = M.util.get_string('likeAnswer', 'pdfannotator'); 
-                    }
-                    
-                }
-                likeButton.className = 'comment-like-a btn-link';
-                likeButton.onclick = function(e) { 
+                    likeButton.attr("disabled","disabled");
+                    likeButton.css("visibility", "hidden");
+                } else if ((comment.userid == _userid) || (comment.isvoted)) {
+                    likeButton.attr("disabled","disabled");                    
+                }              
+                              
+                likeButton.click(function(e) { 
                     _2.default.getStoreAdapter().voteComment(RENDER_OPTIONS.documentId, comment.uuid)
                         .then(function(data){
                             if(data.status == 'error') {
@@ -1186,7 +1379,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                             console.error(M.util.get_string('error:voteComment', 'pdfannotator'));
                                 
                             } else {
-                                //update number of votes and disable button
+                                // Update number of votes and disable button.
                                 var voteDiv = document.querySelector("div#comment_"+comment.uuid+" div.votes");
                                 var button = voteDiv.querySelector("button");
                                 var img = button.querySelector("i");
@@ -1198,66 +1391,99 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                     button.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  //button
                                     img.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  //img
                                     img.alt = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  //img
-                                    div.title = votes.innerHTML + " " + M.util.get_string('likeCountQuestion', 'pdfannotator');
+                                  //  div.title = votes.innerHTML + " " + M.util.get_string('likeCountQuestion', 'pdfannotator');
                                 } else {
                                     button.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator');
                                     img.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  //img
                                     img.alt = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  //img
-                                    div.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');                                    
+                                 //   div.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');                                    
                                 }
                             }
                         });
                       
-                };
-                //create img for the vote-button
-                var likeI = document.createElement('i');             
-                likeI.className = 'icon fa fa-chevron-up fa-lg';
-
-                           
-                if (comment.isdeleted == 1) {
-                    likeI.alt = M.util.get_string('likeForbidden', 'pdfannotator');  
-                    likeI.title = M.util.get_string('likeForbidden', 'pdfannotator');
-                } else if (comment.userid == _userid) {    // not allowed to vote own comments
-                    likeI.alt = M.util.get_string('likeOwnComment', 'pdfannotator');  
-                    likeI.title = M.util.get_string('likeOwnComment', 'pdfannotator');
-                } else if (comment.isvoted)  {
-                    if (comment.isquestion == 1){
-                        likeI.alt = M.util.get_string('likeQuestionForbidden', 'pdfannotator');  
-                        likeI.title = M.util.get_string('likeQuestionForbidden', 'pdfannotator');
+                });               
+          }
+          /**
+           * Function handles opening/closing and submitting the edit comment form
+           *
+           * @param {type} comment
+           * @returns {undefined}
+           */
+          function createEditFormHandler(comment){
+                // Create an element for click.
+                var editButton = $('#editButton'+comment.uuid);
+                let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
+                // Add an event handler to the click element that opens a textarea and fills it with the current comment.
+                editButton.click(function(e) {
+                    var editForm = document.getElementById("edit"+comment.uuid);
+                    var editArea = document.getElementById("editarea"+comment.uuid);
+                    var text = document.getElementById("chatmessage"+comment.uuid);
+                    if (editForm.style.display === "none") {
+                        editArea.innerHTML = comment.content;
+                        editForm.style.display = "block";
+                        text.innerHTML = "";
+                        // Add an event handler to the form for submitting any changes to the database.
+                        editForm.onsubmit = function (e) {
+                            let newContent = editArea.value.trim();
+                            if(newContent < 2){
+                                // Should be more than one character, otherwise it should not be saved.
+                                notification.addNotification({
+                                  message: M.util.get_string('min2Chars','pdfannotator'),
+                                  type: "error"
+                                });
+                                return false;
+                            }
+                            if(newContent === comment.content) {     // No changes.
+                                editForm.style.display = "none";
+                                text.innerHTML = comment.content;
+                                UI.mathJaxAndShortenText(selector, 2.5, comment.isquestion);
+                            } else {
+                                _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
+                                    .then(function(data){
+                                        if (data.status === "success") {
+                                            editForm.style.display = "none";
+                                            if (data.modifiedby) {
+                                                $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + data.timemodified + M.util.get_string('modifiedby', 'pdfannotator') + data.modifiedby);
+                                            } else {
+                                                $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + data.timemodified);
+                                            }
+                                            text.innerHTML = newContent;
+                                            comment.content = newContent;
+                                            UI.mathJaxAndShortenText(selector, 2.5, comment.isquestion);
+                                            notification.addNotification({
+                                                message: M.util.get_string('successfullyEdited', 'pdfannotator'),
+                                                type: "success"
+                                            });
+                                        } else {
+                                            notification.addNotification({
+                                                message: M.util.get_string('error:editComment','pdfannotator'),
+                                                type: "error"
+                                            });                                        
+                                        }
+                                        setTimeout(function(){
+                                            let notificationpanel = document.getElementById("user-notifications");
+                                            while (notificationpanel.hasChildNodes()) {
+                                                notificationpanel.removeChild(notificationpanel.firstChild);
+                                            }
+                                        }, 4000);
+                                    });
+                            }
+ 
+                          return false; // Prevents normal POST and page reload in favour of an asynchronous load.
+                        };
+                        
+                        $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
+                            editForm.style.display = "none";
+                            text.innerHTML = comment.content;
+                            UI.mathJaxAndShortenText(selector, 2.5, comment.isquestion);
+                        });
                     } else {
-                        likeI.alt = M.util.get_string('likeAnswerForbidden', 'pdfannotator');  
-                        likeI.title = M.util.get_string('likeAnswerForbidden', 'pdfannotator'); 
-                    }                    
-                }else{
-                    if (comment.isquestion == 1){
-                       likeI.alt = M.util.get_string('likeQuestion', 'pdfannotator');  
-                       likeI.title = M.util.get_string('likeQuestion', 'pdfannotator'); 
-                    } else {
-                       likeI.alt = M.util.get_string('likeAnswer', 'pdfannotator');  
-                       likeI.title = M.util.get_string('likeAnswer', 'pdfannotator'); 
+                        editForm.style.display = "none";
+                        text.innerHTML = comment.content;
+                        UI.mathJaxAndShortenText(selector, 2.5, comment.isquestion);
                     }
-                }
-                
-                likeButton.appendChild(likeI);
-                voteDiv.appendChild(likeButton);
-                
-                //create div to show the number of votes
-                if(comment.isdeleted != 1) {
-                    var votes = document.createElement('div');
-                    votes.className= 'countVotes';
-                    if(comment.votes) {
-                        votes.innerHTML = comment.votes;                    
-                    } else {
-                        votes.innerHTML = '0';
-                    }
-                    if (comment.isquestion == 1){
-                        votes.title = votes.innerHTML + " " + M.util.get_string('likeCountQuestion', 'pdfannotator');
-                    } else {
-                        votes.title = votes.innerHTML + " " + M.util.get_string('likeCountAnswer', 'pdfannotator');
-                    }
-                    voteDiv.appendChild(votes);
-                }
-                return voteDiv;
+                      
+                });               
           }
           
           /**
@@ -1265,21 +1491,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
            * @param {type} comment The comment-object for which the deletebutton is.
            * @returns {Element|startIndex.indexstartIndex#L#26.indexstartIndex#L#26#L#72.indexstartIndex#L#26#L#72#L#743.createDeleteButton.deleteSpan}
            */
-          function createDeleteButton(comment) {
-              //TODO for this function you could use a template instead of creating elements
-            var deleteSpan = document.createElement('span');
-            deleteSpan.className = 'comment-delete-button';
-
-            //create an element for click
-            var deleteA = document.createElement('button');
-            if(comment.isdeleted == 1){
-                deleteA.disabled = true;
-                deleteA.title = M.util.get_string('deletionForbidden', 'pdfannotator');
-            }else{
-                deleteA.title = M.util.get_string('delete', 'pdfannotator');
-            }
-            deleteA.className = 'comment-delete-a btn-link';
-            deleteA.onclick = function(e) {
+          function createDeleteHandler(comment) {
+            var button = $('#comment_'+comment.uuid+' .comment-delete-a');
+            var i = $('#comment_'+comment.uuid+' .comment-subscribe-a i');
+            button.click(function(e) {
                 var confirmDelete = '';
                 if(comment.isquestion==1){                            
                     if (_isadmin) {
@@ -1287,23 +1502,21 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     } else {
                         confirmDelete = M.util.get_string('deletingQuestion_student', 'pdfannotator');
                     }
-                } else if (_isadmin){
-                    confirmDelete = M.util.get_string('deletingComment_manager', 'pdfannotator');
                 } else {
-                    confirmDelete = M.util.get_string('deletingComment_student', 'pdfannotator');
+                    confirmDelete = M.util.get_string('deletingComment', 'pdfannotator');
                 }
                 notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), dialogCallbackForDelete, null);                     
-            };
+            });
 
             function dialogCallbackForDelete(args = comment){
-                if(args.isquestion == 1){
+                if(args.type === "textbox" || args.type === "drawing"){
                     _2.default.getStoreAdapter().deleteAnnotation(documentId, args.annotation).then(function(data){
                         if(data.status === "success"){
                             //_2.default.getStoreAdapter().deleteComment(RENDER_OPTIONS.documentId, args.uuid);
                             var node = document.querySelector('[data-pdf-annotate-id="'+args.annotation+'"]');
                             var visiblePageNum = node.parentNode.getAttribute('data-pdf-annotate-page');
                             node.parentNode.removeChild(node);
-                            //keine Kommentare mehr eingeben koennen
+                            // Not possible to enter new comments.
                             document.querySelector('.comment-list-container').innerHTML = '';
                             document.querySelector('.comment-list-form').setAttribute('style','display:none');
                             UI.renderQuestions(documentId,visiblePageNum);
@@ -1315,97 +1528,13 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         });
                         console.error(M.util.get_string('error:deleteAnnotation', 'pdfannotator'));
                     });
-                } else{
-                    _2.default.getStoreAdapter().deleteComment(RENDER_OPTIONS.documentId, args.uuid);
-                }
-            }
-            //create delete image (x)
-            var deleteImg = document.createElement('img');
-            deleteImg.className = "icon";
-            if(comment.isdeleted == 1){
-                deleteImg.alt = M.util.get_string('deletionForbidden', 'pdfannotator');
-                deleteImg.title = M.util.get_string('deletionForbidden', 'pdfannotator');
-            }else{
-                deleteImg.alt = M.util.get_string('delete', 'pdfannotator');
-                deleteImg.title = M.util.get_string('delete', 'pdfannotator');
-            }
-            deleteImg.src = M.util.image_url('/t/delete');
-            deleteA.appendChild(deleteImg);
-            deleteSpan.appendChild(deleteA);
-			
-            return deleteSpan;
-          }
-         
-        /**
-         * This function creates an Node-Element for reporting the comment
-         * @param {type} comment The comment-object for which the report button is.
-         * @returns {Element|startIndex.indexstartIndex#L#26.indexstartIndex#L#26#L#72.indexstartIndex#L#26#L#72#L#743.createReportButton.reportSpan}
-         */    
-	function createReportButton(comment) {
-            //TODO for this function you could use a template instead of creating elements
-            //create wrapper element for report form 
-            var reportSpan = document.createElement('span');
-            reportSpan.className = 'comment-report-button';
-
-            // create report form
-            var reportForm = document.createElement('form');
-            reportForm.action = "view.php";// "test.php";
-            reportForm.method = "POST";
-
-            var cid = document.createElement('input'); // course module object
-            cid.type = "hidden";
-            cid.name = "coursemodule";
-            cid.value = JSON.stringify(_cm);
-
-            var commentid = document.createElement('input'); // comment id
-            commentid.type = "hidden";
-            commentid.name = "commentid";
-            commentid.value = comment.uuid;
-
-            var action = document.createElement('input'); // action to be performed on next load of view.php
-            action.type = "hidden";
-            action.name = "action";
-            action.value = "report";
-
-            //id because moodle expects this parameter
-            var cmid = document.createElement('input'); // course module id
-            cmid.type = "hidden";
-            cmid.name = "id";// "coursemoduleid";
-            cmid.value = _cm.id;
-
-            //create an element for click
-            var reportB = document.createElement('button');
-            reportB.className = 'comment-report-a btn-link';
-            if(comment.isdeleted == 1){
-                reportB.disabled = true;
-                reportB.title = M.util.get_string('reportForbidden','pdfannotator');
-            }else{
-                reportB.title = M.util.get_string('toreport','pdfannotator');
-            }
+                } else {  
+                     _2.default.getStoreAdapter().deleteComment(RENDER_OPTIONS.documentId, args.uuid);
+                } 
             
-            //create report image (x)
-            var reportImg = document.createElement('img');
-            reportImg.className = "icon";
-            if(comment.isdeleted == 1){
-                reportImg.alt = M.util.get_string('reportForbidden','pdfannotator');
-                reportImg.title = M.util.get_string('reportForbidden','pdfannotator');
-            }else{
-                reportImg.alt = M.util.get_string('toreport','pdfannotator');
-                reportImg.title = M.util.get_string('toreport','pdfannotator');
-            }
-            reportImg.src = M.util.image_url('/i/flagged'); // "/moodle/theme/image.php/clean/core/1504678549/i/flagged";
-            reportB.appendChild(reportImg);
-
-            reportForm.appendChild(cid);
-            reportForm.appendChild(commentid);
-            reportForm.appendChild(action);
-            reportForm.appendChild(cmid);
-            reportForm.appendChild(reportB);
-
-            reportSpan.appendChild(reportForm);
-            return reportSpan;
-        }  
-        
+          }
+      }
+                
         /**
          * This function is called, when an annotation is clicked. The corresponding comments are rendered and a form to submit a comment.
          * @param {type} target
@@ -1421,7 +1550,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 	        var annotationId = target.getAttribute('data-pdf-annotate-id');
 
 	        _2.default.getStoreAdapter().getComments(documentId, annotationId).then(function (comments) {
-                    UI.hideLoader();
+                  UI.hideLoader();
 	          commentList.innerHTML = '';
 	          commentForm.style.display = 'inherit';
                   
@@ -1429,8 +1558,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                   button1.style.display = 'inline';
                   var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                   button2.style.display = 'inline';
-                  
-	          commentForm.onsubmit = function (e) {
+                  commentForm.onsubmit = function (e) {
                       document.querySelector('#commentSubmit').disabled = true;
                       var commentVisibility= "public";
                       if(document.querySelector('#anonymousCheckbox').checked){
@@ -1438,7 +1566,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                       }
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       if(commentText.value.trim().length < 2){
-                          //should be more than one charakter, otherwise it should not be saved.
+                          //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
                             message: M.util.get_string('min2Chars','pdfannotator'),
                             type: "error"
@@ -1448,7 +1576,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                           return false;
                       }
 	            _2.default.getStoreAdapter().addComment(documentId, annotationId, commentText.value.trim(), commentVisibility, isquestion)
-                        .then(insertComment)
+                        .then(insertComments)
                         .then(function () {
                             document.querySelector('#commentSubmit').disabled = false;
                             commentText.value = '';
@@ -1461,38 +1589,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                             console.error(M.util.get_string('error:addComment', 'pdfannotator'));
                         });
 
-	            return false; // verhindert normales POST und Neuladen der Seite zugunsten eines asynchronen Ladens
+	            return false; // Prevents page reload via POST to enable asynchronous loading
 	          };
                   
-                  //render comments  
-                  comments.forEach(insertComment);
+                  //render comments   
+                  insertComments(comments, target.markCommentid);
                   
-                    //if the target has the attribute markCommentid a specific comment should be marked with an red border
-                    //after 3 sec the border should disappear
-                    if(target.markCommentid !== undefined && target.markCommentid !== null){
-                      document.querySelector('#comment_'+target.markCommentid).style.cssText = "border:3px solid red !important";
-                      target.markCommentid = undefined;
-                      setTimeout(function(){
-                          if(document.querySelector('#comment_'+target.markCommentid)){
-                              document.querySelector('#comment_'+target.markCommentid).style.border = "none";
-                          }
-                      },3000);
-                    }else{
-                        //otherwise the inputfield of the form should be focused
-                      commentText.focus();
-                    }
                 }, function (err){
                     commentList.innerHTML = '';
                     commentForm.style.display = 'none';
                     commentForm.onsubmit = null;
-                    insertComment({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
+                    insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
                     notification.addNotification({
                         message: M.util.get_string('error:getComments','pdfannotator'),
                         type: "error"
-                      });
+                    });
+                    setTimeout(function(){
+                        let notificationpanel = document.getElementById("user-notifications");
+                        while (notificationpanel.hasChildNodes()) {
+                            notificationpanel.removeChild(notificationpanel.firstChild);
+                        }
+                    }, 4000);
                 });
 	      })();
-	    }else{
+	    }else{      // Drawing or textbox
                 
                 (function () {
 	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
@@ -1509,14 +1629,13 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                   var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                   button2.style.display = 'inline';
                   
-                  var comment = {content: M.util.get_string('noCommentsupported','pdfannotator'), annotation: annotation, userid: annotation.userid, username: annotation.user, visibility: 'public', timecreated: annotation.timecreated, usevotes: 0, uuid: 1, isdeleted: 0};
                   //render comments  
-                  insertComment(comment);
+                  insertComments(annotation);
                 }, function (err){
                     commentList.innerHTML = '';
                     commentForm.style.display = 'none';
                     commentForm.onsubmit = null;
-                    insertComment({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
+                    insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
                     notification.addNotification({
                         message: M.util.get_string('error:getComments','pdfannotator'),
                         type: "error"
@@ -3050,7 +3169,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         * @param {String} pageNumber The number of the requested page
                         * @return {Promise}
                         */
-                        {key:'getQuestions',value:function getQuestions(documentId,pageNumber){
+                        {key:'getQuestions',value:function getQuestions(documentId,pageNumber,pattern){
                                 (0,_abstractFunction2.default)('getQuestions');
                             }
                         },
@@ -3061,7 +3180,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         * @param {String} pageNumber The number of the requested page
                         * @return {Promise}
                         */
-                        {key:'__getQuestions',value:function getQuestions(documentId,pageNumber){
+                        {key:'__getQuestions',value:function getQuestions(documentId,pageNumber,pattern){
                                 (0,_abstractFunction2.default)('getQuestions');
                             }
                         },
@@ -3127,6 +3246,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         },
                         
                         /**
+                         * Edit a comment
+                         * @param {String} documentId The ID for the document
+                         * @param {String} commentId The ID for the comment
+                         * @return {Promise}
+                         */
+                        {key:'__editComment',value:function __editComment(documentId,commentId){
+                                (0,_abstractFunction2.default)('editComment');
+                            }
+                        },
+                        
+                        /**
                          * Subscribe to a question
                          * @param {String} documentId The ID for the document
                          * @param {String} commentId The ID for the comment
@@ -3141,7 +3271,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                 (0,_abstractFunction2.default)('unsubscribeQuestion');
                             }
                         },
-                                    
+                        
+                        {key:'__getCommentsToPrint',value:function __getCommentsToPrint(documentId){
+                                (0,_abstractFunction2.default)('getCommentsToPrint');
+                            }
+                        },
+                                
                         {key:'getAnnotations',get:function get(){
                                 return this.__getAnnotations;
                          },
@@ -3176,8 +3311,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         {key:'deleteComment',get:function get(){return this.__deleteComment;},set:function set(fn){this.__deleteComment=function deleteComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:delete',documentId,commentId);}return success;});};}},
                         {key:'getInformation',get:function get(){return this.__getInformation;},set:function set(fn){this.__getInformation=function getInformation(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('annotation:getInformation',documentId,annotationId);}return success;});};}},
                         {key:'voteComment',get:function get(){return this.__voteComment;},set:function set(fn){this.__voteComment=function voteComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:vote',documentId,commentId);}return success;});};}},
+                        {key:'editComment',get:function get(){return this.__editComment;},set:function set(fn){this.__editComment=function editComment(documentId,commentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:edit',documentId,commentId);}return success;});};}},
                         {key:'subscribeQuestion',get:function get(){return this.__subscribeQuestion;},set:function set(fn){this.__subscribeQuestion=function subscribeQuestion(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:subscribe',documentId,annotationId);}return success;});};}},
-                        {key:'unsubscribeQuestion',get:function get(){return this.__unsubscribeQuestion;},set:function set(fn){this.__unsubscribeQuestion=function unsubscribeQuestion(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:unsubscribe',documentId,annotationId);}return success;});};}}
+                        {key:'unsubscribeQuestion',get:function get(){return this.__unsubscribeQuestion;},set:function set(fn){this.__unsubscribeQuestion=function unsubscribeQuestion(documentId,annotationId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('comment:unsubscribe',documentId,annotationId);}return success;});};}},
+                        {key:'getCommentsToPrint',get:function get(){return this.__getCommentsToPrint;},set:function set(fn){this.__getCommentsToPrint=function getCommentsToPrint(documentId){return fn.apply(undefined,arguments).then(function(success){if(success){(0,_event.fireEvent)('document:printannotations',documentId);}return success;});};}}
                         
                     ]);return StoreAdapter;
                 }(); //Ende StoreAdapter
@@ -3513,7 +3650,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 var elements=document.querySelectorAll('svg[data-pdf-annotate-container="true"]');
                 if(array){
                     var ret = [];
-                    //ende R
+                    //end R
                     for(var i=0,l=elements.length;i<l;i++){
                         var el=elements[i];
                         var rect=el.getBoundingClientRect();
@@ -4385,7 +4522,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             /**
             * Initialize the event handlers for keeping screen reader hints synced with data
-            */function initEventHandlers(){(0,_event.addEventListener)('annotation:add',function(documentId,pageNumber,annotation){reorderAnnotationsByType(documentId,pageNumber,annotation.type);});(0,_event.addEventListener)('annotation:edit',function(documentId,annotationId,annotation){reorderAnnotationsByType(documentId,annotation.page,annotation.type);});(0,_event.addEventListener)('annotation:delete',removeAnnotation);(0,_event.addEventListener)('comment:add',insertComment);(0,_event.addEventListener)('comment:delete',removeComment);}/**
+            */function initEventHandlers(){(0,_event.addEventListener)('annotation:add',function(documentId,pageNumber,annotation){reorderAnnotationsByType(documentId,pageNumber,annotation.type);});(0,_event.addEventListener)('annotation:edit',function(documentId,annotationId,annotation){reorderAnnotationsByType(documentId,annotation.page,annotation.type);});(0,_event.addEventListener)('annotation:delete',removeAnnotation);(0,_event.addEventListener)('comment:add',insertComments);(0,_event.addEventListener)('comment:delete',removeComment);}/**
             * Reorder the annotation numbers by annotation type
             *
             * @param {String} documentId The ID of the document
@@ -4402,7 +4539,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             * @param {String} documentId The ID of the document
             * @param {String} annotationId The ID of tha assocated annotation
             * @param {Object} comment The comment to insert a hint for
-            */function insertComment(documentId,annotationId,comment){
+            */function insertComments(documentId,annotationId,comment){
                            var list=document.querySelector('pdf-annotate-screenreader-comment-list-'+annotationId);
                            var promise=void 0;
                            if(!list){
@@ -4446,7 +4583,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             var _shortText = __webpack_require__(39);
             var _newAnnotations = __webpack_require__(40);
             var _ajaxloader=__webpack_require__(36);
-            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, renderAllQuestions: _questionsRenderer.renderAllQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, loadNewAnnotations : _newAnnotations.load};
+            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, renderAllQuestions: _questionsRenderer.renderAllQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, mathJaxAndShortenText:_shortText.mathJaxAndShortenText, loadNewAnnotations : _newAnnotations.load};
             module.exports=exports['default'];
     /***/},
     /** 29 */
@@ -4661,9 +4798,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 if(type==='highlight' || type==='strikeout'){
                     return;
                 }
-                if(target.getAttribute('data-pdf-annotate-owner') == 'false'){
-                    return;
-                }
                 isDragging=true;
                 dragOffsetX=e.clientX;
                 dragOffsetY=e.clientY;
@@ -4756,7 +4890,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                             if(annotation.rectangles){
                                                 annotation.rectangles[i].y=modelY;
                                             }else {
-                                                annotation['annotation'].y=modelY.toString();
+                                                annotation['annotation'].y=modelY; // .toString();
                                             }
 
                                         }
@@ -4779,7 +4913,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                             if(annotation.rectangles){
                                                 annotation.rectangles[i].x=modelX;
                                             } else {
-                                                annotation['annotation'].x = modelX.toString(); 
+                                                annotation['annotation'].x = modelX; // .toString(); 
                                             }
                                         }
                                     });
@@ -4981,9 +5115,27 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             * @param {String} penColor The color of the lines drawn by the pen
             */function setPen(){var penSize=arguments.length<=0||arguments[0]===undefined?1:arguments[0];var penColor=arguments.length<=1||arguments[1]===undefined?'000000':arguments[1];_penSize=parseInt(penSize,10);_penColor=penColor;}/**
             * Enable the pen behavior
-            */function enablePen(){if(_enabled){return;}_enabled=true;document.getElementById('content-wrapper').classList.add('cursor-pen');document.addEventListener('mousedown',handleDocumentMousedown);document.addEventListener('keyup',handleDocumentKeyup);(0,_utils.disableUserSelect)();}/**
+            */function enablePen(){
+                           if(_enabled){
+                               return;
+                           }
+                           _enabled=true;
+                           document.getElementById('content-wrapper').classList.add('cursor-pen');
+                           document.addEventListener('mousedown',handleDocumentMousedown);
+                           document.addEventListener('keyup',handleDocumentKeyup);
+                           (0,_utils.disableUserSelect)();
+                       }/**
             * Disable the pen behavior
-            */function disablePen(){if(!_enabled){return;}_enabled=false;document.getElementById('content-wrapper').classList.remove('cursor-pen');document.removeEventListener('mousedown',handleDocumentMousedown);document.removeEventListener('keyup',handleDocumentKeyup);(0,_utils.enableUserSelect)();}
+            */function disablePen(){
+                           if(!_enabled){
+                               return;
+                           }
+                           _enabled=false;
+                           document.getElementById('content-wrapper').classList.remove('cursor-pen');
+                           document.removeEventListener('mousedown',handleDocumentMousedown);
+                           document.removeEventListener('keyup',handleDocumentKeyup);
+                           (0,_utils.enableUserSelect)();
+                       }
     /***/},
     /* 31 */
     /***/function(module,exports,__webpack_require__){
@@ -5099,7 +5251,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             /**
             * Save a new point annotation from input
             */function savePoint(){
-                if(textarea.value.trim().length>0){
+                if(textarea.value.trim().length>1){
                     disablePoint();
                     var _ret=function(){
                         var clientX=(0,_utils.roundDigits)(data.x,4);
@@ -5286,7 +5438,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             }
             /**
             * Handle document.mouseup event
-            *betrifft area,highlight und strikeout
+            * concerns area,highlight and strikeout
             * @param {Event} e The DOM event to handle
             */function handleDocumentMouseup(e){
                 //if the cursor is clicked nothing should happen!
@@ -5440,7 +5592,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 var documentId=_getMetadata.documentId;
                 var pageNumber=_getMetadata.pageNumber;
                 var content=textarea.value.trim();
-                if(content.length > 0){
+                if(content.length > 1){
                     
                     (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                     
@@ -5761,7 +5913,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                             message: M.util.get_string('error:renderPage', 'pdfannotator'),
                             type: "error"
                         });
-                    });
+                    });                    
             }/**
             * Scale the elements of a page.
             *
@@ -5888,7 +6040,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 resetbutton = document.getElementById('commentCancel');
                 resetbutton.addEventListener('click',cancelClick);
                 form.onsubmit = submitClick;
-                
+                //fixCommentForm();
                 if(_type === 'pin'){
                     data = new Object();
                     data.x = e.clientX;
@@ -5961,15 +6113,22 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
              * @param {type} commid id of the comment, if a comment should be marked, else null
              * @return {void}
              */
-            function pickAnnotation(page,annoid,commid){
-                //Scroll to defined page (because of the picked annotation (new annotation, new answer or report) from overview)
-                $('#content-wrapper').scrollTop(document.getElementById('pageContainer'+page).offsetTop);
+            function pickAnnotation(page,annoid,commid){             
                 //[0] for only first element (it only can be one element)
                 var target = $('[data-pdf-annotate-id='+annoid+']')[0];
                 if(commid !== null){
                     target.markCommentid = commid;        
                 }
                _event.fireEvent('annotation:click',target);
+               
+               //Scroll to defined page (because of the picked annotation (new annotation, new answer or report) from overview)
+               var targetDiv = $('[data-target-id='+annoid+']')[0];
+               var pageOffset = document.getElementById('pageContainer'+page).offsetTop;
+
+               var contentWrapper = $('#content-wrapper');
+               contentWrapper.scrollTop(pageOffset + targetDiv.offsetTop - 100); 
+               contentWrapper.scrollLeft(targetDiv.offsetLeft - contentWrapper.width() + 100); 
+
             }
         },
     /* 38 *//*OWN Module! To show questions of one PDF-Page on the right side*/
@@ -5994,14 +6153,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
              * @return {undefined}
              */
             function renderQuestions (documentId, pageNumber, activeCall = null){
-                _PDFJSAnnotate2.default.getStoreAdapter().getQuestions(documentId,pageNumber).then(function(questions){
-                    
+                let pattern = $('#searchPattern').val();
+                _PDFJSAnnotate2.default.getStoreAdapter().getQuestions(documentId,pageNumber, pattern).then(function(questions){
                     let container = document.querySelector('.comment-list-container');
                     let title = $('#comment-wrapper > h4')[0];
-                    title.innerHTML = M.util.get_string('questionstitle','pdfannotator') + pageNumber;
-                    
+                    if(pattern === '') {
+                        title.innerHTML = M.util.get_string('questionstitle','pdfannotator') + pageNumber;
+                    } else {
+                        title.innerHTML = M.util.get_string('searchresults','pdfannotator');
+                    }
                     var button1 = document.getElementById('allQuestions'); // to be found in index template
-                    button1.style.display = 'block';
+                    button1.style.display = 'inline';
                     var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                     button2.style.display = 'none';
                     
@@ -6014,7 +6176,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         container.innerHTML = '';
 
                         if(questions.length < 1){
-                            container.innerHTML = M.util.get_string('noquestions','pdfannotator');
+                            if (pattern === '') {
+                                container.innerHTML = M.util.get_string('noquestions','pdfannotator');
+                            } else {
+                                container.innerHTML = M.util.get_string('nosearchresults','pdfannotator');
+                            }
                         }else{
                             for(let id in questions){
                                 let question = questions[id];
@@ -6037,14 +6203,31 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                 container.appendChild(questionWrapper);
                                 (function(questionObj,questionDOM){
                                     questionDOM.onclick = function(e){
-                                    let target = $('[data-pdf-annotate-id='+questionObj.annotationid+']')[0];
-                                    _event.fireEvent('annotation:click',target);
-                                };
+                                        if(questionObj.page !== undefined && questionObj.page !== $('#currentPage').val()) {
+                                          $('#content-wrapper').scrollTop(document.getElementById('pageContainer'+questionObj.page).offsetTop);
+                                        }                                        
+                                        (function scrollToAnnotation(annotationid, pageNumber) {
+                                            let target = $('[data-pdf-annotate-id='+annotationid+']')[0]; 
+                                            // if scrolled to a different page (see a few lines above) and page isn't loaded yet; wait and try again
+                                            if (target === undefined) {
+                                                setTimeout(function() {scrollToAnnotation(annotationid, pageNumber);}, 200);
+                                            } else {
+                                                _event.fireEvent('annotation:click',target);
+                                                var targetDiv = $('[data-target-id='+annotationid+']')[0];
+                                                var contentWrapper = $('#content-wrapper');
+                                                if(pageNumber === undefined) {
+                                                    pageNumber = $('#currentPage').val();
+                                                }
+                                                var pageOffset = document.getElementById('pageContainer'+pageNumber).offsetTop;
+                                                contentWrapper.scrollTop(pageOffset + targetDiv.offsetTop - 100); 
+                                                contentWrapper.scrollLeft(targetDiv.offsetLeft - contentWrapper.width() + 100);
+                                            }
+                                        })(questionObj.annotationid, questionObj.page);                                       
+                                    };
                                 })(question,questionWrapper);
                             }
                             // comment overview column
-//                            _shortText.shortenText('.more',80,'...');
-                            _shortText.shortenTextDynamic('.chat-message.comment-list-item.questions', '.more', 4, '...');
+                            _shortText.mathJaxAndShortenText('.more', 4);                            
                         }  
                     }
                 }, function (err){
@@ -6054,6 +6237,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     });
                 });  
             }
+            
+            
+            
             /**
              * Function renders overview column for all questions in this document
              * 
@@ -6073,8 +6259,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     var button1 = document.getElementById('allQuestions'); // to be found in index.mustache template
                     button1.style.display = 'none';
                     var button2 = document.getElementById('questionsOnThisPage'); // to be found in index.mustache template
-                    button2.style.display = 'block';
-                    
+                    button2.style.display = 'inline';
+                   
                     if(document.querySelector('.comment-list-form').style.display !== 'none') {
                         document.querySelector('.comment-list-form').style.display = 'none';
                     }
@@ -6125,6 +6311,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
             Object.defineProperty(exports,"__esModule",{value:true});
             exports.shortenText=shortenText;
             exports.shortenTextDynamic=shortenTextDynamic;
+            exports.mathJaxAndShortenText=mathJaxAndShortenText;
             
             /**
             * Shorten display of any report or question to a maximum of 80 characters and display
@@ -6164,15 +6351,15 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 var moretext = M.util.get_string('showmore', 'pdfannotator');
                 var lesstext = M.util.get_string('showless', 'pdfannotator');
                 $(selector).each(function() {
+                    if($(this).children().first().attr('id')=== 'content') { return; }
                     var content = $(this).html();
                     //determine if the message should be shortend, here only the characters without the html should be considered
                     var contentWithoudTags = this.innerText; 
                     if(contentWithoudTags.length > (showChar + ellipsesText.length)) {
                         //for the clip-function you should import textclipper.js
-                        var c = clip(content,showChar, {html:true, indicator: ''});//clipped content, the indicator is nothing, because we add the ellipsesText manually in the html
+                        var c = clip(unescape(content),showChar, {html:true, indicator: ''});//clipped content, the indicator is nothing, because we add the ellipsesText manually in the html
                         var h = content; // complete content
-                        var html = '<span id="content">' + c + '</span><span class="moreellipses">' + ellipsesText+ '&nbsp;</span><span class="morecontent"><span class="completeContent">' + h + '</span><span class="clippedContent">'+c+'</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
-                        
+                        var html = '<span id="content">' + c + '</span><span class="moreellipses">' + ellipsesText+ '&nbsp;</span><span class="morecontent"><span class="completeContent">' + h + '</span><span class="clippedContent">'+c+'</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';        
                         $(this).html(html);
                     }
 
@@ -6181,17 +6368,19 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                 $(selector+" .morelink").click(function(){
                         if($(this).hasClass("less")) {
                             $(this).removeClass("less");
-                            $(this).html(moretext);
-                            $(selector+" #content").html($(selector+" .morecontent .clippedContent").html());
+                            $(this).html(moretext); // entspricht innerHTML
+                            $(this).parent().prev().prev().html($(this).prev().html());
+                        //    $(selector+" #content").html($(selector+" .morecontent .clippedContent").html());
                         } else {
                             $(this).addClass("less");
                             $(this).html(lesstext);
-                            
-                            $(selector+" #content").html($(selector+" .morecontent .completeContent").html());
+                            $(this).parent().prev().prev().html($(this).prev().prev().html());
+                         //   $(selector+" #content").html($(selector+" .morecontent .completeContent").html());
                         }
-                        $(this).parent().prev().toggle();
+                        $(this).parent().prev().toggle();       //span .moreellipses
                         return false;
                 });
+                
             };
             
             /**
@@ -6203,16 +6392,21 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
              * @returns {undefined}
              */
             function shortenTextDynamic(parentselector, selector, divisor){
-                
-                if(parentselector !== null){
+                if (parentselector === null) {
+                    let elem = document.querySelector(selector);
+                    if (elem !== null) {
+                        var parent = elem.parentElement;
+                    } else {
+                        return;
+                    }
+                } else {
+                    var parent = document.querySelector(parentselector);
+                }
+                if(parent !== null){
                     
                     let minCharacters = 80;
                     let maxCharacters = 120;
                     
-                    let parent = document.querySelector(parentselector);
-                    if(parent === null){
-                        return;
-                    }
                     let nCharactersToDisplay = parent.offsetWidth / divisor;
                     
                     if (nCharactersToDisplay < minCharacters) {
@@ -6224,9 +6418,34 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                     shortenText(selector, nCharactersToDisplay);
                     
                 }else{
-                    shortenText(selector); // default: 80 characters
+                    shortenText(selector); // Default: 80 characters
                 }
             }
+            
+            /**
+             * Renders MathJax and calls shortenText() afterwards.
+             * @param {type} selector
+             * @param {type} divisor
+             * @param {type} click
+             * @returns {undefined}
+             */
+            function mathJaxAndShortenText(selector, divisor, click = false){
+                   if (typeof(MathJax) !== "undefined") {
+                        // Add the Mathjax-function and the shortenText function to the queue.
+                        MathJax.Hub.Queue(['Typeset', MathJax.Hub], [function(){
+                            shortenTextDynamic(null, selector, divisor);
+                            if (click) {                                       
+                                $(selector+" .morelink").click();
+                            }
+                        }, null]);
+                    } else {
+                        shortenTextDynamic(null, selector, divisor);
+                        if (click) {                                       
+                            $(selector+" .morelink").click();
+                        }
+                    } 
+            }
+            
         },
          /* 40 *//*OWN Module! To load new annotations (Synchronisation between sessions)*/
     /***/function(module,exports,__webpack_require__){
@@ -6321,7 +6540,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                         newAnnotations[pageNumber] = data.annotations;
                         var oldAnnotations = currentAnnotations.slice();
                         currentAnnotations[pageNumber] = newAnnotations[pageNumber];
-                        var vorhanden = false;
+                        var exists = false;
                         for (var annotationID in newAnnotations[pageNumber]) {
                             var annotation = newAnnotations[pageNumber][annotationID];
                             for(var oldAnnoid in oldAnnotations[pageNumber]){
@@ -6335,9 +6554,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                             editAnnotationSVG(annotation.type, node, svg, annotation);
                                         }
                                     }
-                                    vorhanden = true;
+                                    exists = true;
                                     break;
-                                }else if(oldAnno.newAnno && isAnnotationsPosEqual(annotation,oldAnno)){
+                                } else if (oldAnno.newAnno && isAnnotationsPosEqual(annotation,oldAnno)){
                                     //Annotation was just added and is the same in newAnnotations
                                     //do Nothing
                                     delete oldAnno.newAnno;
@@ -6345,29 +6564,29 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
                                 }
 
                             }
-                            if(!vorhanden){
+                            if(!exists){
                                 //append annotation to svg
                                 (0,_appendChild2.default)(svg,annotation,viewport);
                             }
-                            vorhanden = false;
+                            exists = false;
                         }
-                        var vorhanden = false;
+                        var exists = false;
                         for( var oldAnnoid in oldAnnotations[pageNumber]){
                             var oldAnno = oldAnnotations[pageNumber][oldAnnoid];
                             for (var annotationID in newAnnotations[pageNumber]) {
                                 var annotation = newAnnotations[pageNumber][annotationID];
                                 if(oldAnno.uuid == annotation.uuid){
-                                    vorhanden = true;
+                                    exists = true;
                                     break;
                                 }
                             }
-                            if(!vorhanden  && !oldAnno.newAnno){
+                            if(!exists  && !oldAnno.newAnno){
                                 var node = document.querySelector('[data-pdf-annotate-id="'+oldAnno.uuid+'"]');
                                 if(node !== null){
                                     node.parentNode.removeChild(node);
                                 }
                             }
-                            vorhanden = false;
+                            exists = false;
                         }
                         //call this function to repeat in 5 secs
                         setTimeout(loadNewAnnotations, 5000); 
@@ -6493,5 +6712,5 @@ function startIndex(Y,_cm,_documentObject,_userid,_isadmin, _toolbarSettings, _p
 
 /***/ }
 /******/ ]);
-}); //require JQuery geschlossen
+}); //require JQuery closed
 }

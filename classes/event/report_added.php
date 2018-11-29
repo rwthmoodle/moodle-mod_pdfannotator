@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * The report_added event.
  *
@@ -38,20 +38,20 @@ defined('MOODLE_INTERNAL') || die();
  **/
 class report_added extends \core\event\base {
     protected function init() {
-        $this->data['crud'] = 'c'; // c(reate), r(ead), u(pdate), d(elete)
+        $this->data['crud'] = 'c'; // ... c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'pdfannotator_reports';
     }
- 
+
     public static function get_name() {
         return get_string('eventreport_added', 'pdfannotator');
     }
- 
+
     public function get_description() {
         return "The user with id {$this->userid} created an report with id {$this->objectid}.";
     }
- 
+
     public function get_url() {
-        return new \moodle_url('/mod/pdfannotator/view.php', array('id' => $this->other['cmid'],'action' => 'overview'));
+        return new \moodle_url('/mod/pdfannotator/view.php', array('id' => $this->other['cmid'], 'action' => 'overview'));
     }
 }

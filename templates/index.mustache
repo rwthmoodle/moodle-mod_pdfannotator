@@ -1,31 +1,37 @@
-<div class='pdfannotator_index'>
+<!--working:-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+
+<div id='pdfannotator_index' class='pdfannotator_index'>
     <div class="row">
         <div class="toolbar col-md-12" id="pdftoolbar" style="top:auto">
-            <button class="cursor" type="button" title="Cursor" data-tooltype="cursor"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></button>
+            <button id="pdfannotator_cursor" class="cursor" type="button" title="Cursor" data-tooltype="cursor"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></button>
             
             <div class="spacer"></div>
             <button class="comment" type="button" title="{{# str }} point, pdfannotator {{/ str }}" data-tooltype="point">{{# pix }}pinbild,pdfannotator, {{# str }} point, pdfannotator {{/ str }} {{/ pix}}</button>           
             <button class="pdfannotator_rectangle" type="button" title="{{# str }} rectangle, pdfannotator {{/ str }}" data-tooltype="area">{{# pix }}i/completion-manual-n,core, {{# str }} rectangle, pdfannotator {{/ str }} {{/ pix}}</button>
             <button class="pdfannotator_highlight" type="button" title="{{# str }} highlight, pdfannotator {{/ str }}" data-tooltype="highlight">{{# pix }}text_highlight_picker,pdfannotator, {{# str }} highlight, pdfannotator {{/ str }} {{/ pix}}</button>
             <button class="pdfannotator_strikeout" type="button" title="{{# str }} strikeout, pdfannotator {{/ str }}" data-tooltype="strikeout">{{# pix }}strikethrough,pdfannotator, {{# str }} strikeout, pdfannotator {{/ str }} {{/ pix}}</button>
-     
+
             <div class="spacer"></div>
 
-            {{#use_studenttextbox}}
-                <button class="text" type="button" title="{{# str }} text, pdfannotator {{/ str }}" data-tooltype="text">{{# pix }}text_color_picker,pdfannotator, {{# str }} text, pdfannotator {{/ str }} {{/ pix}}</button>
-                <select class="text-size"></select>
-                <div class="text-color"></div>
-
+            {{#usestudenttextbox}}
+                <span class="{{pdfannotatortextboxvisibility}}">
+                    <button class="text" type="button{{pdfannotatortextboxvisibility}}" title="{{# str }} text, pdfannotator {{/ str }}" data-tooltype="text">{{# pix }}text_color_picker,pdfannotator, {{# str }} text, pdfannotator {{/ str }} {{/ pix}}</button>
+                    <select class="text-size"></select>
+                    <div class="text-color"></div>
+                </span>
                 <div class="spacer"></div>
-            {{/use_studenttextbox}}
+            {{/usestudenttextbox}}
 
-            {{#use_studentdrawing}}
-                <button class="pen" type="button" title="{{# str }} drawing, pdfannotator {{/ str }}" data-tooltype="draw">{{# pix }}editstring,pdfannotator, {{# str }} drawing, pdfannotator {{/ str }} {{/ pix}}</button>
-                <select class="pen-size"></select>
-                <div class="pen-color"></div>
-
+            {{#usestudentdrawing}}
+                <span class="{{pdfannotatorpenvisibility}}">
+                    <button class="pen" type="button{{pdfannotatorpenvisibility}}" title="{{# str }} drawing, pdfannotator {{/ str }}" data-tooltype="draw">{{# pix }}editstring,pdfannotator, {{# str }} drawing, pdfannotator {{/ str }} {{/ pix}}</button>
+                    <select class="pen-size"></select>
+                    <div class="pen-color"></div>
+                </span>
                 <div class="spacer"></div>
-            {{/use_studentdrawing}}
+            {{/usestudentdrawing}}
 
             <select class="scale">
                 <option value="0.5">50%</option>
@@ -48,8 +54,18 @@
             <input id="currentPage" title="{{# str }} currentPage, pdfannotator {{/ str }}" value="1"> / <span id="sumPages" title="{{# str }} sumPages, pdfannotator {{/ str }}">1</span>
 
             <div class="spacer"></div>
+    
+            {{#useprint}}
+                <button id="pdfannotator_print_button" class="pdfannotator_print {{pdfannotatorprintvisibility}}" type="button{{pdfannotator_printvisibility}}" title="{{# str }} print, pdfannotator {{/ str }}" data-tooltype="printdoc">
+                    <img src='{{{pixprintdoc}}}' alt='{{# str }} print, pdfannotator {{/ str }}'>
+                </button>
+                <button id="pdfannotator_printannotations_button" class="pdfannotator_print {{pdfannotatorprintvisibility}}" type="button{{pdfannotator_printvisibility}}" title="{{# str }} printwithannotations, pdfannotator {{/ str }}" data-tooltype="printcomments">
+                    <img src='{{{pixprintcomments}}}' alt='{{# str }} printwithannotations, pdfannotator {{/ str }}'>
+                </button>
+                <div id="myprinturl" hidden>{{printlink}}</div>
+                <div class="spacer"></div>
+            {{/useprint}}
 
-            
         </div>
     </div>
     <div class="row-fluid row" id="body-wrapper">
@@ -60,51 +76,44 @@
         <div class="span4 col-md-4" id="comment-wrapper">
                 <h4>{{# str }} questionstitle, pdfannotator {{/ str }}</h4>
                 <div id="comment-nav">
-                    <button id="allQuestions" class="pdfannotatorJumpButton" title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}">
+                    <button id="allQuestions" title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}">
                         <!--{{# pix}}file-pdf, pdfannotator, {{#str}}allquestionsimgtitle, pdfannotator{{/str}} {{/pix}}-->
                         <!--<img alt="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}" src={{{pixopenbook}}}>-->
-                        <i title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-book fa-fw questionanswercount"></i>
+                        <i title="{{#str}}allquestionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-book fa-fw"></i>
                     </button>
-                    <button id="questionsOnThisPage" class="pdfannotatorJumpButton" title="{{#str}}questionsimgtitle, pdfannotator{{/str}}">
-                        <i title="{{#str}}questionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-comments fa-fw questionanswercount"></i>
+                    <button id="questionsOnThisPage" title="{{#str}}questionsimgtitle, pdfannotator{{/str}}">
+                        <i title="{{#str}}questionsimgtitle, pdfannotator{{/str}}" class="icon fa fa-comments fa-fw"></i>
                     </button>
+                    <button id="searchButton" class="btn-link" title="{{# str }} search, pdfannotator {{/ str }}" alt="{{# str }} search, pdfannotator {{/ str }}">
+                        <i class="icon fa fa-search fa-fw" title="{{# str }} search, pdfannotator {{/ str }}" alt="{{# str }} search, pdfannotator {{/ str }}"></i>
+                    </button>
+                    <form id="searchForm">
+                        <input type="search" id="searchPattern" class="form-control" name="pattern" placeholder="{{#str}}search, pdfannotator{{/str}}">      
+                        <button type="submit" id="searchClear">
+                            <i class="icon fa fa-times fa-fw"></i>
+                        </button>
+                    </form>                    
                 </div>
             <div class="comment-list">
                 <div class="comment-list-container">
                     <!--<div class="comment-list-item">No comments</div>-->
                 </div>
-                <form class="comment-list-form" style="display:none;">
-                    
-                    <!--<input type="text" placeholder="Add a Comment"/>-->
+                <form id="comment-list-form" class="comment-list-form" style="display:none;">
 
                     <textarea id="myarea" placeholder="{{# str }} addAComment, pdfannotator {{/ str }}" cols="40" rows="3"></textarea>                 
-                    <!--
-                    <div class"row-fluid row comment-radio">
-                            <div class="span4 col-md-4 comment-radio"><input type="radio" name="visibility" value="public" checked="checked" onclick="paintBlue();"/><span>{{# str }} public, pdfannotator {{/ str }}</span></div>
-                            <div class="span4 col-md-4 comment-radio"><input type="radio" name="visibility" value="anonymous" onclick="paintCream();"/><span>{{# str }} anonymous, pdfannotator {{/ str }}</span></div>
-                            <div class="span4 col-md-4 comment-radio"><input type="radio" name="visibility" value="private" onclick="paintLilac();"/><span>{{# str }} private, pdfannotator {{/ str }}</span></div>
-                    </div>
-                    -->
-                    <div class"row-fluid row">
+
+                    <div class="row-fluid row">
                         <input type="checkbox" name="visibility" value="anonymous" id="anonymousCheckbox" style="width:auto;"><label for="anonymousCheckbox">{{# str }} sendAnonymous, pdfannotator {{/ str }}</label>
                     </div>
-                    <script>
-                        function paintBlue() {
-                            document.getElementById('commentSubmit').className = "owner";
-                        }
-                        function paintLilac() {
-                            document.getElementById('commentSubmit').className = "private";
-                        }
-                        function paintCream() {
-                            document.getElementById('commentSubmit').className = "anonymous";
-                        }
-                    </script>
-                    
+                                       
                     <input id="commentSubmit" class="owner" type="submit" value="{{# str }} answerButton, pdfannotator {{/ str }}">
                     <input id="commentCancel" class="owner" type="reset" value="{{# str }} cancelButton, pdfannotator {{/ str }}" >
                 </form>
             </div>
+
         </div>
     </div>
+
 </div>
+
 

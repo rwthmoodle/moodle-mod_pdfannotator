@@ -12,3 +12,9 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+Please note that this plugin also contains files that are under the
+- MIT License: namely index.js, jquery-3.2.1, textclipper.js.
+- Apache License, Version 2.0: namely pdf.js.
+
+Google Charts Api is used in download function to convert latex formulae to png: <https://chart.googleapis.com/chart>.

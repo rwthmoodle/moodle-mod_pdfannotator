@@ -19,13 +19,7 @@
     height: 34px;
     margin: 0 5px -11px;
 }
-/*
-.toolbar a {
-  color: inherit;
-  text-decoration: none;
-}
 
-*/
 .path-mod-pdfannotator .toolbar button {
     background-color: transparent;
     border: 0px solid transparent;
@@ -59,9 +53,16 @@
 }
 
 .path-mod-pdfannotator .toolbar button .icon {
-    color: red;
+    color: #999999;
     margin-right: 0px;
 }
+
+.path-mod-pdfannotator .toolbar .teachersonly {
+    background-color: #dff0d8 !important;
+}
+
+
+
 /*
 .toolbar button:hover,
 .toolbar button:focus {
@@ -329,13 +330,6 @@ body {
     overflow: auto;
     bottom: 0;
     height: 100%;
-    /*
-          position: relative;
-          top: 35px;
-          left: 0;
-          right: 250px;
-          bottom: 0;
-          overflow: auto;*/
 }
 
 .path-mod-pdfannotator #comment-wrapper {
@@ -346,26 +340,35 @@ body {
     bottom: 0;
     height: 100%;
     margin: 0;
-    /*
-          position: relative;
-          top: 35px;
-          right: 0;
-          bottom: 0;
-
-          width: 100%;
-    */
 }
 .path-mod-pdfannotator #comment-wrapper h4,
 .path-mod-pdfannotator #comment-nav {
     margin: 10px;
 }
 
+/*.path-mod-pdfannotator .pdfannotatorJumpButton {*/
 .path-mod-pdfannotator #comment-nav button {
-    height: 16px;
+    border: none;
+    background-color: transparent;
 }
 
 .path-mod-pdfannotator #comment-nav .icon {
     color: #999999 !important;
+}
+
+.path-mod-pdfannotator #searchForm {
+    display: flex;
+    margin-top: 10px;
+}
+
+.path-mod-pdfannotator #searchPattern {
+    padding-right: 25px;
+    height: 30px;
+}
+
+.path-mod-pdfannotator #searchClear {
+    margin-left: -25px;
+    padding: 0px;
 }
 
 .path-mod-pdfannotator #comment-wrapper .comment-list {
@@ -378,7 +381,6 @@ body {
     overflow: hidden;
 }
 .path-mod-pdfannotator #comment-wrapper .comment-list-item {
-    border-bottom: 1px solid #d0d0d0;
     padding: 10px;
 }
 .path-mod-pdfannotator #comment-wrapper .comment-list-container {
@@ -405,7 +407,6 @@ body {
 }
 
 .path-mod-pdfannotator .chat-message {
-    /*border: 1px dotted #ddd;*/
     border-radius: 4px;
     padding: 4px 10px;
     margin: 0 0px 10px 0;
@@ -418,7 +419,11 @@ body {
 
 .path-mod-pdfannotator .chat-message.owner:not(.questioncomment), .chat-message.private:not(.questioncomment) {
     margin: 0 10px 10px 10px;
-    border: 3px solid #c7ddf2 !important;
+    border: 3px solid #c7ddf2;
+}
+
+.path-mod-pdfannotator .chat-message.mark {
+    border: 3px solid red !important
 }
 
 .path-mod-pdfannotator .chat-message:not(.questioncomment) {
@@ -446,7 +451,8 @@ body {
     color: rgba(0,0,0,.15) !important;
 }
 
-.path-mod-pdfannotator .chat-message .time {
+.path-mod-pdfannotator .chat-message .time,
+.path-mod-pdfannotator .chat-message .edited{
     float: right;
     font-size: 11px;
     color: #777;
@@ -455,16 +461,18 @@ body {
     font-weight: 700;
 }
 
-.path-mod-pdfannotator .chat-message button {
+.path-mod-pdfannotator .chat-message button, .path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
 }
 
-.path-mod-pdfannotator .chat-message .comment-delete-button, .chat-message .comment-report-button  {
+.path-mod-pdfannotator .chat-message .comment-delete-button, .path-mod-pdfannotator .chat-message .comment-report-button,
+.path-mod-pdfannotator .chat-message .comment-edit-button{
     float: right;
     margin: 0px 0px 0px 5px;
 }
 
-.path-mod-pdfannotator .comment-delete-a, .comment-report-a, .comment-subscribe-a {
+.path-mod-pdfannotator .comment-delete-a, .path-mod-pdfannotator .comment-report-a,
+.path-mod-pdfannotator .comment-subscribe-a, .path-mod-pdfannotator .comment-edit-a {
     padding: 0;
 }
 
@@ -479,8 +487,8 @@ body {
 }
 
 .path-mod-pdfannotator .chat-message.questions.page {
-    background-color: #dff0d8 !important
-        border-color: #d0e9c6;
+    background-color: #dff0d8 !important;
+    border-color: #d0e9c6;
     color: #3c763d;
 }
 
@@ -500,6 +508,8 @@ body {
 .path-mod-pdfannotator :not(.questioncomment) > .chat-message-text p{
     margin-bottom: 0;
 }
+
+
 
 .path-mod-pdfannotator .helperLayer {
     width: 100%;
@@ -524,6 +534,10 @@ body {
     overflow-y: visible;
     left: unset !important;
     right: unset !important;
+}
+
+.path-mod-pdfannotator .fixform{
+    position: fixed !important;
 }
 
 
@@ -568,8 +582,9 @@ body {
 }
 
 
-.path-mod-pdfannotator #myarea {
+.path-mod-pdfannotator #myarea, .path-mod-pdfannotator .chat-message textarea {
     width: 100%;
+    height: 10em;
 }
 
 
@@ -598,28 +613,19 @@ body {
 
 
 .path-mod-pdfannotator .questionanswercount {
-    /*border: 2px solid rgb(142,186,229)*/;
     float: right;
     padding: 0px 2px 0px 2px;
     margin: 0px;
     border-radius: 8px;
 }
 
-.path-mod-pdfannotator .pdfannotatorJumpButton {
-    border: none;
-    background-color: transparent;
-}
 
-/******************************************** START: mainly for studentoverview.mustache and teacheroverview.mustache *******************************************/
+/******************************************** START: mainly for overview.mustache *******************************************/
 
 /*Information for older browsers*/
     header, section, footer, aside, nav, main, article, figure {
         display: block;
     }
-
-/*    h3 a {
-        aria-expanded: 'true' !important;
-    }*/
 
 .path-mod-pdfannotator .buttonForOverviewSettings {
     float: right !important
@@ -629,15 +635,6 @@ body {
         padding: 4px 8px !important;
     margin: 5px !important;
 }
-
-/*    #openAll {
-        float: right !important
-        border-radius: 2px !important
-        color: white !important
-        background-color: #1177d1 !important
-        padding: 4px 8px !important;
-    }*/
-
 
 .path-mod-pdfannotator .panel-group {
     border-radius: 10px;
@@ -701,7 +698,7 @@ body {
     text-decoration: none !important;
 }
 
-/******************************************** END: mainly for studentoverview.mustache and teacheroverview.mustache *******************************************/
+/******************************************** END: mainly for overview.mustache *******************************************/
 
 
 .path-mod-pdfannotator :disabled img {

@@ -1,11 +1,25 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Friederike Schwager (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * This class contains functions returning the data for the statistics-tab
@@ -71,7 +85,7 @@ class pdfannotator_statistics {
         global $DB;
         $sql = "SELECT AVG(count) AS average FROM ("
                 . "SELECT COUNT(*) AS count FROM {pdfannotator_comments} "
-                . "WHERE pdfannotatorid=? AND isquestion = ? AND isdeleted = ? "
+                . "WHERE pdfannotatorid = ? AND isquestion = ? AND isdeleted = ? "
                 . "GROUP BY userid ) AS counts";
 
         return key($DB->get_records_sql($sql, array($this->annotatorid, $isquestion, '0')));
@@ -129,9 +143,9 @@ class pdfannotator_statistics {
             $ret[] = array('i' => array(get_string('reports', 'pdfannotator'), $this->get_reports_annotator(), $this->get_reports_course()));
         } else {
             $ret[] = array('i' => array(get_string('questions', 'pdfannotator'), $this->get_comments_annotator('1'),
-                $this->get_comments_annotator('1', true), round($this->get_comments_average_annotator('1'), 2)));
+                    $this->get_comments_annotator('1', true), round($this->get_comments_average_annotator('1'), 2)));
             $ret[] = array('i' => array(get_string('answers', 'pdfannotator'), $this->get_comments_annotator('0'),
-                $this->get_comments_annotator('0', true), round($this->get_comments_average_annotator('0'), 2)));
+                    $this->get_comments_annotator('0', true), round($this->get_comments_average_annotator('0'), 2)));
         }
         return $ret;
     }
@@ -182,7 +196,7 @@ class pdfannotator_statistics {
         $ret = array($names, $otherquestions, $myquestions, $otheranswers, $myanswers);
         return $ret;
     }
-  
+
     /**
      * Returns the number of questions/answers in one PDF-Annotator by one/all users
      * @global type $DB
