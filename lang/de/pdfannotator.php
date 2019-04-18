@@ -46,10 +46,11 @@ $string['pdfannotator:usetextbox'] = 'Textbox verwenden (auch wenn es in den Ein
 $string['pdfannotator:usedrawing'] = 'Drawing verwenden (auch wenn es in den Einstellungen des Annotators nicht erlaubt wurde)';
 $string['pdfannotator:printdocument'] = 'Dokument herunterladen';
 $string['pdfannotator:printcomments'] = 'Kommentare herunterladen';
-
+$string['pdfannotator:forwardquestions'] = 'Fragen weiterleiten';
+$string['pdfannotator:getforwardedquestions'] = 'Weitergeleitete Fragen erhalten';
 $string['pdfannotator:hidecomments'] = 'Kommentare für Teilnehmer/innen verbergen';
 $string['pdfannotator:seehiddencomments'] = 'Verborgene Kommentare sehen';
-        
+
 $string['pdfannotator:viewreports'] = 'Kommentar-Meldungen sehen (Übersichtsseite)';
 $string['pdfannotator:viewanswers'] = 'Antworten auf abonnierte Fragen sehen (Übersichtsseite)';
 $string['pdfannotator:viewquestions'] = 'Offene Fragen sehen (Übersichtsseite)';
@@ -137,13 +138,24 @@ $string['comments'] = 'Kommentare';
 $string['author'] = 'Verfasser';
 $string['guestscantdoanything'] = 'Gäste können hier nichts tun.';
 
+$string['forward'] = 'Weiterleiten';
+$string['titleforwardform'] = 'Frage weiterleiten';
+$string['messageforwardform'] = 'Ihre Nachricht an den/die Empfänger';
+$string['recipientrequired'] = 'Bitte wählen sie einen oder mehrere Empfänger aus';
+$string['recipientforwardform'] = 'Weiterleiten an';
+$string['recipient'] = 'Empfänger';
+$string['recipient_help'] = 'Um mehrere Personen auszuwählen, "Strg" gedrückt halten.';
+$string['send'] = 'Senden';
+
 // When displaying your message types in a user's messaging preferences it will use a string from your component's language file called "messageprovider:messagename".
 $string['messageprovider:newanswer'] = 'Mitteilung bei neuer Antwort auf eine abonnierte Frage';
 $string['messageprovider:newreport'] = 'Mitteilung, wenn ein Kommentar gemeldet wurde';
 $string['messageprovider:newquestion'] = 'Mitteilung, wenn eine neue Frage gestellt wurde';
+$string['messageprovider:forwardedquestion'] = 'Mitteilung, wenn eine Frage weitergeleitet an Sie wurde';
 $string['notificationsubject:newreport'] = 'Neue Meldung eines Kommentars in {$a}';
 $string['notificationsubject:newanswer'] = 'Neue Antwort auf von Ihnen abonnierte Frage in {$a}';
 $string['notificationsubject:newquestion'] = 'Neue Frage in {$a}';
+$string['notificationsubject:forwardedquestion'] = 'Weitergeleitete Frage in {$a}';
 $string['reportwassentoff'] = 'Ihre Meldung wurde erfolgreich versandt.';
 
 $string['myquestion'] = 'Frage'; // 'zugehörige Frage' / 'Frage' / 'Abonnement'
@@ -258,6 +270,7 @@ $string['error:show'] = 'Beim Einblenden des Elements ist ein Fehler aufgetreten
 $string['error:putinrecyclebin'] = 'Das Element konnte nicht in den Papierkorb verschoben werden.';
 $string['error:markasread'] = 'Das Element konnte nicht als gelesen markiert werden.';
 $string['error:markasunread'] = 'Das Element konnte nicht als ungelesen markiert werden.';
+$string['error:forwardquestion'] = 'Beim Weiterleiten der Frage ist ein Fehler aufgetreten.';
 
 $string['document'] = 'Dokument';
 
@@ -315,6 +328,23 @@ $string['newquestiontext'] = 'Es wurde eine neue Frage von {$a->answeruser} eing
     "{$a->content}"
 
 Die Frage ist verfügbar unter: {$a->urltoanswer}';
+
+$string['forwardedquestionhtml'] = '{$a->sender} hat folgende Frage an sie weitergeleitet: <br /> <br />'
+        . '"{$a->questioncontent}" <br /> <br />'
+        . 'mit folgender Nachricht: <br /> <br />'
+        . '"{$a->message}" <br /> <br />'
+        . 'Die Frage ist <a href="{$a->urltoquestion}">hier</a> einzusehen.';
+
+$string['forwardedquestiontext'] = '{$a->sender} hat folgende Frage an sie weitergeleitet:
+
+        "{$a->questioncontent}"
+
+        mit folgender Nachricht:
+
+        "{$a->message}"
+
+        Die Frage ist verfügbar unter: {$a->urltoquestion}';
+
 
 $string['unsubscribe_notification'] = 'Um keine Benachrichtigung mehr zu erhalten, klicken Sie bitte <a href="{$a}">hier</a>.';
 

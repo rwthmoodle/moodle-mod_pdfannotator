@@ -231,9 +231,22 @@ function pdfannotator_process_latex($string) {
     }
 }
 
+function send_forward_message($recipients, $messageparams, $course, $cm, $context) {
+    $name = 'forwardedquestion';
+    $text = new stdClass();
+    $module = get_string('modulename', 'pdfannotator');
+    $text->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $cm->name, $messageparams, $name);
+    $text->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $messageparams, $name);
+    $text->url = $messageparams->urltoquestion;
+
+    foreach ($recipients as $recipient) {
+        pdfannotator_notify_manager($recipient, $course, $cm, $name, $text);
+    }
+}
+
 function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext, $anonymous = false) {
 
-    global $USER, $CFG;
+    global $USER;
     $userfrom = $USER;
     if ($anonymous) {
         $userfrom = clone($USER);
@@ -1290,11 +1303,12 @@ function pdfannotator_get_first_key_in_array($array) {
  * @param Moodle url object $url
  * @param int $currentpage
  */
-function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage) {
+function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage, $context) {
 
     global $CFG, $OUTPUT;
     require_once("$CFG->dirroot/mod/pdfannotator/model/overviewtable.php");
 
+    $showdropdown = has_capability('mod/pdfannotator:forwardquestions', $context);
     $questioncount = count($questions);
     $usepagination = !($itemsperpage == -1 || $itemsperpage >= $questioncount);
     $offset = $currentpage * $itemsperpage;
@@ -1306,7 +1320,7 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
     $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
     // Define flexible table.
-    $table = new questionstable($url);
+    $table = new questionstable($url, $showdropdown);
     $table->setup();
     // $table->pageable(false);
 
@@ -1320,7 +1334,7 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
     // Add data to the table and print the requested table (page).
     if (pdfannotator_is_phone() || $itemsperpage == -1 || $itemsperpage >= $questioncount) { // No pagination.
         foreach ($questions as $question) {
-            pdfannotator_questionstable_add_row($thiscourse, $table, $question);
+            pdfannotator_questionstable_add_row($thiscourse, $table, $question, $urlparams, $showdropdown);
         }
     } else {
         $table->pagesize($itemsperpage, $questioncount);
@@ -1329,7 +1343,7 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
             if ($itemsperpage === 0) {
                 break;
             }
-            pdfannotator_questionstable_add_row($thiscourse, $table, $question);
+            pdfannotator_questionstable_add_row($thiscourse, $table, $question, $urlparams, $showdropdown);
             $itemsperpage--;
         }
     }
@@ -1477,8 +1491,9 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
  * @param questionstable $table
  * @param object $question
  */
-function pdfannotator_questionstable_add_row($thiscourse, $table, $question) {
-    global $CFG;
+function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $urlparams, $showdropdown) {
+
+    global $CFG, $PAGE;
     if ($question->visibility != 'public') {
         $author = get_string('anonymous', 'pdfannotator');
     } else {
@@ -1502,7 +1517,16 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question) {
     }
     $content = "<a href=$question->link class='more'>$question->content</a>";
     $pdfannotatorname = $question->pdfannotatorname;
-    $table->add_data(array($content, $author . '<br>' . $time, $question->votes, $question->answercount,  $lastanswered, $pdfannotatorname), $classname);
+
+    $data = array($content, $author . '<br>' . $time, $question->votes, $question->answercount,  $lastanswered, $pdfannotatorname);
+
+    if ($showdropdown) {
+        require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/questionmenu.php');
+        $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+        $dropdown = $myrenderer->render_dropdownmenu(new questionmenu($question->commentid, $urlparams));
+        $data[] = $dropdown;
+    }
+    $table->add_data($data, $classname);
 }
 /**
  * This function adds a row of data to the overview table that displays
@@ -1610,7 +1634,38 @@ function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, 
     // Add a new row to the reports table.
     $table->add_data(array($report->report, $reportedby . '<br>' . $reporttime, $reportedcommmentlink, $writtenby . '<br>' . $commenttime, $dropdown), $classname);
 }
+/**
+ * This function receives data from our feedback form and sends it to the
+ * developers via email.
+ *
+ * @global type $USER
+ * @param type $formdata
+ */
+function pdfannotator_send_feedbackmail ($formdata, $url) {
 
+    global $USER;
+
+    $subject = 'Feedback zum PDF-Annotation-Tool aus Aachen';
+    $messagetext = $formdata->feedback;
+    $from = $USER->firstname . ' ' . $USER->lastname . '<' . $USER->email . '>';
+    $headers = "From: $from\r\n";
+    $headers .= "Content-type: text/html\r\n";
+    $to = 'obeid@cil.rwth-aachen.de, schwager@cil.rwth-aachen.de, heynkes@cil.rwth-aachen.de';
+    $html = <<<EOF
+          <html>
+			<head>
+				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    </head>
+    <body dir='auto'>
+		<div dir='ltr'>$messagetext</div>
+                <br><br>
+                Gesendet von $url
+	</body>
+ </html>
+EOF;
+
+    mail($to, $subject, $html, $headers);
+}
 /**
  * Function takes a moodle timestamp, calculates how much time has since elapsed
  * and returns this information as a string (e.g.: '3 days ago').

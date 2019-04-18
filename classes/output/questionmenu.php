@@ -15,7 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dropdown menu in questionstable on overview tab.
+ * The purpose of this script is to collect the output data for the statistic template and
+ * make it available to the renderer. The data is collected via the statistic model and then processed.
+ * Therefore, class statistic can be seen as a view controller.
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -31,12 +33,6 @@ class questionmenu implements \renderable, \templatable {
     private $label;
     private $buttonclass;
 
-    /**
-     * Constructor of renderable for dropdown menu in questionstable.
-     *
-     * @param int $commentid Id of the question
-     * @param array $urlparams Parameters for the link
-     */
     public function __construct($commentid, $urlparams) {
 
         global $CFG;
@@ -48,7 +44,6 @@ class questionmenu implements \renderable, \templatable {
         $urlparams['action'] = 'forwardquestion';
         $urlparams['fromoverview'] = '1';
         $urlparams['commentid'] = $commentid;
-        $urlparams['sesskey'] = sesskey();
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
         $this->url = $url;

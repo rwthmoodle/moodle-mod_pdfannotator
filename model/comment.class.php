@@ -260,13 +260,6 @@ class pdfannotator_comment {
         $tobedeletedaswell = [];
         $hideannotation = 0;
 
-//        $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
-
-//        if ($wasanswered) { // If the comment was answered, mark it as deleted for a special display.
-//            $params = array("id" => $commentid, "isdeleted" => 1);
-//            $success = $DB->update_record('pdfannotator_comments', $params, $bulk = false);
-//        } else { // If not, just delete it.
-//        //
         if (!$wasanswered) {
             // But first: Check if the predecessor was already marked as deleted, too and if so, delete it completely.
             $sql = "SELECT id, isdeleted, isquestion from {pdfannotator_comments} "
@@ -280,8 +273,7 @@ class pdfannotator_comment {
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
-//                            pdfannotator_annotation::delete($annotationid, $cmid, true);
-                                $hideannotation = 1; //$annotationid;
+                                $hideannotation = 1; // $annotationid;
                         }
                     }
                 } else {
@@ -289,22 +281,12 @@ class pdfannotator_comment {
                 }
             }
 
-            // If the comment is a question and has no answers, delete the annotion.
-//            if ($comment->isquestion) {
-//                pdfannotator_annotation::delete($annotationid, $cmid, true);
-//                $deleteannotation = $annotationid;
-//            }
-
-//            $success = $DB->delete_records('pdfannotator_comments', array("id" => $commentid));
         }
 
         $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
 
-        // Delete votes to the comment.
-//        $DB->delete_records('pdfannotator_votes', array("commentid" => $commentid));
-
         if ($success == 1) {
-            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell]; //, 'deleteannotation' => $deleteannotation];
+            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell]; // , 'deleteannotation' => $deleteannotation];
         } else {
             return ['status' => 'error'];
         }

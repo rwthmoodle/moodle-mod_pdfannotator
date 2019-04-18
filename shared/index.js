@@ -1534,7 +1534,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                             createSubscriptionHandler(comment);
                             createHideHandler(comment);
                             createDeleteHandler(comment);
-                            createSolvedHandler(comment);
+                            createSolvedHandler(comment);                           
                             let pattern = $('#searchPattern').val();
                             if(pattern !== '' && comment.content.search(new RegExp(pattern, "i")) !== -1){
                                 $('#comment_'+comment.uuid).addClass('mark');

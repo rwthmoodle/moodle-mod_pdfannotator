@@ -34,6 +34,96 @@ if ($action === 'overview') {
     // Go to question-overview by default.
     $action = 'overviewquestions';
 }
+
+if ($action === 'forwardquestion') {
+    require_capability('mod/pdfannotator:forwardquestions', $context);
+    require_once($CFG->dirroot . '/mod/pdfannotator/forward_form.php');
+    global $USER;
+
+    $commentid = required_param('commentid', PARAM_INT);
+    $cminfo = pdfannotator_instance::get_cm_info($cm->course);
+    // Make sure user is allowed to see cm with the question. (Might happen if user changes commentid in url).
+    list($insql, $inparams) = $DB->get_in_or_equal(array_keys($cminfo));
+    $sql = "SELECT c.*, a.page, cm.id AS cmid "
+            . "FROM {pdfannotator_comments} c "
+            . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
+            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+            . "JOIN {course_modules} cm ON p.id = cm.instance "
+            . "WHERE c.isdeleted = 0 AND c.id = ? AND cm.id $insql";
+    $params = array_merge([$commentid], $inparams);
+    $comments = $DB->get_records_sql($sql, $params);
+    $error = false;
+    if (!$comments) {
+        $error = true;
+    } else {
+        $comment = $comments[$commentid];
+        if (!$error && $comment->ishidden && !has_capability('mod/pdfannotator:seehiddencomments', $context)) {
+            $error = true;
+        }
+    }
+
+    if ($error) { // An error occured e.g. comment doesn't exist.
+        $info = get_string('error:forwardquestion', 'pdfannotator'); // Display error notification.
+        echo "<span id='subscriptionPanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
+        $action = 'overviewquestions'; // And go back to overview.
+    } else {
+
+        $possiblerecipients = get_enrolled_users($context, 'mod/pdfannotator:getforwardedquestions');
+        $recipientslist = [];
+        foreach ($possiblerecipients as $recipient) {
+            $recipientslist[$recipient->id] = $recipient->firstname . ' ' . $recipient->lastname;
+        }
+
+        $data = new stdClass();
+        $data->course = $cm->course;
+        $data->pdfannotatorid = $cm->instance;
+        $data->pdfname = $cm->name;
+        $data->commentid = $commentid;
+        $data->id = $cm->id; // Course module id.
+        $data->action = 'forwardquestion';
+
+        // Initialise mform and pass on $data-object to it.
+        $mform = new pdfannotator_forward_form(null, ['comment' => $comment, 'recipients' => $recipientslist]);
+        $mform->set_data($data);
+
+        if ($mform->is_cancelled()) { // Form was cancelled.
+            // Go back to overview or document.
+            $fromoverview = optional_param('fromoverview', 0, PARAM_INT);
+            if ($fromoverview) {
+                $action = 'overviewquestions';
+            } else {
+                $action = 'view';
+            }
+        } else if ($data = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
+            $url = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $comment->cmid,
+                    'page' => $comment->page, 'annoid' => $comment->annotationid, 'commid' => $comment->id)))->out();
+
+            $params = new stdClass();
+            $params->sender = $USER->firstname . ' ' . $USER->lastname;
+            $params->questioncontent = $comment->content;
+            $params->message = $data->message;
+            $params->urltoquestion = $url;
+
+            if (isset($data->recipients)) {
+                send_forward_message($data->recipients, $params, $course, $cm, $context);
+            }
+            $fromoverview = optional_param('fromoverview', 0, PARAM_INT);
+            if ($fromoverview) {
+                // If user forwarded question from overview go back to overview.
+                $action = 'overviewquestions';
+            } else {
+                // Else go to document.
+                $action = 'view';
+            }
+
+        } else { // Executed if the form is submitted but the data doesn't validate and the form should be redisplayed
+            // or on the first display of the form.
+            $PAGE->set_title("forward_form");
+            echo $OUTPUT->heading(get_string('titleforwardform', 'pdfannotator'));
+            $mform->display(); // Display form.
+        }
+    }
+}
 /*
  * This section prints a subpage of overview called 'unsolved questions'.
  */
@@ -69,7 +159,7 @@ if ($action === 'overviewquestions') {
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
     } else {
         $urlparams = array('action' => 'overviewquestions', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage, 'questionfilter' => $questionfilter);
-        pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage);
+        pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage, $context);
     }
 }
 /*

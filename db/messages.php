@@ -44,6 +44,15 @@ $messageproviders = array (
     // Notify teacher about a newly reported comment.
     'newreport' => array (
         'capability'  => 'mod/pdfannotator:viewreports' // Teacher capability.
+    ),
+
+    // Notify when receiving a forwarded question.
+    'forwardedquestion' => array (
+        'capability'  => 'mod/pdfannotator:getforwardedquestions',
+        'defaults' => array(
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        )
     )
 
 );

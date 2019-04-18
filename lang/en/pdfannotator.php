@@ -46,7 +46,8 @@ $string['pdfannotator:usetextbox'] = 'Use textbox (even if the option is disable
 $string['pdfannotator:usedrawing'] = 'Use drawing (even if the option is disabled for a PDF-Annotator)';
 $string['pdfannotator:printdocument'] = 'Download the document';
 $string['pdfannotator:printcomments'] = 'Download the comments';
-
+$string['pdfannotator:forwardquestions'] = 'Forward questions';
+$string['pdfannotator:getforwardedquestions'] = 'Receive forwarded questions';
 $string['pdfannotator:hidecomments'] = 'Hide comments for participants';
 $string['pdfannotator:seehiddencomments'] = 'See hidden comments';
 
@@ -148,6 +149,16 @@ $string['correct'] = 'correct';
 $string['comments'] = 'Comments';
 $string['author'] = 'Author';
 $string['guestscantdoanything'] = 'Guests can\'t do anything here.';
+
+$string['forward'] = 'Forward';
+$string['titleforwardform'] = 'Forward question';
+$string['messageforwardform'] = 'Your message to the recipient/s';
+$string['recipientrequired'] = 'Please select recipient/s';
+$string['recipientforwardform'] = 'Forward to';
+$string['recipient'] = 'Recipient/s';
+$string['recipient_help'] = 'To select several persons, hold down "Ctrl"';
+$string['send'] = 'Send';
+
 $string['newanswersavailable'] = 'Recently answered';
 $string['newquestions'] = 'Recently asked';
 $string['read'] = 'Read';
@@ -216,14 +227,16 @@ $string['newstitle'] = 'Just asked';
 $string['messageprovider:newanswer'] = 'When a question you subscribed to was answered';
 $string['messageprovider:newreport'] = 'When a comment was reported';
 $string['messageprovider:newquestion'] = 'When a new question was asked';
+$string['messageprovider:forwardedquestion'] = 'When a question was forwarded to you';
 $string['notificationsubject:newreport'] = 'A comment was reported in {$a}';
 $string['notificationsubject:newanswer'] = 'New answer to subscribed question in {$a}';
 $string['notificationsubject:newquestion'] = 'New question in {$a}';
+$string['notificationsubject:forwardedquestion'] = 'Forwarded question in {$a}';
 $string['reportwassentoff'] = 'The comment has been reported.';
 
 $string['myquestion'] = 'Question';
 $string['mypost'] = 'My post';
-$string['question'] = 'question';
+$string['question'] = 'Question';
 $string['askedby'] = 'By / on';
 $string['answeredby'] = 'By / on';
 $string['by'] = 'by';
@@ -337,6 +350,7 @@ $string['error:show'] = 'An error has occured while showing the element.';
 $string['error:putinrecyclebin'] = 'The item could not be placed in the recycle bin.';
 $string['error:markasread'] = 'The item could not be marked as read.';
 $string['error:markasunread'] = 'The item could not be marked as unread.';
+$string['error:forwardquestion'] = 'An error has occured while forwarding the question.';
 
 $string['document'] = 'Document';
 
@@ -381,6 +395,22 @@ $string['newquestiontext'] = 'A new Questions was added by {$a->answeruser} with
     "{$a->content}"
 
 The question is available under: {$a->urltoanswer}';
+
+$string['forwardedquestionhtml'] = '{$a->sender} forwarded the following question to you: <br /> <br />'
+        . '"{$a->questioncontent}" <br /> <br />'
+        . 'with the message: <br /> <br />'
+        . '"{$a->message}" <br /> <br />'
+        . 'The question is available <a href="{$a->urltoquestion}">here</a>.';
+
+$string['forwardedquestiontext'] = '{$a->sender} hat folgende Frage an sie weitergeleitet:
+
+        "{$a->questioncontent}"
+
+        mit folgender Nachricht:
+
+        "{$a->message}"
+
+        Die Frage ist verfügbar unter: {$a->urltoquestion}';
 
 $string['unsubscribe_notification'] = 'To unsubscribe from notification, please click <a href="{$a}">here</a>.';
 
