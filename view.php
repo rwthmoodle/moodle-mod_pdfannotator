@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Ahmad Obeid and Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Ahmad Obeid, Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require('../../config.php');
@@ -56,7 +57,6 @@ require_capability('mod/pdfannotator:view', $context);
 pdfannotator_view($pdfannotator, $course, $cm, $context);
 
 $PAGE->set_url('/mod/pdfannotator/view.php', array('id' => $cm->id));
-
 
 $fs = get_file_storage();
 $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'content', 0, 'sortorder DESC, id ASC', false);// TODO Not efficient!

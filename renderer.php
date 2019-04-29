@@ -16,7 +16,8 @@
 
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Rabea de Groot and Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -34,45 +35,6 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
     public function render_index($index) {
         return $this->render_from_template('pdfannotator/index', $index->export_for_template($this));
     }
-
-    /**
-     *
-     * @param \templatable $overview
-     * @return type
-     */
-    public function render_overview_page(\templatable $overview) {
-        $data = $overview->export_for_template($this);
-        // 1. Param specifies the template, 2. param the data to pass into it.
-        return $this->render_from_template('mod_pdfannotator/overview', $data);
-    }
-
-    // TODO Obsolete testfunction?
-    public function render_printview(\templatable $printview) {
-        $data = $printview->export_for_template($this);
-        // 1. Param specifies the template, 2. param the data to pass into it.
-        return $this->render_from_template('mod_pdfannotator/printview', $data);
-    }
-
-    /**
-     *
-     * @param \templatable $teacheroverview renderable
-     * @return type
-     */
-    public function render_teacheroverview(\templatable $teacheroverview) {
-        $data = $teacheroverview->export_for_template($this);
-        return $this->render_from_template('mod_pdfannotator/teacheroverview', $data);
-    }
-
-    /**
-     *
-     * @param \templatable $studentoverview
-     * @return type
-     */
-    public function render_studentoverview(\templatable $studentoverview) {
-        $data = $studentoverview->export_for_template($this);
-        return $this->render_from_template('mod_pdfannotator/studentoverview', $data);
-    }
-
     /**
      *
      * @param \templatable $statistic
@@ -81,6 +43,16 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
     public function render_statistic(\templatable $statistic) {
         $data = $statistic->export_for_template($this);
         return $this->render_from_template('mod_pdfannotator/statistic', $data);
+    }
+
+    /**
+     * renders dropdown-actionmenu. Currently used on overview in the categories "answers" and "reports".
+     * @param \templatable $dropdownmenu
+     * @return type
+     */
+    public function render_dropdownmenu(\templatable $dropdownmenu) {
+        $data = $dropdownmenu->export_for_template($this);
+        return $this->render_from_template('mod_pdfannotator/dropdownmenu', $data);
     }
 
     /**
@@ -119,14 +91,8 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
         $o .= $this->output->container_end();
         return $o;
     }
-
-    public function create_seen_link($cm) {
-        $link = "<a href='/mod/cilscheduler/overview.php?id=>$cm->id>"."Link</a>";
-        return $link;
-    }
-
     /**
-     * Construct a tab header in the teacher view.
+     * Construct a tab header.
      *
      * @param moodle_url $baseurl
      * @param string $namekey
@@ -145,58 +111,26 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
         $tab = new tabobject($id, $taburl, $tabname);
         return $tab;
     }
-
     /**
-     * Render the tab header hierarchy in the teacher view.
+     * Render the tab header hierarchy.
      *
-     * @param cilscheduler_instance $cilscheduler the cilscheduler in question
-     * @param moodle_url $baseurl base URL for the tab addresses
-     * @param string $selected the selected tab
-     * @param array $inactive any inactive tabs
-     * @return string rendered tab tree
+     * @param moodle_url $baseurl
+     * @param type $selected
+     * @param type $pdfannotatorname
+     * @param type $context
+     * @param type $inactive
+     * @return type
      */
-    public function pdfannotator_render_tabs(moodle_url $baseurl, $selected = null, $pdfannotatorname, $inactive = null) {
+    public function pdfannotator_render_tabs(moodle_url $baseurl, $selected = null, $pdfannotatorname, $context, $inactive = null) {
+
+        $overviewtab = $this->pdfannotator_create_tab($baseurl, 'overview', 'overview');
 
         $level1 = array(
-            $this->pdfannotator_create_tab($baseurl, 'overview', 'overview'),
+            $overviewtab,
             $this->pdfannotator_create_tab($baseurl, 'document', 'view', $pdfannotatorname),
             $this->pdfannotator_create_tab($baseurl, 'statistic', 'statistic'),
         );
         return $this->tabtree($level1, $selected, $inactive);
-    }
-
-
-    public function render_pdfannotator_conversation_info(pdfannotator_conversation_info $info) {
-        $o = '';
-        $o .= $this->output->container_start('conversationinfotable');
-        $o .= $this->output->box_start('boxaligncenter conversationinfotable');
-
-        $t = new html_table();
-
-        $row = new html_table_row();
-        $cell1 = new html_table_cell('Seite'); // get_string('slotdatetimelabel', 'pdfannotator')
-        $cell2 = new html_table_cell('Frage'); // $info->datetime;
-        $cell3 = new html_table_cell('Antworten');
-        $cell4 = new html_table_cell('Autor');
-        $row->cells = array($cell1, $cell2);
-        $t->data[] = $row;
-
-        $row = new html_table_row();
-        $cell1 = new html_table_cell(get_string('author', 'pdfannotator'));
-        $cell2 = new html_table_cell($info->author);
-        $row->cells = array($cell1, $cell2);
-        $t->data[] = $row;
-
-        $row = new html_table_row();
-        $cell1 = new html_table_cell(get_string('comment', 'pdfannotator'));
-        $cell2 = new html_table_cell($info->content);
-        $row->cells = array($cell1, $cell2);
-        $t->data[] = $row;
-
-        $o .= html_writer::table($t);
-        $o .= $this->output->box_end();
-        $o .= $this->output->container_end();
-        return $o;
     }
 
 }

@@ -63,7 +63,8 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
 
         // Add a filemanager for drag-and-drop file upload.
         // $fileoptions = array('subdirs' => 0, 'maxbytes' => 0, 'areamaxbytes' => 10485760, 'maxfiles' => 1,
-        // 'accepted_types' => '.pdf', 'return_types' => 1 | 2); // FILE_INTERNAL | FILE_EXTERNAL was replaced by 1|2, because moodle doesnt't identify FILE_INTERNAL, FILE_EXTERNAL here. (Why??)
+        // 'accepted_types' => '.pdf', 'return_types' => 1 | 2);
+        // FILE_INTERNAL | FILE_EXTERNAL was replaced by 1|2, because moodle doesnt't identify FILE_INTERNAL, FILE_EXTERNAL here.
         $filemanageroptions = array();
         $filemanageroptions['accepted_types'] = '.pdf';
         $filemanageroptions['maxbytes'] = 0;
@@ -95,6 +96,11 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->setType('useprint', PARAM_BOOL);
         $mform->setDefault('useprint', $config->useprint);
         $mform->addHelpButton('useprint', 'setting_useprint', 'pdfannotator');
+
+        $mform->addElement('advcheckbox', 'useprintcomments', get_string('setting_useprint_comments', 'pdfannotator'), get_string('useprint_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('useprint', PARAM_BOOL);
+        $mform->setDefault('useprint', $config->useprintcomments);
+        $mform->addHelpButton('useprint', 'setting_useprint_comments', 'pdfannotator');
 
         // Add legacy files flag only if used.
         if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {

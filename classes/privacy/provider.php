@@ -13,6 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * @package   mod_pdfannotator
+ * @category  backup
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Anna Heynkes
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace mod_pdfannotator\privacy;
 
@@ -45,7 +52,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      * @param collection $collection
      * @return collection
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
 
         // 1. Indicating that you store content in a Moodle subsystem.
         // 1.1 Files uploaded by users are saved.
@@ -113,7 +120,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      * @param   int           $userid       The user to search.
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : \core_privacy\local\request\contextlist {
+    public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
 
         $contextlist = new \core_privacy\local\request\contextlist();
 

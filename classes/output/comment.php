@@ -20,7 +20,8 @@
  * Therefore, class statistic can be seen as a view controller.
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Friederike Schwager (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -29,24 +30,28 @@ class comment implements \renderable, \templatable {
 
     private $comments = [];
 
-    public function __construct($data, $isteacher, $cm, $context) {
+    public function __construct($data, $cm, $context) {
         global $USER;
 
         if (!is_array($data)) {
             $data = [$data];
         }
-
+        $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
         foreach ($data as $comment) {
+
+            $comment->buttons = [];
 
             $comment->isdeleted = boolval($comment->isdeleted);
             $comment->isquestion = boolval($comment->isquestion);
+            $comment->solved = boolval($comment->solved);
 
             $owner = ($comment->userid == $USER->id);
-            $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
             $comment->wrapperClass = 'chat-message comment-list-item';
             if ($comment->isquestion) {
                 $comment->wrapperClass .= ' questioncomment';
+            } else if ($comment->solved) {
+                $comment->wrapperClass .= ' correct';
             }
             if ($owner) {
                 $comment->wrapperClass .= ' owner';
@@ -81,45 +86,100 @@ class comment implements \renderable, \templatable {
                 }
             }
 
-            if (!isset($comment->type) && $comment->timemodified != $comment->timecreated) {
-                $comment->edited = true;
-            }
-
-            if (!isset($comment->type)) { // Only set for textbox and drawing.
-                if ($comment->isquestion && $comment->issubscribed) {
-                    $comment->subscriptionTitle = get_string('unsubscribeQuestion', 'pdfannotator');
-                    $comment->subscriptionClass = 'icon fa fa-bell-slash fa-fw';
+            if (!empty($comment->ishidden)) {
+                if (has_capability('mod/pdfannotator:seehiddencomments', $context)) {
+                    $comment->content = $comment->content;
+                    $comment->dimmed = 'dimmed_text';
+                    $comment->displayhidden = 1;
+                    $comment->buttons[] = ["attributes" => ["name" => "id", "value" => "hideButton" . $comment->uuid],
+                        "moodleicon" => ["key" => "i/hide", "component" => "core", "title" => get_string('removehidden', 'pdfannotator')],
+                        "text" => get_string('removehidden', 'pdfannotator')];
                 } else {
-                    $comment->subscriptionTitle = get_string('subscribeQuestion', 'pdfannotator');
-                    $comment->subscriptionClass = 'icon fa fa-bell fa-fw';
+                    $comment->visibility = 'anonymous';
+                    $comment->content = '<em>' . get_string('hiddenComment', 'pdfannotator') . '</em>';
+                }
+
+            } else {
+                if (has_capability('mod/pdfannotator:hidecomments', $context)) {
+                    $comment->buttons[] = ["attributes" => ["name" => "id", "value" => "hideButton" . $comment->uuid],
+                        "moodleicon" => ["key" => "i/show", "component" => "core", "title" => get_string('markhidden', 'pdfannotator')],
+                        "text" => get_string('markhidden', 'pdfannotator')];
                 }
             }
+
             if ($comment->isdeleted || isset($comment->type)) {
                 $comment->content = '<em>' . $comment->content . '</em>';
             }
 
             if (!$comment->isdeleted) {
-                if ($owner || $isteacher) { // Delete.
-                    $comment->delete = true;
-                } else if (!isset($comment->type)) { // Report (textbox/drawing can't be reported because of a missing commentid).
+                $deleteany = has_capability('mod/pdfannotator:deleteany', $context);
+                $deleteown = has_capability('mod/pdfannotator:deleteown', $context);
+                $report = has_capability('mod/pdfannotator:report', $context);
+                if ($deleteany || ($deleteown && $owner)) { // Delete.
+                    $comment->buttons[] = ["classes" => "comment-delete-a", "text" => get_string('delete', 'pdfannotator'),
+                        "moodleicon" => ["key" => "delete", "component" => "pdfannotator", "title" => get_string('delete', 'pdfannotator')]];
+                }
+                 // Report (textbox/drawing can't be reported because of a missing commentid).
+                if ($report && !$owner && !isset($comment->type) ) {
                     $comment->report = true;
                     $comment->cm = json_encode($cm);  // Course module object.
                     $comment->cmid = $cm->id;
                 }
+                if (!isset($comment->type) && ($owner || $editanypost)) {
+                    $comment->buttons[] = ["classes" => "comment-edit-a", "attributes" => ["name" => "id", "value" => "editButton" . $comment->uuid],
+                        "moodleicon" => ["key" => "i/edit", "component" => "core", "title" => get_string('edit', 'pdfannotator')],
+                        "text" => get_string('edit', 'pdfannotator')];
+                }
             }
 
-            if (!isset($comment->type) && ($owner || $editanypost)) {
-                $comment->edit = true;
-            }
-            if ( !empty($comment->modifiedby) && ($comment->modifiedby != $comment->userid) )  {
+            if (!empty($comment->modifiedby) && ($comment->modifiedby != $comment->userid) && ($comment->userid != 0)) {
                 $comment->modifiedby = get_string('modifiedby', 'pdfannotator') . pdfannotator_get_username($comment->modifiedby);
             } else {
                 $comment->modifiedby = null;
             }
-            if (!empty($comment->repositioned) && !empty($comment->movedby) && ($comment->movedby != $comment->userid))  {
-                $comment->movedby = get_string('modifiedby', 'pdfannotator') . pdfannotator_get_username($comment->movedby);
-            } else {
-                $comment->movedby = null;
+
+            if ($comment->isquestion || !$comment->isdeleted) {
+                $comment->dropdown = true;
+            }
+
+            if (!isset($comment->type) && $comment->isquestion) { // Only set for textbox and drawing.
+                if (!empty($comment->issubscribed)) {
+                    $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell-slash"],
+                        "text" => get_string('unsubscribeQuestion', 'pdfannotator')];
+                } else {
+                    $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell"],
+                        "text" => get_string('subscribeQuestion', 'pdfannotator')];
+                }
+                // Open/Close.
+                $closequestion = has_capability('mod/pdfannotator:closequestion', $context);
+                $closeanyquestion = has_capability('mod/pdfannotator:closeanyquestion', $context);
+                if (($owner && $closequestion) || $closeanyquestion) {
+                    if ($comment->solved) {
+                        $comment->buttons[] = ["classes" => "comment-solve-a", "faicon" => ["class" => "fa-unlock"],
+                            "text" => get_string('markUnsolved', 'pdfannotator')];
+                    } else {
+                        $comment->buttons[] = ["classes" => "comment-solve-a", "faicon" => ["class" => "fa-lock"],
+                            "text" => get_string('markSolved', 'pdfannotator')];
+                    }
+                }
+            }
+
+            $solve = has_capability('mod/pdfannotator:markcorrectanswer', $context);
+            if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type)) {
+                if ($comment->solved) {
+                    $comment->buttons[] = ["classes" => "comment-solve-a", "text" => get_string('removeCorrect', 'pdfannotator'),
+                        "moodleicon" => ["key" => "i/completion-manual-n", "component" => "core", "title" => get_string('removeCorrect', 'pdfannotator')]];
+                } else {
+                    $comment->buttons[] = ["classes" => "comment-solve-a", "text" => get_string('markCorrect', 'pdfannotator'),
+                        "moodleicon" => ["key" => "i/completion-manual-enabled", "component" => "core", "title" => get_string('markCorrect', 'pdfannotator')]];
+                }
+            }
+            if ($comment->solved) {
+                if ($comment->isquestion) {
+                    $comment->solvedicon = ["classes" => "icon fa fa-lock fa-fw solvedquestionicon", "title" => get_string('questionSolved', 'pdfannotator')];
+                } else if (!$comment->isdeleted) {
+                    $comment->solvedicon = ["classes" => "icon fa fa-check fa-fw correctanswericon", "title" => get_string('answerSolved', 'pdfannotator')];
+                }
             }
             $this->comments[] = $comment;
         }

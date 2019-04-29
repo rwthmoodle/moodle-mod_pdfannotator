@@ -18,7 +18,8 @@
  * The renderables will be replaced by templatables but are still used by the latter.
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -34,7 +35,6 @@ class pdfannotator_comment_info implements renderable {
     public $author;
     public $content;
 
-
     /**
      * Method returns an object with info about a comment the user is about to report.
      * This info is displayed above the report form.
@@ -42,34 +42,24 @@ class pdfannotator_comment_info implements renderable {
      * @param comment $comment
      * @return \pdfannotator_comment_info
      */
-    public static function make_from_comment(pdfannotator_comment $comment) {
+    public static function make_from_comment($comment) {
 
         // Determine author (possibly anonymous).
         if ($comment->visibility === 'public') {
-
-            $authorid = pdfannotator_comment::get_authorid($comment->id);
+            $authorid = $comment->userid;
             $author = pdfannotator_get_username($authorid);
-
         } else {
             $author = get_string('anonymous', 'pdfannotator');
         }
 
         // Create info object.
         $info = new pdfannotator_comment_info();
-        $timestamp = pdfannotator_comment::get_timestamp($comment->id);
+        $timestamp = $comment->timecreated;
         $info->datetime = pdfannotator_get_user_datetime($timestamp);
         $info->author = $author;
         $info->content = $comment->content;
 
         return $info;
-    }
-
-}
-
-class pdfannotator_conversation_info implements renderable {
-
-    public function __construct($dbrecord) {
-
     }
 
 }

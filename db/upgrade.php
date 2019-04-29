@@ -16,7 +16,8 @@
 
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes(see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -439,7 +440,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         }
 
         // Pdfannotator savepoint reached.
-        upgrade_mod_savepoint(true, 2018092400, 'pdfannotator');
+        upgrade_mod_savepoint(true, 2018111602, 'pdfannotator');
     }
 
     if ($oldversion < 2018103000) {
@@ -454,6 +455,21 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018103000, 'pdfannotator');
     }
 
+    if ($oldversion < 2018112203) {
+
+        // Define field solved to be added to pdfannotator_comments.
+        $table = new xmldb_table('pdfannotator_comments');
+        $field = new xmldb_field('solved', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'seen');
+
+        // Conditionally launch add field solved.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2018112203, 'pdfannotator');
+    }
+
     if ($oldversion < 2018111901) {
 
         // Changing the default of field useprint on table pdfannotator to 0.
@@ -464,7 +480,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         if ($dbman->field_exists($table, $field)) {
             $dbman->change_field_default($table, $field);
         }
-    
+
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2018111901, 'pdfannotator');
     }
@@ -497,9 +513,37 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-    
+
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2018112100, 'pdfannotator');
+    }
+
+    if ($oldversion < 2019013000) {
+
+        // Rename field seen on table pdfannotator_comments to NEWNAMEGOESHERE.
+        $table = new xmldb_table('pdfannotator_comments');
+        $field = new xmldb_field('seen', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'isdeleted');
+
+        // Launch rename field seen.
+        $dbman->rename_field($table, $field, 'ishidden');
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2019013000, 'pdfannotator');
+    }
+
+    if ($oldversion < 2019030100) {
+
+        // Define field useprintcomments to be added to pdfannotator.
+        $table = new xmldb_table('pdfannotator');
+        $field = new xmldb_field('useprintcomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'useprint');
+
+        // Conditionally launch add field useprintcomments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2019030100, 'pdfannotator');
     }
 
     return true;

@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Friederike Schwager (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -23,7 +24,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * This class contains functions returning the data for the statistics-tab
- * @author schwager
  */
 class pdfannotator_statistics {
 
@@ -130,37 +130,23 @@ class pdfannotator_statistics {
     }
 
     /**
-     * Returns the data for the (left) table in the statistics-tab.
+     * Returns the data for the tabl in the statistics-tab
      * @return array
      */
-    public function get_tabledata_1() {
+    public function get_tabledata() {
         $ret = [];
 
+        $ret[] = array('row' => array(get_string('questions', 'pdfannotator'), $this->get_comments_annotator('1'), $this->get_comments_course('1')));
+        $ret[] = array('row' => array(get_string('myquestions', 'pdfannotator'), $this->get_comments_annotator('1', true), $this->get_comments_course('1', true)));
+        $ret[] = array('row' => array(get_string('average_questions', 'pdfannotator').'<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="'.get_string('average_help', 'pdfannotator').'" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="'.get_string('entity_helptitle', 'pdfannotator').get_string('average_help', 'pdfannotator').'"></li></a>'
+                    , round($this->get_comments_average_annotator('1'), 2), round($this->get_comments_average_course('1'), 2)));
+        $ret[] = array('row' => array(get_string('answers', 'pdfannotator'), $this->get_comments_annotator('0'), $this->get_comments_course('0')));
+        $ret[] = array('row' => array(get_string('myanswers', 'pdfannotator'), $this->get_comments_annotator('0', true), $this->get_comments_course('0', true)));
+        $ret[] = array('row' => array(get_string('average_answers', 'pdfannotator').'<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="'.get_string('average_help', 'pdfannotator').'" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="'.get_string('entity_helptitle', 'pdfannotator').get_string('average_help', 'pdfannotator').'"></li></a>'
+                    , round($this->get_comments_average_annotator('0'), 2), round($this->get_comments_average_course('0'), 2)));
         if ($this->isteacher) {
-            $ret[] = array('i' => array(get_string('questions', 'pdfannotator'), $this->get_comments_annotator('1'), $this->get_comments_course('1')));
-            $ret[] = array('i' => array(get_string('answers', 'pdfannotator'), $this->get_comments_annotator('0'), $this->get_comments_course('0')));
-            $ret[] = array('i' => array(get_string('myanswers', 'pdfannotator'), $this->get_comments_annotator('0', true), $this->get_comments_course('0', true)));
-            $ret[] = array('i' => array(get_string('reports', 'pdfannotator'), $this->get_reports_annotator(), $this->get_reports_course()));
-        } else {
-            $ret[] = array('i' => array(get_string('questions', 'pdfannotator'), $this->get_comments_annotator('1'),
-                    $this->get_comments_annotator('1', true), round($this->get_comments_average_annotator('1'), 2)));
-            $ret[] = array('i' => array(get_string('answers', 'pdfannotator'), $this->get_comments_annotator('0'),
-                    $this->get_comments_annotator('0', true), round($this->get_comments_average_annotator('0'), 2)));
+            $ret[] = array('row' => array(get_string('reports', 'pdfannotator'), $this->get_reports_annotator(), $this->get_reports_course()));
         }
-        return $ret;
-    }
-
-    /**
-     * Returns the data for the right table in the statistics-tab for students.
-     * @return array
-     */
-    public function get_tabledata_2() {
-        $ret = [];
-
-        $ret[] = array('i' => array(get_string('questions', 'pdfannotator'), $this->get_comments_course('1'),
-                $this->get_comments_course('1', true), round($this->get_comments_average_course('1'), 2)));
-        $ret[] = array('i' => array(get_string('answers', 'pdfannotator'), $this->get_comments_course('0'),
-                $this->get_comments_course('0', true), round($this->get_comments_average_course('0'), 2)));
 
         return $ret;
     }
@@ -172,7 +158,6 @@ class pdfannotator_statistics {
      * @return type
      */
     public function get_chartdata() {
-        global $DB;
 
         $pdfannotators = pdfannotator_instance::get_pdfannotator_instances($this->courseid);
 

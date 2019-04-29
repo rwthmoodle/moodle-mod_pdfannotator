@@ -20,7 +20,8 @@
  * and then processed. Therefore, class teacheroverview can be seen as a view controller.
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  * Description of index
@@ -34,45 +35,17 @@ class index implements renderable, templatable { // Class should be placed elsew
     private $usestudenttextbox;
     private $usestudentdrawing;
     private $useprint;
+    private $useprintcomments;
     private $printurl;
-    private $pdfannotatortextboxvisibility;
-    private $pdfannotatorpenvisibility;
-    private $pdfannotatorprintvisibility;
 
-    public function __construct($pdfannotator, $isallowedforuser, $file) {
+    public function __construct($pdfannotator, $capabilities, $file) {
 
         global $CFG, $USER;
 
-        // If the textbox/drawing is allowed for students, the array should have a single value.
-        $this->usestudenttextbox = array();
-        if ($pdfannotator->use_studenttextbox || $isallowedforuser) {
-            $this->usestudenttextbox = array('use');
-            if (!$pdfannotator->use_studenttextbox) {
-                $this->pdfannotatortextboxvisibility = 'teachersonly';
-            } else {
-                $this->pdfannotatortextboxvisibility = '';
-            }
-        }
-        $this->usestudentdrawing = array();
-        if ($pdfannotator->use_studentdrawing || $isallowedforuser) {
-            $this->usestudentdrawing = array('use');
-            if (!$pdfannotator->use_studentdrawing) {
-                $this->pdfannotatorpenvisibility = 'teachersonly';
-            } else {
-                $this->pdfannotatorpenvisibility = '';
-            }
-        }
-
-        $this->useprint = array();
-        $studentsmayprint = pdfannotator_instance::useprint($pdfannotator->id);
-        if ($studentsmayprint || $isallowedforuser) {
-            $this->useprint = array('use');
-            if (!$studentsmayprint) {
-                $this->pdfannotatorprintvisibility = 'teachersonly';
-            } else {
-                $this->pdfannotatorprintvisibility = '';
-            }
-        }
+        $this->usestudenttextbox = ($pdfannotator->use_studenttextbox || $capabilities->usetextbox);
+        $this->usestudentdrawing = ($pdfannotator->use_studentdrawing || $capabilities->usedrawing);
+        $this->useprint = ($pdfannotator->useprint || $capabilities->useprint);
+        $this->useprintcomments = ($pdfannotator->useprintcomments || $capabilities->useprintcomments);
 
         $contextid = $file->get_contextid();
         $component = $file->get_component();
@@ -94,12 +67,10 @@ class index implements renderable, templatable { // Class should be placed elsew
         $data->pixopenbook = $OUTPUT->image_url('openbook', 'mod_pdfannotator');
         $data->pixsinglefile = $OUTPUT->image_url('/e/new_document');
         $data->useprint = $this->useprint;
+        $data->useprintcomments = $this->useprintcomments;
         $data->printlink = $this->printurl;
         $data->pixprintdoc = $OUTPUT->image_url('download', 'mod_pdfannotator');
         $data->pixprintcomments = $OUTPUT->image_url('print_comments', 'mod_pdfannotator');
-        $data->pdfannotatorprintvisibility = $this->pdfannotatorprintvisibility;
-        $data->pdfannotatortextboxvisibility = $this->pdfannotatortextboxvisibility;
-        $data->pdfannotatorpenvisibility = $this->pdfannotatorpenvisibility;
 
         return $data;
     }

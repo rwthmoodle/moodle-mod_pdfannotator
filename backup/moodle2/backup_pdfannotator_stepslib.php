@@ -25,7 +25,8 @@
  *
  * @package   mod_pdfannotator
  * @category  backup
- * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
@@ -53,7 +54,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
         // 2. Define each element separately.
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
-            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'use_studenttextbox', 'use_studentdrawing', 'timecreated', 'timemodified'));
+            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing', 'timecreated', 'timemodified'));
 
             $annotations = new backup_nested_element('annotations');
             $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid', 'data', 'timecreated', 'timemodified', 'modifiedby'));

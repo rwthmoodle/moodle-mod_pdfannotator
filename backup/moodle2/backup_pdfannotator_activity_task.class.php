@@ -24,7 +24,8 @@
  *
  * @package   mod_pdfannotator
  * @category  backup
- * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;

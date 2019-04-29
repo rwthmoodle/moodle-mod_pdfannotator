@@ -2,94 +2,138 @@
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen, Rabea de Groot and Ahmad Obeid (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
  */
-require(['jquery'], function ($) {
-    $(document).ready(function ()
-    {
-        /**
-         * Function for a fixed Toolbar, if the 
-         * @returns {undefined}
-         */
-        (function () {
-            var top = $('#pdftoolbar').offset().top - parseFloat($('#pdftoolbar').css('marginTop').replace(/auto/, 0));
 
-            var fixedTop = 0;
-            if ($('.fixed-top').length > 0) {
-                fixedTop = $('.fixed-top').outerHeight();
-            } else if ($('.navbar-static-top').length > 0) {
-                fixedTop = $('.navbar-static-top').outerHeight();
-            }
+function addDropdownNavigation(Y, __capabilities, __cmid) {
 
-            var oldTop = $('#pdftoolbar').css('top');
+    // Select the general overview tab.
+    let tabs = document.querySelectorAll('.nav.nav-tabs li a');
+    var overviewtab;
+    for (var tab in tabs) {
+        if (tabs[tab].innerHTML === M.util.get_string('overview', 'pdfannotator')) {
+            overviewtab = tabs[tab];
+            break;
+        }
+    }
+    overviewtab.classList.add('mydropbtn');
 
-            $(window).scroll(function (event) {
-                var y = $(this).scrollTop();
+    // Create a dropdown navigation menu.
+    var dropdown = document.createElement('div');
+    dropdown.id = 'pdfannotator_dropdownnav';
+    dropdown.classList.add('dropdown-content');
 
-                if (y >= top + 1 - fixedTop) {
+    if (__capabilities.viewquestions) {
+        var nav1 = document.createElement('a');
+        var img1 = "<div><span class='media-left'><i class='icon fa fa-unlock fa-fw'></i></span> ";
+        nav1.href = 'view.php?action=overviewquestions&id=' + __cmid;
+        nav1.innerHTML = img1 + "<span class='media-body'>" + M.util.get_string('questionstab', 'pdfannotator') + "</span>";
+        dropdown.appendChild(nav1);
+    }
+    if (__capabilities.viewanswers) {
+        var nav2 = document.createElement('a');
+        var img2 = "<div><span class='media-left'><i class='icon fa fa-envelope fa-fw'></i></span> ";
+        nav2.href = 'view.php?action=overviewanswers&id=' + __cmid;
+        nav2.innerHTML = img2 + "<span class='media-body'>" + M.util.get_string('answerstab', 'pdfannotator') + "</span>";
+        dropdown.appendChild(nav2);
+    }
+    if (__capabilities.viewposts) {
+        var nav3 = document.createElement('a');
+        var img3 = "<div><span class='media-left'><i class='icon fa fa-user fa-fw'></i></span> ";
+        nav3.href = 'view.php?action=overviewownposts&id=' + __cmid;
+        nav3.innerHTML = img3 + "<span class='media-body'>" + M.util.get_string('ownpoststab', 'pdfannotator') + "</span>";
+        dropdown.appendChild(nav3);
+    }
+    if (__capabilities.viewreports) {
+        var nav4 = document.createElement('a');
+        var img4 = "<div><span class='media-left'><i class='icon fa fa-flag fa-fw'></i></span> "; // "<div><span class='media-left'><img src='" + M.util.image_url('flagged', 'pdfannotator') + "'></span> ";
+        nav4.href = 'view.php?action=overviewreports&id=' + __cmid;
+        nav4.innerHTML = img4 + "<span class='media-body'>" + M.util.get_string('reportstab', 'pdfannotator') + "</span>";
+        dropdown.appendChild(nav4);
 
-                    $('#pdftoolbar').addClass('fixtool');
-                    document.getElementById("pdftoolbar").style.top = fixedTop + "px";
-                } else {
-
-                    $('#pdftoolbar').removeClass('fixtool');
-                    document.getElementById("pdftoolbar").style.top = oldTop;
-                }
-            });
-        })();
-
-    });
-});
-
-    function renderMathJax() {
-        var counter = 0;
-        let mathjax = function () {
-            if (typeof (MathJax) !== "undefined") {
-                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
-            } else if (counter < 100) {
-                counter++;
-                setTimeout(mathjax, 100);
-            } else {
-            }
-        };
-        mathjax();
     }
 
+    overviewtab.parentNode.append(dropdown);
+
+    // Add an event listener (for opening the dropdown) to the overview tab.
+    let mouseOverDropdownContent = false;
+    // Hover on overview-tab => show dropdown.
+    overviewtab.addEventListener("mouseover", function () {
+        if (!dropdown.classList.contains('show')) {
+            dropdown.classList.add('show');
+        }
+    });
+
+    // Leaving overview-tab => hide dropdown. But not if hover on dropdown!
+    overviewtab.addEventListener("mouseleave", function () {
+        setTimeout(function () {
+            if (!mouseOverDropdownContent) {
+                $('#pdfannotator_dropdownnav').removeClass('show');
+            }
+        }, 0);
+    });
+
+    $('#pdfannotator_dropdownnav').mouseenter(function () {
+        mouseOverDropdownContent = true;
+    });
+    $('#pdfannotator_dropdownnav').mouseleave(function () {
+        $('#pdfannotator_dropdownnav').removeClass('show');
+        mouseOverDropdownContent = false;
+    });
+
+}
+
+
+
+function renderMathJax() {
+    var counter = 0;
+    let mathjax = function () {
+        if (typeof (MathJax) !== "undefined") {
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+        } else if (counter < 30) {
+            counter++;
+            setTimeout(mathjax, 100);
+        } else {
+        }
+    };
+    mathjax();
+}
+
 function fixCommentForm() {
+    if ($('#comment-list-form').hasClass('fixtool')) {
+        $('#comment-list-form').removeClass('fixtool');
+        $('#comment-list-form').css("width", "");
+        $('#comment-list-form').css("top", "");
+    }
+
+    var top = $('#comment-list-form').offset().top - parseFloat($('#comment-list-form').css('marginTop').replace(/auto/, 0));
+    var fixedTop = $('#pdftoolbar').outerHeight();
+    if ($('.fixed-top').length > 0) {
+        fixedTop += $('.fixed-top').outerHeight();
+    } else if ($('.navbar-static-top').length > 0) {
+        fixedTop += $('.navbar-static-top').outerHeight();
+    }
+    var oldWidth = $('#comment-list-form').css('width');
+
+    fixForm(top, fixedTop, oldWidth);
+
+    $(window).scroll(function (event) {
+        fixForm(top, fixedTop, oldWidth);
+    });
+
+    $(window).resize(function (event) {
+        // Adjust width if form is fixed.
         if ($('#comment-list-form').hasClass('fixtool')) {
             $('#comment-list-form').removeClass('fixtool');
             $('#comment-list-form').css("width", "");
-            $('#comment-list-form').css("top", "");
+            oldWidth = $('#comment-list-form').css('width');
+            document.getElementById("comment-list-form").style.width = oldWidth;
+        } else {
+            oldWidth = $('#comment-list-form').css('width');
         }
-
-        var top = $('#comment-list-form').offset().top - parseFloat($('#comment-list-form').css('marginTop').replace(/auto/, 0));
-        var fixedTop = $('#pdftoolbar').outerHeight();
-        if ($('.fixed-top').length > 0) {
-            fixedTop += $('.fixed-top').outerHeight();
-        } else if ($('.navbar-static-top').length > 0) {
-            fixedTop += $('.navbar-static-top').outerHeight();
-        }
-        var oldWidth = $('#comment-list-form').css('width');
-
+        // Fix form if window was resized so that the scroll event wasn't triggered.
         fixForm(top, fixedTop, oldWidth);
-
-        $(window).scroll(function (event) {
-            fixForm(top, fixedTop, oldWidth);
-        });
-
-        $(window).resize(function (event) {
-            // Adjust width if form is fixed.
-            if ($('#comment-list-form').hasClass('fixtool')) {
-                $('#comment-list-form').removeClass('fixtool');
-                $('#comment-list-form').css("width", "");
-                oldWidth = $('#comment-list-form').css('width');
-                document.getElementById("comment-list-form").style.width = oldWidth;
-            } else {
-                oldWidth = $('#comment-list-form').css('width');
-            }
-            // Fix form if window was resized so that the scroll event wasn't triggered.
-            fixForm(top, fixedTop, oldWidth);
-        });
+    });
 }
 
 function fixForm(top, fixedTop, oldWidth) {
@@ -114,8 +158,8 @@ function closeComment() {
 var oldHeight = -1;
 function makeFullScreen() {
     document.querySelector('body').classList.toggle('fullscreenWrapper');
-    //if it is now in fullscreen, the image should be the collapse fullscreen image
-    //else it should be the fullscreen image
+    // If it is now in fullscreen, the image should be the collapse fullscreen image.
+    // Else it should be the fullscreen image.
     if (document.querySelector('body').classList.contains('fullscreenWrapper')) {
         oldHeight = document.querySelector('#body-wrapper').style.height;
         let img = document.querySelector('img[title="' + M.util.get_string('fullscreen', 'pdfannotator') + '"]');
@@ -134,4 +178,3 @@ function makeFullScreen() {
         document.querySelector('#body-wrapper').style.height = oldHeight;
     }
 }
-;

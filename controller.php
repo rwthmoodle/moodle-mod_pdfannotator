@@ -16,7 +16,8 @@
 
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Anna Heynkes (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
@@ -30,44 +31,298 @@ $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
 /* *********************************************** Display overview page *********************************************** */
 
 if ($action === 'overview') {
+    // Go to question-overview by default.
+    $action = 'overviewquestions';
+}
+/*
+ * This section prints a subpage of overview called 'unsolved questions'.
+ */
+if ($action === 'overviewquestions') {
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/overview.php');
+    global $OUTPUT, $CFG;
 
-    $PAGE->set_title("overview");
+    require_once($CFG->libdir . '/tablelib.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 
-    // 1.1 Display tab navigation.
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name);
 
-    // 1.2 Give javascript (see below) access to the language string repository.
-    $stringman = get_string_manager();
-    $strings = $stringman->load_component_strings('pdfannotator', 'en'); // Method gets the strings of the language files.
-    $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator'); // Method to use the language-strings in javascript.
-    // 1.3 Add the javascript file that determines the dynamic behaviour of the page.
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/overview.js?ver=00002"));
+    $currentpage = optional_param('page', 0, PARAM_INT);
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+    $questionfilter = optional_param('questionfilter', 0, PARAM_INT); // Default 0 means: Display only unsolved/open questions.
 
-    // 1.4 Check user capabilities to view the different categories.
-    // The argument 'false' disregards administrator's magical 'doanything' power.
-    $viewreports = has_capability('mod/pdfannotator:viewreports', $context);
-    $viewanswers = has_capability('mod/pdfannotator:viewanswers', $context);
-    $viewquestions = has_capability('mod/pdfannotator:viewquestions', $context);
-    $viewposts = has_capability('mod/pdfannotator:viewposts', $context);
-    // $viewadministration = has_capability('mod/pdfannotator:viewadministration', $context);
+    $thisannotator = $pdfannotator->id;
+    $thiscourse = $pdfannotator->course;
+    $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
-    $params = array($pdfannotator->id);
-    $PAGE->requires->js_init_call('startOverview', $params, true); // 1. name of JS function, 2. parameters.
-    // 1.5 Create a renderer, let it render the renderable/templatable 'overview' (pass on user capabilities).
-    $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+    pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
+    echo $OUTPUT->heading(get_string('questionstab', 'pdfannotator') . ' ' . $OUTPUT->help_icon('questionstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
 
-    $overview = new overview($pdfannotator->id, $pdfannotator->course, null, $viewreports, $viewanswers, $viewquestions, $viewposts);
-    echo $myrenderer->render_overview_page($overview);
+    $questions = pdfannotator_get_questions($thiscourse, $context, $questionfilter);
+
+    if (empty($questions)) {
+        if ($questionfilter == 1) {
+            $info = get_string('noquestionsclosed_overview', 'pdfannotator');
+        } else if ($questionfilter == 2) {
+            $info = get_string('noquestions_overview', 'pdfannotator');
+        } else {
+            $info = get_string('noquestionsopen_overview', 'pdfannotator');
+        }
+        echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
+    } else {
+        $urlparams = array('action' => 'overviewquestions', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage, 'questionfilter' => $questionfilter);
+        pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage);
+    }
+}
+/*
+ * This section subscribes the user to a particular question and then rerenders the overview table of
+ * all answers.
+ */
+if ($action === 'subscribeQuestion') {
+
+    require_capability('mod/pdfannotator:subscribe', $context);
+
+    global $DB;
+
+    $annotationid = required_param('annotationid', PARAM_INT);
+
+    $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
+
+    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid);
+
+    if (!empty($subscriptionid)) {
+        $info = get_string('successfullySubscribed', 'pdfannotator');
+        echo "<span id='subscriptionPanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
+    }
+
+    $action = 'overviewanswers';
+
+}
+/*
+ * This section unsubscribes the user from a particular question and then rerenders the overview table of
+ * answers to questions to which the user is subscribed.
+ */
+if ($action === 'unsubscribeQuestion') {
+
+    require_capability('mod/pdfannotator:subscribe', $context);
+
+    global $DB;
+
+    $annotationid = required_param('annotationid', PARAM_INT);
+    $answerfilter = optional_param('answerfilter', 1, PARAM_INT);
+
+    $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
+
+    $entrycount = pdfannotator_comment::delete_subscription($annotationid);
+
+    if (!empty($entrycount) && ($answerfilter == 1)) {
+        if ($entrycount == 1) {
+            $info = get_string('successfullyUnsubscribedSingular', 'pdfannotator', $entrycount);
+        } else if ($entrycount == 2) {
+            $info = get_string('successfullyUnsubscribedTwo', 'pdfannotator', $entrycount);
+        } else {
+            $info = get_string('successfullyUnsubscribedPlural', 'pdfannotator', $entrycount);
+        }
+    } else {
+        $info = get_string('successfullyUnsubscribed', 'pdfannotator', $entrycount);
+    }
+    echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
+
+    $action = 'overviewanswers';
+
+}
+/*
+ * This section prints a subpage of overview called 'answers'. It lists all answers to questions the current
+ * user asked or subscribed to.
+ */
+if ($action === 'overviewanswers') {
+
+    require_once($CFG->libdir . '/tablelib.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
+
+    global $CFG, $OUTPUT, $DB;
+
+    $currentpage = optional_param('page', 0, PARAM_INT);
+
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+    $answerfilter = optional_param('answerfilter', 1, PARAM_INT);
+
+    $thisannotator = $pdfannotator->id;
+    $thiscourse = $pdfannotator->course;
+    $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
+
+    pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
+    echo $OUTPUT->heading(get_string('answerstab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('answerstabicon', 'pdfannotator')) . " <span id='pdfannotator-filter'></span>";
+
+    $data = pdfannotator_get_answers_for_this_user($thiscourse, $context, $answerfilter);
+
+    if (empty($data)) {
+        if ($answerfilter == 1) {
+            $info = get_string('noanswerssubscribed', 'pdfannotator');
+        } else {
+            $info = get_string('noanswers', 'pdfannotator');
+        }
+        echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
+    } else {
+        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage, 'answerfilter' => $answerfilter);
+        $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
+        pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter);
+    }
+}
+/*
+ * This section prints a subpage of overview called "My posts".
+ */
+if ($action === 'overviewownposts') {
+
+    require_once($CFG->libdir . '/tablelib.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
+
+    global $CFG, $OUTPUT;
+
+    $currentpage = optional_param('page', 0, PARAM_INT);
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+
+    $thisannotator = $pdfannotator->id;
+    $thiscourse = $pdfannotator->course;
+    $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
+
+    pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
+    echo $OUTPUT->heading(get_string('ownpoststab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('ownpoststabicon', 'mod_pdfannotator'));
+
+    $posts = pdfannotator_get_posts_by_this_user($thiscourse, $context);
+
+    if (empty($posts)) {
+        $info = get_string('nomyposts', 'pdfannotator');
+        echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
+    } else {
+        $urlparams = array('action' => 'overviewownposts', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage);
+        $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
+        pdfannotator_print_this_users_posts($posts, $thiscourse, $url, $currentpage, $itemsperpage);
+    }
+}
+/*
+ * This section marks a report as read and then rerenders the overview table of reports
+ * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
+ */
+if ($action === 'markreportasread') { // XXX Rename key and move it into $action === 'overviewreports'
+
+    require_capability('mod/pdfannotator:viewreports', $context);
+
+    global $DB;
+
+    $reportid = required_param('reportid', PARAM_INT);
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+    $reportfilter = optional_param('reportfilter', 0, PARAM_INT);
+
+    $success = $DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 1), $bulk = false);
+
+    // Give feedback to the user.
+    if ($success) {
+        switch ($reportfilter) {
+            case 0:// Filter is currently set to show read reports only.
+                $info = get_string('successfullymarkedasreadandnolongerdisplayed', 'pdfannotator');
+                break;
+            case 2: // Filter is currently set to show all reports in this course.
+                $info = get_string('successfullymarkedasread', 'pdfannotator');
+                break;
+            default:
+                $info = get_string('successfullymarkedasread', 'pdfannotator');
+        }
+        echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
+
+    } else {
+        $info = get_string('error:markasread', 'pdfannotator');
+        echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-error alert-block fade in' role='alert'>$info</div></span>";
+    }
+
+    $action = 'overviewreports'; // This will do the actual rerendering of the page (see below).
+
+}
+/*
+ * This section marks a report as read and then rerenders the overview table of reports
+ * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
+ */
+if ($action === 'markreportasunread') { // XXX Rename key and move it into $action === 'overviewreports'
+
+    require_capability('mod/pdfannotator:viewreports', $context);
+
+    global $DB;
+
+    $reportid = required_param('reportid', PARAM_INT);
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+    $reportfilter = optional_param('reportfilter', 2, PARAM_INT);
+
+    $success = $DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 0), $bulk = false);
+
+    // Give feedback to the user.
+    if ($success) {
+        switch ($reportfilter) {
+            case 1: // i.e.: Filter is currently set to show unread reports only.
+                $info = get_string('successfullymarkedasunreadandnolongerdisplayed', 'pdfannotator');
+                break;
+            case 2: // i.e.: Filter is currently set to show all reports in this course.
+                $info = get_string('successfullymarkedasunread', 'pdfannotator');
+                break;
+            default:
+                $info = get_string('successfullymarkedasunread', 'pdfannotator');
+        }
+        echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
+
+    } else {
+        $info = get_string('error:markasunread', 'pdfannotator');
+        echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-error alert-block fade in' role='alert'>$info</div></span>";
+    }
+
+    $action = 'overviewreports'; // This will do the actual rerendering of the page (see below).
+
+}
+/*
+ * This section prints a subpage of overview called "Reports" were comments that were reported as inappropriate are listed.
+ */
+if ($action === 'overviewreports') {
+
+    require_once($CFG->libdir . '/tablelib.php');
+    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
+
+    global $CFG, $OUTPUT;
+
+    $currentpage = optional_param('page', 0, PARAM_INT);
+    $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
+    $reportfilter = optional_param('reportfilter', 0, PARAM_INT);
+
+    $thisannotator = $pdfannotator->id;
+    $thiscourse = $pdfannotator->course;
+    $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
+
+    pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
+    echo $OUTPUT->heading(get_string('reportstab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('reportstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
+
+    $reports = pdfannotator_get_reports($thiscourse, $reportfilter);
+
+    if (empty($reports)) {
+        switch ($reportfilter) {
+            case 0:
+                $info = get_string('nounreadreports', 'pdfannotator');
+                break;
+            case 1:
+                $info = get_string('noreadreports', 'pdfannotator');
+                break;
+            case 2:
+                $info = get_string('noreports', 'pdfannotator');
+                break;
+        }
+        echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
+
+    } else {
+        $urlparams = array('action' => 'overviewreports', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage, 'reportfilter' => $reportfilter);
+        $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
+        pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter);
+    }
 }
 
 /* *********************************** Display the pdf in its editor (default action) *************************************** */
 
 if ($action === 'view') { // Default.
     $PAGE->set_title("annotatorview");
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name);
-    // echo $OUTPUT->heading(format_string($pdfannotator->name), 2);
+    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
 
     pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page, $annoid, $commid);
 }
@@ -76,22 +331,30 @@ if ($action === 'view') { // Default.
 
 if ($action === 'statistic') {
 
+    require_capability('mod/pdfannotator:viewstatistics', $context);
+
     require_once($CFG->dirroot . '/mod/pdfannotator/model/statistics.class.php');
     require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/statistics.php');
 
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name);
+    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
     $PAGE->set_title("statisticview");
     echo $OUTPUT->heading(get_string('activities', 'pdfannotator'));
 
-    // Give javascript (see below) access to the language string repository.
+    // Give javascript access to the language string repository.
     $stringman = get_string_manager();
     $strings = $stringman->load_component_strings('pdfannotator', 'en'); // Method gets the strings of the language files.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator'); // Method to use the language-strings in javascript.
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/statistic.js"));
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+    $capabilities = new stdClass();
+    $capabilities->viewquestions = has_capability('mod/pdfannotator:viewquestions', $context);
+    $capabilities->viewanswers = has_capability('mod/pdfannotator:viewanswers', $context);
+    $capabilities->viewposts = has_capability('mod/pdfannotator:viewposts', $context);
+    $capabilities->viewreports = has_capability('mod/pdfannotator:viewreports', $context);
+    $capabilities->viewteacherstatistics = has_capability('mod/pdfannotator:viewteacherstatistics', $context);
 
-    $isteacher = has_capability('mod/pdfannotator:viewreports', $context);
-    echo $myrenderer->render_statistic(new statistics($cm->instance, $course->id, $isteacher)); // Param 'statistics' is a renderable/templatable.
+    echo $myrenderer->render_statistic(new statistics($cm->instance, $course->id, $capabilities, $id));
 }
 
 /* ****************************************** Display form for reporting a comment  ******************************************** */
@@ -100,7 +363,8 @@ if ($action === 'report') {
 
     require_once($CFG->dirroot . '/mod/pdfannotator/reportform.php');
     require_once($CFG->dirroot . '/mod/pdfannotator/model/comment.class.php');
-    require_once($CFG->dirroot . '/mod/pdfannotator/model/report.class.php');
+
+    global $DB;
 
     // Get comment id.
     $commentid = optional_param('commentid', 0, PARAM_INT);
@@ -121,16 +385,16 @@ if ($action === 'report') {
     /* ******************** Form processing and displaying is done here ************************ */
     if ($mform->is_cancelled()) {
         $action = 'view';
-        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name);
+        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
         pdfannotator_display_embed($pdfannotator, $cm, $course, $file);
-    } else if ($report = $mform->get_data()) { // In this case you process validated data. $mform->get_data() returns data posted in form.
-        global $DB, $USER;
+    } else if ($report = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
+        global $USER;
 
         // 1. Notify course manager(s).
-        $recipients = get_enrolled_users($context, 'mod/pdfannotator:administrateuserinput');
+        $recipients = get_enrolled_users($context, 'mod/pdfannotator:viewreports');
         $name = 'newreport';
         $report->reportinguser = fullname($USER);
-        $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overview';
+        $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
         $messagetext = new stdClass();
         $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');
         $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');
@@ -139,11 +403,14 @@ if ($action === 'report') {
             foreach ($recipients as $recipient) {
                 $messageid = pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext);
             }
+            // 2. Notify the reporting user that their report has been sent off (display blue toast box at top of page).
+            \core\notification::info(get_string('reportwassentoff', 'pdfannotator'));
         } catch (Exception $ex) {
-
+            $info = $ex->getMessage();
+            \core\notification::error($info);
         }
 
-        // 2. Save report in db.
+        // 3. Save report in db.
         $record = new stdClass();
         $record->commentid = $report->commentid;
         $record->courseid = $cm->course;
@@ -153,13 +420,13 @@ if ($action === 'report') {
         $record->timecreated = time();
         $record->seen = 0;
 
-        $DB->insert_record('pdfannotator_reports', $record, $returnid = true, $bulk = false);
-
-        // 2. Notify the reporting user that their report has been sent off (display blue toast box at top of page).
-        \core\notification::info(get_string('reportwassentoff', 'pdfannotator'));
+        $reportid = $DB->insert_record('pdfannotator_reports', $record, $returnid = true, $bulk = false);
+        if (empty($reportid)) {
+            \core\notification::error(get_string('error:reportComment', 'pdfannotator'));
+        }
 
         $action = 'view';
-        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name);
+        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
         pdfannotator_display_embed($pdfannotator, $cm, $course, $file);
     } else { // This branch is executed if the form is submitted but the data doesn't validate and the form should be redisplayed
         // or on the first display of the form.
@@ -167,7 +434,7 @@ if ($action === 'report') {
         echo $OUTPUT->heading(get_string('titleforreportcommentform', 'pdfannotator'));
 
         // Get information about the comment to be reported.
-        $comment = new pdfannotator_comment($commentid);
+        $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
         $info = pdfannotator_comment_info::make_from_comment($comment);
 
         // Display it in a table.

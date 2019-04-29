@@ -29,6 +29,9 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/useprint',
             get_string('global_setting_useprint', 'pdfannotator'), get_string('global_setting_useprint_desc', 'pdfannotator'), 0));
 
+    $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/useprintcomments',
+            get_string('global_setting_useprint_comments', 'pdfannotator'), get_string('global_setting_useprint_comments_desc', 'pdfannotator'), 0));
+
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/use_studenttextbox',
             get_string('global_setting_use_studenttextbox', 'pdfannotator'),
             get_string('global_setting_use_studenttextbox_desc', 'pdfannotator'), 0));

@@ -19,7 +19,8 @@
  * produced are defined.
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes(see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Rabea de Groot and Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -27,17 +28,22 @@ defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = array (
 
-    // Notify student that one of her/his questions received a new answer.
+    'newquestion' => array (
+        'capability'  => 'mod/pdfannotator:recievenewquestionnotifications' // All capabilities.
+    ),
+
+    // Concerns answers to questions the student subscribed to.
     'newanswer' => array (
-        'capability'  => 'mod/pdfannotator:viewanswers' // Student capability.
+        'capability'  => 'mod/pdfannotator:viewanswers', // Student capability.
+        'defaults' => array(
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
+        )
     ),
 
     // Notify teacher about a newly reported comment.
     'newreport' => array (
         'capability'  => 'mod/pdfannotator:viewreports' // Teacher capability.
-    ),
-
-    'newquestion' => array (
-        'capability'  => 'mod/pdfannotator:recievenewquestionnotifications' // All capabilities.
     )
+
 );

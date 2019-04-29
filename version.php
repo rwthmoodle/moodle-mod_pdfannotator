@@ -14,19 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Version information for mod/pdfannotator
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes
+ * @copyright 2018 RWTH Aachen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_pdfannotator'; // Full name of the plugin (used for diagnostics).
-$plugin->version   = 2018112200; // The current module version (Date: YYYYMMDDXX).
-$plugin->release  = 'PDF Annotator v1.1 release 1';
+$plugin->version   = 2019042900; // The current module version (Date: YYYYMMDDXX).
+$plugin->release  = 'PDF Annotator v1.2 release 1';
 $plugin->requires  = 2016112900; // Requires this Moodle version.
 $plugin->cron      = 0;          // Period for cron to check this module (secs).

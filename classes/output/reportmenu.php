@@ -26,27 +26,38 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * The purpose of this script is to collect the output data for the template and
- * make it available to the renderer.
- */
-class statistics implements \renderable, \templatable {
+class reportmenu implements \renderable, \templatable {
 
-    private $isteacher;
-    private $tabledata;
+    private $url;
+    private $iconclass;
+    private $label;
 
-    public function __construct($annotatorid, $courseid, $capabilities, $id) {
-        global $USER, $PAGE;
-        $userid = $USER->id;
-        $this->isteacher = $capabilities->viewteacherstatistics;
+    public function __construct($report, $cmid, $currentpage, $itemsperpage, $reportfilter) {
+        global $CFG;
+        if ($report->seen == 0) {
+            $urlparams = array('action' => 'markreportasread');
+            $iconclass = "icon fa fa-eye-slash fa-fw";
+            $label = get_string('markasread', 'pdfannotator');
+        } else {
+            $urlparams = array('action' => 'markreportasunread');
+            $iconclass = "icon fa fa-eye fa-fw";
+            $label = get_string('markasunread', 'pdfannotator');
+        }
+        $urlparams['id'] = $cmid;
+        if ($reportfilter == 2) {
+            $urlparams['page'] = $currentpage;
+        } else {
+            $urlparams['page'] = '0';
+        }
+        $urlparams['reportid'] = $report->reportid;
+        $urlparams['itemsperpage'] = $itemsperpage;
+        $urlparams['reportfilter'] = $reportfilter;
 
-        $statistics = new pdfannotator_statistics($courseid, $annotatorid, $userid, $this->isteacher);
+        $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
-        $this->tabledata = $statistics->get_tabledata();
-
-        $params = $statistics->get_chartdata();
-        $PAGE->requires->js_init_call('addDropdownNavigation', array($capabilities, $id), true);
-        $PAGE->requires->js_init_call('setCharts', $params, true);
+        $this->url = $url;
+        $this->iconclass = $iconclass;
+        $this->label = $label;
     }
 
     /**
@@ -56,11 +67,10 @@ class statistics implements \renderable, \templatable {
      * @return type
      */
     public function export_for_template(\renderer_base $output) {
-
         $data = [];
-        $data['isteacher'] = $this->isteacher;
-        $data['tabledata'] = $this->tabledata;
-
+        $data['url'] = $this->url->out();
+        $data['iconclass'] = $this->iconclass;
+        $data['label'] = $this->label;
         return $data;
     }
 

@@ -3,10 +3,9 @@
  * of the overview pages / templates for both student and teacher
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes (see README.md)
+ * @copyright 2018 onward RWTH Aachen, Rabea de Groot and Anna Heynkes (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 /**
  *
  * @param {type} Y
@@ -14,28 +13,27 @@
  * @param {type} __role
  * @return {undefined}
  */
-function startOverview(Y, __annotatorid) { // Wrapper function that is called by teacher-/studentview controller.
+function startOverview(Y, __annotatorid, __cmid, __capabilities, __action) { // Wrapper function that is called by controller.php
 
     require(['jquery', 'core/templates', 'core/notification'], function ($, templates, notification) {
 
         /************************** 1. Call initialising functions **************************/
 
-        markCurrent();
+        styleTableReset();
 
-        loadLocalStorageSettings();
-        makeCurrentViewNewStandard();
-        setTimespanForDisplayingNewQuestions();
+        hideAlert();
 
-        toggleShowAllShowNone();
-        toggleOpenAndClose();
+        addDropdownNavigation(null, __capabilities, __cmid);
 
-        addEventListenerForHidingReports();
-        addEventListenerForDisplayingReports();
-        addEventListenerForDeletingReports();
+        letUserSelectNumberOfItemsPerPage();
 
-        addEventListenerForHidingAnswers();
-        addEventListenerForDisplayingAnswers();
-        addEventListenerForUnsubscribing();
+        if (__action === 'overviewquestions') {
+            enableFilteringOfQuestions();
+        } else if (__action === 'overviewanswers') {
+            enableFilteringOfAnswers();
+        } else if (__action === 'overviewreports') {
+            enableFilteringOfReports();
+        }
 
         shortenTextOverview();
         renderMathJax();
@@ -43,949 +41,326 @@ function startOverview(Y, __annotatorid) { // Wrapper function that is called by
         /************************** 2. Function definitions **************************/
 
         /**
-         * Helper function for setting icon paths after asynchronous partial page reload
+         * Function reduces the extra white space for the 'reset table' option added after table sort.
          *
-         * @param {type} data
-         * @return {undefined}
+         * @returns {undefined}
          */
-        function setPicturePaths(data) {
-            data.pixcollapsed = M.util.image_url('/t/collapsed');
-            data.pixgotox = M.util.image_url('link_small', 'mod_pdfannotator');
-            data.pixhide = M.util.image_url('/e/accessibility_checker');
-            data.pixdisplay = M.util.image_url('/i/hide');
-            data.pixdelete = M.util.image_url('/t/delete');
-        }
-
-        /**
-         * This function adds the CSS class 'mycurrent' to the current annotator
-         * so that it is highlighted by a different background color from the
-         * other annotators in the course.
-         *
-         * @return {undefined}
-         */
-        function markCurrent() {
-            let headings = document.getElementsByClassName('panel-default');
-            let panel;
-            let id1a = 'answerpanel_' + __annotatorid;
-            let id1b = 'reportpanel_' + __annotatorid;
-            let id2 = 'questionpanel_' + __annotatorid;
-            let id3 = 'postpanel_' + __annotatorid;
-            let id4 = 'hiddenentrypanel_' + __annotatorid;
-            let id5 = 'hiddenreportpanel_' + __annotatorid;
-
-            for (i = 0; i < headings.length; i++) {
-                (function (innerI) {
-                    panel = headings[innerI];
-                    if (panel.id === id1a || panel.id === id1b || panel.id === id2 || panel.id === id3 || panel.id === id4 || panel.id === id5) {
-                        panel.classList.add('mycurrent');
-                    }
-                })(i);
+        function styleTableReset() {
+            var resetlink = document.getElementsByClassName('resettable mdl-right')[0];
+            var filtercontainer = document.getElementById('pdfannotator-filter');
+            if ( (typeof resetlink != 'undefined') && (typeof filtercontainer != 'undefined')) {
+                $(resetlink).insertAfter(filtercontainer);
             }
         }
         /**
-         * Function opens or collapses all categories and sets the timespan for
-         * displaying "new" questions
+         * Function removes residual info boxes from the top of the page (if present, e.g. after unsubscribing).
          *
-         * (according to the user's local storage settings)
-         *
-         * @return {undefined}
+         * @returns {undefined}
          */
-        function loadLocalStorageSettings() {
-            if (localStorage !== "undefined") {
-
-                for (let i = 0; i <= 5; i++) {
-                    (function (innerI) {
-
-                        let id = 'accordion' + innerI;
-
-                        let container = document.getElementById(id);
-
-                        if (container) {
-                            let item = "collapseCategory" + innerI;
-
-                            if (localStorage.getItem(item) === 'true') {
-                                if (!container.classList.contains('collapse')) {
-                                    container.classList.add('collapse');
-                                }
-                                if (container.classList.contains('in')) {
-                                    container.classList.remove('in');
-                                }
-                                if (container.classList.contains('show')) {
-                                    container.classList.remove('show');
-                                }
-                            }
-
-                            if (localStorage.getItem(item) === 'false') {
-                                if (container.classList.contains('collapse') && !(container.classList.contains('in') && !(container.classList.contains('show')))) {
-                                    container.classList.remove('collapse');
-                                }
-                            }
-                        }
-                    })(i);
-                }
-                // Load user preferences concerning new questions time period.
-                var usernewsspan = localStorage.getItem('pdfannotatornewsspan');
-                if (usernewsspan != null) {
-                    var id = 'setNewsspan' + usernewsspan;
-                    document.getElementById(id).selected = "true";
-
-                    if (usernewsspan != 3) { // 3 is selected per default.
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": __annotatorid, "newsspan": usernewsspan, "action": 'setNewsspan', sesskey: M.cfg.sesskey}
-                        }).then(function (data) {
-                            data = JSON.parse(data);
-                            if (data.status === "success") {
-                                (function (templates, data) {
-                                    setPicturePaths(data);
-                                    templates.render('mod_pdfannotator/overview_new_questions', data)
-                                            .then(function (html, js) {
-                                                templates.replaceNodeContents('#accordion2', html, js);
-                                                toggleOpenAndClose();
-                                                markCurrent();
-                                                document.getElementById('count2').innerHTML = '(' + (data.count2) + ')';
-                                                shortenTextOverview();
-                                                renderMathJax();
-                                            }); // Add a catch.
-                                })(templates, data.newdata);
-                            }
-                        });
+        function hideAlert() {
+            setTimeout(function () {
+                let notificationpanel = document.getElementById("pdfannotator_notificationpanel");
+                if (notificationpanel instanceof Object) {
+                    while (notificationpanel.hasChildNodes()) {
+                        notificationpanel.removeChild(notificationpanel.firstChild);
                     }
                 }
-            }
+            }, 5000);
         }
-        function setTimespanForDisplayingNewQuestions() {
-            require(['core/notification'], function (notification) {
-                let time = document.getElementById('setNewsspan');
-                time.addEventListener("change", function () {
-                    var t = time.value;
-                    // 1. Show change (rerender partial template "overview_new_questions").
-                    return $.ajax({
-                        type: "POST",
-                        url: "action.php",
-                        data: {"documentId": __annotatorid, "newsspan": t, "action": 'setNewsspan', sesskey: M.cfg.sesskey}
-                    }).then(function (data) {
-                        data = JSON.parse(data);
-
-                        if (data.status === "success") {
-                            (function (templates, data) {
-                                setPicturePaths(data);
-                                templates.render('mod_pdfannotator/overview_new_questions', data)
-                                        .then(function (html, js) {
-                                            templates.replaceNodeContents('#accordion2', html, js);
-                                            toggleOpenAndClose();
-                                            markCurrent(); // Former parameters: null, data.openannotator
-                                            document.getElementById('count2').innerHTML = '(' + (data.count2) + ')';
-                                            shortenTextOverview();
-                                                renderMathJax();
-                                        }); // Add a catch.
-                            })(templates, data.newdata);
-                        } else {
-                            console.error(M.util.get_string('timecouldnotbeset', 'pdfannotator'));
-                        }
-
-                        // 2. Save change.
-                        if (localStorage !== "undefined") {
-                            localStorage.setItem('pdfannotatornewsspan', t);
-                            notification.addNotification({
-                                message: M.util.get_string('timewasset', 'pdfannotator'),
-                                type: "success"
-                            });
-                        } else {
-                            notification.addNotification({
-                                message: M.util.get_string('timecouldnotbeset', 'pdfannotator'),
-                                type: "error"
-                            });
-                        }
-                        setTimeout(function () {
-                            let notificationpanel = document.getElementById("user-notifications");
-                            while (notificationpanel.hasChildNodes()) {
-                                notificationpanel.removeChild(notificationpanel.firstChild);
-                            }
-                        }, 5000);
-                    });
-                });
-            });
-        }
-        /**
-         * Function adds the event listener to the 'saveOverviewConfig' button.
-         * Onclick, the current configuration of opened and closed categories is
-         * stored in the browser's local storage
+        /**This function adds a select option for choosing the number of tablerows to be displayed
+         * per page.
          *
-         * @return {undefined}
+         * @returns {undefined}
          */
-        function makeCurrentViewNewStandard() {
-            require(['core/notification'], function (notification) {
-                let button = document.getElementById('saveConfig');
-                button.addEventListener("click", function () {
-                    if (localStorage !== "undefined") {
-                        for (let i = 0; i <= 5; i++) {
-                            (function (innerI) {
-                                let id = 'accordion' + innerI;
-                                let container = document.getElementById(id);
-                                if (container !== null) {
-                                    let item = "collapseCategory" + innerI;
-                                    if (container.classList.contains('collapse') && (!container.classList.contains('in')) && (!container.classList.contains('show'))) {
-                                        localStorage.setItem(item, 'true');
-                                    } else {
-                                        localStorage.setItem(item, 'false');
-                                    }
-                                }
+        function letUserSelectNumberOfItemsPerPage() {
 
-                            })(i);
-                        }
-                        notification.addNotification({
-                            message: M.util.get_string('OverviewConfigSaved', 'pdfannotator'),
-                            type: "success"
-                        });
+            // 1. Create a selection element.
+            var itemsPerPage = document.createElement("SELECT");
+            itemsPerPage.setAttribute("id", "itemsPerPage");
+            itemsPerPage.classList.add('custom-select');
 
+            let option0 = document.createElement("OPTION");
+            option0.value = 5;
+            option0.text = 5;
+
+            let option1 = document.createElement("OPTION");
+            option1.value = 10;
+            option1.text = 10;
+
+            let option2 = document.createElement("OPTION");
+            option2.value = -1;
+            option2.text = M.util.get_string('all', 'pdfannotator');
+
+            // 2. Set current choice.
+            var query = window.location.search;
+            var pos = query.indexOf('&itemsperpage=');
+            if ((pos !== null) && (pos != -1)) {
+
+                let pastchoice = query.slice(pos + 14, pos + 16);
+                let str = pastchoice.split('&');
+                pastchoice = str[0];
+
+                if (pastchoice === '5') {
+                    option0.selected = true;
+                } else if (pastchoice === '10') {
+                    option1.selected = true;
+                } else {
+                    option2.selected = true;
+                }
+            } else {
+                option0.selected = true; // Default.
+            }
+
+            // 3. Add options.
+            itemsPerPage.add(option0);
+            itemsPerPage.add(option1);
+            itemsPerPage.add(option2);
+
+            // 4. Add a label.
+            var label = document.createElement("LABEL");
+            var text = document.createTextNode(M.util.get_string('itemsperpage', 'pdfannotator'));
+            label.setAttribute("for", "itemsPerPage");
+            label.appendChild(text);
+
+            // 5. Wrap it.
+            var wrapper = document.createElement("DIV");
+            wrapper.id = 'itemsperpagewrapper';
+            wrapper.append(itemsPerPage);
+            wrapper.insertBefore(label,itemsPerPage);
+
+            // 6. Attach the wrapper to the pagination navigation (if present).
+            var pagenav = document.getElementsByClassName('pagination-centered');
+            if ((pagenav !== null) && (pagenav.length > 0)) {
+                pagenav[1].parentNode.appendChild(wrapper);
+
+            } else if ((pos !== null) && (pos != -1)) {
+                var table = document.getElementsByClassName('flexible')[0];
+                $(wrapper).insertAfter(table);
+
+            } else {
+                return;
+            }
+
+            // 7. Add functionality to the selection element.
+            itemsPerPage.onchange = function () {
+                var select = this;
+                select = select.options[select.selectedIndex];
+                select.selected = true;
+                var oldpath = window.location.pathname + window.location.search;
+                var newurl = '';
+                if (oldpath.includes('itemsperpage')) {
+                    let activepage = document.getElementsByClassName("page-item active");
+                    if ((typeof(activepage) !== 'undefined') && (activepage !== null) && ( (typeof(activepage.nextSibling) == 'undefined') || (activepage.nextSibling == null) ) && (select.value == 10)) {
+                        let pos2 = query.indexOf('&page=');
+                        newurl = window.location.pathname + query.slice(0, pos2) + '&page=0' + '&itemsperpage=' + select.value;
                     } else {
-                        notification.addNotification({
-                            message: M.util.get_string('OverviewConfigCouldNotBeSaved', 'pdfannotator'),
-                            type: "error"
-                        });
+                        newurl = window.location.pathname + query.slice(0, pos) + '&itemsperpage=' + select.value;
                     }
-                    setTimeout(function () {
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        }
-                    }, 3000);
-                });
-            });
-        }
-        /**
-         * Function initialises "show/collapse all"-button with a click-event-listener
-         * for toggling between collapsing and decollapsing all categories on the overview page
-         *
-         * @return {undefined}
-         */
-        function toggleShowAllShowNone() {
-            let button = document.getElementById('openAll');
-            button.addEventListener("click", function (e) {
 
-                let doclose = false;
-                if (e.target.innerHTML === M.util.get_string('closeAll', 'pdfannotator')) {
-                    doclose = true;
+                } else {
+                    newurl = oldpath + '&itemsperpage=' + select.value;
                 }
+                if (oldpath.includes('answerfilter')) {
+                    var answerfilter = document.getElementById('answerfilter');
+                    answerfilter = answerfilter.options[answerfilter.selectedIndex];
+                    answerfilter.selected = true;
+                    newurl += '&answerfilter=' + answerfilter.value;
+                    newurl = newurl.replace('subscribeQuestion', 'overviewanswers');
+                    newurl = newurl.replace('unsubscribeQuestion', 'overviewanswers');
 
-                for (let i = 0; i <= 5; i++) {
-                    (function (innerI) {
-                        let id = 'accordion' + innerI;
-                        let container = document.getElementById(id);
-                        if (container !== null) {
-                            if (doclose === false && container.classList.contains('collapse') && (!container.classList.contains('in')) && (!container.classList.contains('show'))) {
-                                container.classList.remove('collapse');
-                                container.style.removeProperty("height");
-                                // if (localStorage !== "undefined") { // Check for browser support.
-                                     // localStorage.setItem('collapseoverview', 'false');
-                                // }
-                                e.target.innerHTML = M.util.get_string('closeAll', 'pdfannotator');
-                            }
-                            if (doclose === true && (!container.classList.contains('collapse') || container.classList.contains('in') || container.classList.contains('show'))) {
-                                if (!container.classList.contains('collapse')) {
-                                    container.classList.add('collapse');
-                                }
-                                if (container.classList.contains('in')) {
-                                    container.classList.remove('in');
-                                }
-                                if (container.classList.contains('show')) {
-                                    container.classList.remove('show');
-                                }
-                                // if (localStorage !== "undefined") {
-                                  // localStorage.setItem('collapseoverview', 'true');
-                                // }
-                                e.target.innerHTML = M.util.get_string('openAll', 'pdfannotator');
-                            }
-                        }
+                } else if (oldpath.includes('reportfilter')) {
+                    var reportfilter = document.getElementById('reportfilter');
+                    reportfilter = reportfilter.options[reportfilter.selectedIndex];
+                    reportfilter.selected = true;
+                    newurl += '&reportfilter=' + reportfilter.value;
+                    newurl = newurl.replace('markreportasread', 'overviewreports');
+                    newurl = newurl.replace('markreportasunread', 'overviewreports');
 
-                    })(i);
+                } else if (oldpath.includes('questionfilter')) {
+                    var questionfilter = document.getElementById('questionfilter');
+                    questionfilter = questionfilter.options[questionfilter.selectedIndex];
+                    questionfilter.selected = true;
+                    newurl += '&questionfilter=' + questionfilter.value;
                 }
-            });
+                window.location.href = newurl;
+            };
+
         }
-        /**
-         * Function enables the accordion behaviour
-         *
-         * @return {undefined}
-         */
-        function toggleOpenAndClose() {
 
-            $(document).ready(function () {
+        function enableFilteringOfQuestions() {
 
-                $('.panel-default').each(function (index, elem) {
-                    if (elem.classList.contains('open')) {
-                        elem.classList.remove('open');
-                    }
-                });
+            var query = window.location.search;
 
-                $('.annotator').click(function (e) {
+            // 1. Create a selection element.
+            var filter = document.createElement("SELECT");
+            filter.setAttribute("id", "questionfilter");
+            filter.classList.add('custom-select');
 
-                    // 1. Get the sourrunding panel.
+            let openquestions = document.createElement("OPTION");
+            openquestions.value = 0;
+            openquestions.text = M.util.get_string('openquestions', 'pdfannotator');
 
-                    let panel_id = -1;
-                    let annoid = -1;
-                    let dropdown = -1;
+            let closedquestions = document.createElement("OPTION");
+            closedquestions.value = 1;
+            closedquestions.text = M.util.get_string('closedquestions', 'pdfannotator');
 
-                    // 1.1 a Category: Answers for this user in this course.
+            let allquestions = document.createElement("OPTION");
+            allquestions.value = 2;
+            allquestions.text = M.util.get_string('allquestions', 'pdfannotator');
 
-                    if (e.target.classList.contains('answerlink')) {
-                        dropdown = 1;
-                        annoid = e.target.id.split('_')[1];
-                        panel_id = 'answerpanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('answerlink')) {
-                        dropdown = 1;
-                        annoid = e.target.parentNode.id.split('_')[1];
-                        panel_id = 'answerpanel_' + annoid;
-                    }
-
-                    // 1.1 b Category: Reported comments in this course.
-
-                    if (e.target.classList.contains('reportlink')) {
-                        dropdown = 0; // Has been 1.
-                        annoid = e.target.id.slice(12);
-                        panel_id = 'reportpanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('reportlink')) {
-                        dropdown = 0; // Has been 1.
-                        annoid = e.target.parentNode.id.slice(12);
-                        panel_id = 'reportpanel_' + annoid;
-                    }
-
-                    // 1.2 Category: New questions.
-
-                    if (e.target.classList.contains('questionlink')) {
-                        dropdown = 2;
-                        annoid = e.target.id.slice(13);
-                        panel_id = 'questionpanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('questionlink')) {
-                        dropdown = 2;
-                        annoid = e.target.parentNode.id.slice(13);
-                        panel_id = 'questionpanel_' + annoid;
-                    }
-
-                    // 1.3 Category: My posts.
-
-                    if (e.target.classList.contains('postlink')) {
-                        dropdown = 3;
-                        annoid = e.target.id.slice(9);
-                        panel_id = 'postpanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('postlink')) {
-                        dropdown = 3;
-                        annoid = e.target.parentNode.id.slice(9);
-                        panel_id = 'postpanel_' + annoid;
-                    }
-
-                    // 1.4 Category: Administrate hidden entries/answers (display again or delete permanently).
-
-                    if (e.target.classList.contains('hiddenentrylink')) {
-                        dropdown = 4;
-                        annoid = e.target.id.slice(16);
-                        panel_id = 'hiddenentrypanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('hiddenentrylink')) {
-                        dropdown = 4;
-                        annoid = e.target.parentNode.id.slice(16);
-                        panel_id = 'hiddenentrypanel_' + annoid;
-                    }
-
-                    // 1.5 Category: Administrate hidden reports (display again or delete permanently).
-
-                    if (e.target.classList.contains('hiddenreportlink')) {
-                        dropdown = 5;
-                        annoid = e.target.id.slice(17);
-                        panel_id = 'hiddenreportpanel_' + annoid;
-
-                    } else if (e.target.parentNode.classList.contains('hiddenreportlink')) {
-                        dropdown = 5;
-                        annoid = e.target.parentNode.id.slice(17);
-                        panel_id = 'hiddenreportpanel_' + annoid;
-                    }
-
-                    // 1. For all:
-
-                    let panel = document.getElementById(panel_id);
-                    let iconid = 'dropdown' + dropdown + '_' + annoid;
-                    let icon = document.getElementById(iconid);
-
-                    // 2. Add or remove the CSS class 'open' and toggle the dropdown icon.
-
-                    if ($(panel).hasClass('open')) {
-                        panel.classList.remove('open');
-                        icon.src = M.util.image_url('/t/collapsed'); // '/moodle/pix/t/collapsed.png';
-
-                    } else {
-
-                        // Mark any open elements as closed.
-                        if ($('.panel-default.open')) {
-                            $('.panel-default.open').each(function (index, elem) {
-                                elem.classList.remove('open');
-                            });
-                        }
-                        // Toggle the dropdown icon back to collapsed...
-                        if ($('dropdown_image')) {
-                            $('.dropdown_image').each(function (index, elem) {
-                                elem.src = M.util.image_url('/t/collapsed'); // '/moodle/pix/t/collapsed.png';
-                            });
-
-                        }
-                        // And then mark this element as open.
-                        panel.classList.add('open');
-                        icon.src = M.util.image_url('/t/dropdown'); // '/moodle/pix/t/dropdown.png';
-                    }
-
-                });
-
-            });
-        }
-        /**
-         * Mark a report as seen and hide it henceforth when user clicks hide icon (eye)
-         *
-         * @return {undefined}
-         */
-        function addEventListenerForHidingReports() {
-
-            var hide = document.getElementsByClassName("hidereport");
-
-            for (i = 0; i < hide.length; i++) {
-                (function (innerI) {
-                    hide[innerI].addEventListener("click", function () {
-                        
-                        var annotatorid = this.getAttribute("data-annotator"); // this = event.target.parentNode
-                        var openannotator = __annotatorid;
-
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": annotatorid, "reportid": this.id, "openannotator": openannotator, "action": 'markReportAsSeen', sesskey: M.cfg.sesskey}
-                        }).then(function (data) {
-
-                            data = JSON.parse(data);
-
-                            if (data.status === "success") {
-
-                                // 1. Make the report disappear in the 'reported comments' category.
-                                var id = 'report' + data.reportid;
-                                var report = document.getElementById(id);
-                                if (report !== null) {
-                                    report.parentNode.removeChild(report);
-                                    // report.style.setProperty('display', 'none', 'important');
-                                }
-
-                                id = 'reportcount' + data.pdfannotatorid;
-                                var reportcount = document.getElementById(id).innerHTML;
-                                reportcount = reportcount.slice(1, reportcount.length - 1);
-                                var newreportcount = reportcount - 1;
-                                if (newreportcount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator?
-                                    document.getElementById(id).innerHTML = '(' + (newreportcount) + ')';
-
-                                } else { // No longer show the annotator.
-                                    id = 'reportpanel_' + data.pdfannotatorid;
-                                    var reportpanel = document.getElementById(id);
-                                    if (reportpanel !== null) {
-                                        reportpanel.style.setProperty('display', 'none', 'important');
-                                    }
-                                }
-                                // Adjust global report count.
-                                var globalReportCount = document.getElementById('count0').innerHTML;
-                                globalReportCount = globalReportCount.slice(1, globalReportCount.length - 1);
-                                globalReportCount--;
-                                document.getElementById('count0').innerHTML = '(' + (globalReportCount) + ')';
-
-                                // Adjust global administration count.
-                                var globalAdminCount = document.getElementById('count5').innerHTML;
-                                globalAdminCount = globalAdminCount.slice(1, globalAdminCount.length - 1);
-                                globalAdminCount++;
-                                document.getElementById('count5').innerHTML = '(' + (globalAdminCount) + ')';
-
-                                // 2. Make the same report appear in the 'administrate' category by rerendering the corresponding template.
-
-                                (function (templates, data) {
-                                    setPicturePaths(data);
-                                    templates.render('mod_pdfannotator/overview_hidden_reports', data)
-                                            .then(function (html, js) {
-                                                templates.replaceNodeContents('#accordion5', html, js);
-                                                addEventListenerForDeletingReports(2);
-                                                addEventListenerForDisplayingReports();
-                                                toggleOpenAndClose();
-                                                markCurrent(); // Former parameters: null, data.openannotator
-                                                shortenTextOverview();
-                                                renderMathJax();
-                                            }); // Add a catch.
-                                })(templates, data.newdata);
-
-                            } else {
-
-                                console.error(M.util.get_string('error:hide', 'pdfannotator'));
-                            }
-
-                        });
-
-                    });
-                })(i);
+            // 2. Set current choice.
+            var filtername = 'questionfilter=';
+            var pos = query.indexOf(filtername);
+            if (pos !== null && pos != -1) {
+                let pastchoice = query.slice(pos + filtername.length, pos + filtername.length + 1);
+                if (pastchoice === '0') {
+                    openquestions.selected = true;
+                } else if (pastchoice === '1') {
+                    closedquestions.selected = true;
+                } else {
+                    allquestions.selected = true;
+                }
+            } else {
+                openquestions.selected = true; // Default.
             }
+
+            // 3. Add options.
+            filter.add(openquestions);
+            filter.add(closedquestions);
+            filter.add(allquestions);
+
+            // 4. Place filter next to the headline.
+            var container = document.getElementById('pdfannotator-filter');
+            container.appendChild(filter);
+
+            // 5. Add functionality to the selection element.
+            addFilterEventlistener(filter, filtername, query, pos);
+
+        }
+
+        function enableFilteringOfAnswers() {
+
+            var query = window.location.search;
+
+            // 1. Create a selection element.
+            var filter = document.createElement("SELECT");
+            filter.setAttribute("id", "answerfilter");
+            filter.classList.add('custom-select');
+
+            let option0 = document.createElement("OPTION");
+            option0.value = 0;
+            option0.text = M.util.get_string('allanswers', 'pdfannotator');
+
+            let option1 = document.createElement("OPTION");
+            option1.value = 1;
+            option1.text = M.util.get_string('subscribedanswers', 'pdfannotator');
+
+            // 2. Set current choice.
+            var filtername = 'answerfilter=';
+            var pos = query.indexOf(filtername);
+            if (pos !== null && pos != -1) {
+                let pastchoice = query.slice(pos + filtername.length, pos + filtername.length + 1);
+                if (pastchoice === '0') {
+                    option0.selected = true;
+                } else {
+                    option1.selected = true;
+                }
+            } else {
+                option1.selected = true; // Default.
+            }
+
+            // 3. Add options.
+            filter.add(option0);
+            filter.add(option1);
+
+            // 4. Place filter next to the headline.
+            var container = document.getElementById('pdfannotator-filter');
+            container.appendChild(filter);
+
+            // 5. Add functionality to the selection element.
+            addFilterEventlistener(filter, filtername, query, pos);
 
         }
         /**
-         * Mark an answer as seen and hide it henceforth when student user clicks hide icon (eye)
+         * This function adds a select option. Users can choose to see all reports,
+         * only unseen reports or only seen reports.
          *
-         * @return {undefined}
+         * @returns {undefined}
          */
-        function addEventListenerForHidingAnswers() {
+        function enableFilteringOfReports() {
 
-            var hide = document.getElementsByClassName("hideanswer");
+            var query = window.location.search;
 
-            for (i = 0; i < hide.length; i++) {
-                (function (innerI) {
-                    hide[innerI].addEventListener("click", function () {
-                        var annotatorid = this.getAttribute("data-annotator");
-                        var openannotator = __annotatorid;
+            // 1. Create a selection element.
+            var filter = document.createElement("SELECT");
+            filter.setAttribute("id", "reportfilter");
+            filter.classList.add('custom-select');
 
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": annotatorid, "answerid": hide[innerI].id, "openannotator": openannotator, "action": 'markAnswerAsSeen', sesskey: M.cfg.sesskey}
-                        }).then(function (data) {
+            let option0 = document.createElement("OPTION");
+            option0.value = 2;
+            option0.text = M.util.get_string('allreports', 'pdfannotator');
 
-                            data = JSON.parse(data);
+            let option1 = document.createElement("OPTION");
+            option1.value = 0;
+            option1.text = M.util.get_string('unseenreports', 'pdfannotator');
 
-                            if (data.status === "success") {
+            let option2 = document.createElement("OPTION");
+            option2.value = 1;
+            option2.text = M.util.get_string('seenreports', 'pdfannotator');
 
-                                // 1. Make the answer disappear in the 'answer' category.
-                                var id = 'answer' + data.answerid;
-                                var answer = document.getElementById(id);
-                                if (answer !== null) {
-                                    answer.style.setProperty('display', 'none', 'important');
-                                }
-
-                                id = 'answercount' + data.pdfannotatorid; // TODO!
-                                var answercount = document.getElementById(id).innerHTML;
-                                answercount = answercount.slice(1, answercount.length - 1);
-                                var newanswercount = answercount - 1;
-
-                                if (newanswercount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator?
-                                    document.getElementById(id).innerHTML = '(' + (newanswercount) + ')';
-
-                                } else { // No longer show the annotator.
-                                    id = 'answerpanel_' + data.pdfannotatorid;
-                                    var answerpanel = document.getElementById(id);
-                                    if (answerpanel !== null) {
-                                        answerpanel.style.setProperty('display', 'none', 'important');
-                                    }
-                                }
-
-                                // 2. Make the same answer appear in the 'administrate' category by rerendering the corresponding template.
-                                (function (templates, data) {
-                                    setPicturePaths(data);
-                                    templates.render('mod_pdfannotator/overview_administrate_entries', data)
-                                            .then(function (html, js) {
-                                                templates.replaceNodeContents('#accordion4', html, js);
-                                                // addEventListenerForDelete();
-                                                addEventListenerForDisplayingAnswers();
-                                                toggleOpenAndClose();
-                                                markCurrent(); // Former parameters: null, data.openannotator
-                                                shortenTextOverview();
-                                                renderMathJax();
-                                            }); // Add a catch!
-                                })(templates, data.newdata);
-
-                                // Adjust global answer count.
-                                var globalAnswerCount = document.getElementById('count1').innerHTML;
-                                globalAnswerCount = globalAnswerCount.slice(1, globalAnswerCount.length - 1);
-                                globalAnswerCount--;
-                                document.getElementById('count1').innerHTML = '(' + (globalAnswerCount) + ')';
-
-                                // Adjust global administration count.
-                                var globalAdminCount = document.getElementById('count4').innerHTML;
-                                globalAdminCount = globalAdminCount.slice(1, globalAdminCount.length - 1);
-                                globalAdminCount++;
-                                document.getElementById('count4').innerHTML = '(' + (globalAdminCount) + ')';
-
-                            } else {
-                                console.error(M.util.get_string('error:hide', 'pdfannotator'));
-                            }
-
-                        });
-
-                    });
-                })(i);
+            // 2. Set current choice.
+            var filtername = 'reportfilter=';
+            var pos = query.indexOf(filtername);
+            if (pos !== null && pos != -1) {
+                let pastchoice = query.slice(pos + filtername.length, pos + filtername.length + 1);
+                if (pastchoice === '2') {
+                    option0.selected = true;
+                } else if (pastchoice === '0') {
+                    option1.selected = true;
+                } else {
+                    option2.selected = true;
+                }
+            } else {
+                option1.selected = true; // Default.
             }
+
+            // 3. Add options.
+            filter.add(option0);
+            filter.add(option1);
+            filter.add(option2);
+
+            // 4. Place filter next to the headline.
+            var container = document.getElementById('pdfannotator-filter');
+            container.appendChild(filter);
+
+            // 5. Add functionality to the selection element.
+            addFilterEventlistener(filter, filtername, query, pos);
 
         }
-        /**
-         * Mark a hidden report as unseen again and display it henceforth when teacher user clicks display icon (eye).
-         *
-         * @return {undefined}
-         */
-        function addEventListenerForDisplayingReports() {
 
-            var hide = document.getElementsByClassName("reportseinblenden");
-
-            for (i = 0; i < hide.length; i++) {
-                (function (innerI) {
-                    hide[innerI].addEventListener("click", function () {
-                        var annotatorid = this.getAttribute("data-annotator");
-                        var openannotator = __annotatorid;
-
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": annotatorid, "reportid": hide[innerI].id, "openannotator": openannotator, "action": 'markReportAsUnseen', sesskey: M.cfg.sesskey}
-                        }).then(function (data) {
-
-                            data = JSON.parse(data);
-
-                            if (data.status === "success") {
-
-                                // 1.1 No longer display the report in 'administrate entries' category.
-                                var id = 'hiddenreport' + data.reportid;
-                                var target = document.getElementById(id);
-                                if (target !== null) {
-                                    target.style.setProperty('display', 'none', 'important');
-                                }
-
-                                // 1.2 Instead, display it once more in the regular 'reports' category by rerendering the corresponding template.
-                                (function (templates, data) {
-                                    setPicturePaths(data);
-                                    templates.render('mod_pdfannotator/overview_reports', data)
-                                            .then(function (html, js) {
-                                                templates.replaceNodeContents('#accordion0', html, js);
-                                                addEventListenerForDeletingReports(1);
-                                                addEventListenerForHidingReports();
-                                                toggleOpenAndClose();
-                                                markCurrent(null, data.openannotator);
-                                                shortenTextOverview();
-                                                renderMathJax();
-                                            }); // Add a catch.
-                                })(templates, data.newdata);
-
-                                // 2.1 a) Adjust the pdfannotator's count of hidden reports (i.e. substract 1).
-                                id = 'hiddenreportcount' + data.pdfannotatorid;
-
-                                var hiddenentrycount = document.getElementById(id).innerHTML;
-
-                                hiddenentrycount = hiddenentrycount.slice(1, hiddenentrycount.length - 1); // Slice of the brackets () around the count.
-
-                                var newhiddenentrycount = hiddenentrycount - 1;
-
-                                if (newhiddenentrycount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator?
-                                    target = document.getElementById(id);
-                                    if (target !== null) {
-                                        target.innerHTML = '(' + (newhiddenentrycount) + ')';
-                                    }
-
-                                } else {
-
-                                    // 2.1 b) If it was the last hidden entry in this annotator, then no longer show the annotator.
-                                    id = 'hiddenreportpanel_' + data.pdfannotatorid;
-                                    var target = document.getElementById(id);
-                                    if (target !== null) {
-                                        target.style.setProperty('display', 'none', 'important');
-                                    }
-
-                                }
-
-                                // Adjust global report count.
-                                var globalReportCount = document.getElementById('count0').innerHTML;
-
-                                globalReportCount = globalReportCount.slice(1, globalReportCount.length - 1);
-
-                                globalReportCount++;
-
-                                document.getElementById('count0').innerHTML = '(' + (globalReportCount) + ')';
-
-                                // Adjust global administration count.
-                                var globalAdminCount = document.getElementById('count5').innerHTML;
-
-                                globalAdminCount = globalAdminCount.slice(1, globalAdminCount.length - 1);
-
-                                globalAdminCount--;
-
-                                document.getElementById('count5').innerHTML = '(' + (globalAdminCount) + ')';
-
-                            } else {
-                                console.error(M.util.get_string('error:show', 'pdfannotator'));
-                            }
-
-                        });
-
-                    });
-                })(i);
-            }
-
-        }
-        /**
-         * Mark a hidden answer as unseen again and display it henceforth when student user clicks display icon (eye)
-         *
-         * @return {undefined}
-         */
-        function addEventListenerForDisplayingAnswers() {
-
-            var hide = document.getElementsByClassName("einblenden");
-
-            for (i = 0; i < hide.length; i++) {
-                (function (innerI) {
-                    hide[innerI].addEventListener("click", function () {
-                        var annotatorid = this.getAttribute("data-annotator");
-                        var openannotator = __annotatorid;
-
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": annotatorid, "answerid": hide[innerI].id, "openannotator": openannotator, "action": 'markAnswerAsUnseen', sesskey: M.cfg.sesskey}
-                        }).then(function (data) {
-
-                            data = JSON.parse(data);
-
-                            if (data.status === "success") {
-
-                                // 1.1 No longer display the answer in 'administrate entries' category.
-                                var id = 'hiddenentry' + data.answerid;
-                                var target = document.getElementById(id);
-                                if (target !== null) {
-                                    target.style.setProperty('display', 'none', 'important');
-                                }
-                                // 1.2 Instead, display it once more in the regular 'answers' category by rerendering the corresponding template.
-                                (function (templates, data) {
-                                    setPicturePaths(data);
-                                    templates.render('mod_pdfannotator/overview_answers', data)
-                                            .then(function (html, js) {
-                                                templates.replaceNodeContents('#accordion1', html, js);
-                                                // addEventListenerForDelete();
-                                                addEventListenerForHidingAnswers();
-                                                toggleOpenAndClose();
-                                                markCurrent(); // Former parameters: null, data.openannotator
-                                                shortenTextOverview();
-                                                renderMathJax();
-                                            }); // Add a catch.
-                                })(templates, data.newdata);
-                                // 2.1 a) Adjust the pdfannotator's count of hidden entries (i.e. substract 1).
-                                id = 'hiddenentrycount' + data.pdfannotatorid;
-                                var hiddenentrycount = document.getElementById(id).innerHTML;
-                                hiddenentrycount = hiddenentrycount.slice(1, hiddenentrycount.length - 1); // Slice of the brackets () around the count.
-                                var newhiddenentrycount = hiddenentrycount - 1;
-
-                                if (newhiddenentrycount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator?
-                                    target = document.getElementById(id);
-                                    if (target !== null) {
-                                        target.innerHTML = '(' + (newhiddenentrycount) + ')';
-                                    }
-
-                                } else {
-
-                                    // 2.1 b) If it was the last hidden entry in this annotator, then no longer show the annotator.
-                                    id = 'hiddenentrypanel_' + data.pdfannotatorid;
-                                    var target = document.getElementById(id);
-                                    if (target !== null) {
-                                        target.style.setProperty('display', 'none', 'important');
-                                    }
-
-                                }
-
-                                // Adjust global answer count.
-                                var globalAnswerCount = document.getElementById('count1').innerHTML;
-                                globalAnswerCount = globalAnswerCount.slice(1, globalAnswerCount.length - 1);
-                                globalAnswerCount++;
-                                document.getElementById('count1').innerHTML = '(' + (globalAnswerCount) + ')';
-
-                                // Adjust global administration count.
-                                var globalAdminCount = document.getElementById('count4').innerHTML;
-                                globalAdminCount = globalAdminCount.slice(1, globalAdminCount.length - 1);
-                                globalAdminCount--;
-                                document.getElementById('count4').innerHTML = '(' + globalAdminCount + ')';
-
-                            } else {
-                                 console.error(M.util.get_string('error:show', 'pdfannotator'));
-                            }
-
-                        });
-
-                    });
-                })(i);
-            }
-
-        }
-        /**
-         * Permanently delete a report when teacher user clicks delete icon
-         *
-         * @return {undefined}
-         */
-        function addEventListenerForDeletingReports(category = null) {
-
-            var deletebuttons;
-
-            if (!category) {
-                deletebuttons = document.getElementsByClassName("delete");
-            } else if (category === 1) {
-                deletebuttons = document.getElementsByClassName("catone");
-            } else { // category === 2
-                deletebuttons = document.getElementsByClassName("cattwo");
-            }
-
-            for (i = 0; i < deletebuttons.length; i++) {
-                (function (innerI) {
-                    deletebuttons[innerI].addEventListener("click", function () {
-
-                        // XXX Would be nice to ask for confirmation before deleting a report
-                        //
-                        // var reallyDelete = false;
-                        //
-                        // confirmDelete = M.util.get_string('deletingComment_manager', 'pdfannotator');
-                        //
-                        // function dialogCallbackForDeleteCancel(){
-                            // return false;
-                        // }
-                        // function dialogCallbackForDelete() {
-                            // return true;
-                        // }
-                        //
-                        // notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), dialogCallbackForDelete, dialogCallbackForDeleteCancel);
-
-                        var reportid = this.id;
-                        reportid = reportid.slice(6);
-
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": __annotatorid, "reportid": reportid, "action": 'deleteReport', sesskey: M.cfg.sesskey} // documentID is a dummy passed on pro forma.
-                        }).then(function (data) {
-                            data = JSON.parse(data);
-
-                            if (data.status === "success") {
-
-                                var id = 'report' + data.reportid;
-                                var target = document.getElementById(id);
-
-                                if (target !== null) {
-
-                                    // 1.1 No longer display the report in the reports category.
-                                    target.style.setProperty('display', 'none', 'important');
-                                    // target.parentNode.removeChild(target);
-
-                                    // 1.2 Adjust the annotator's report count to -= 1
-                                    id = 'reportcount' + data.pdfannotatorid;
-
-                                    var reportcount = document.getElementById(id).innerHTML;
-                                    reportcount = reportcount.slice(1, reportcount.length - 1);
-
-                                    var newreportcount = reportcount - 1;
-
-                                    if (newreportcount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator?
-                                        document.getElementById(id).innerHTML = '(' + (newreportcount) + ')';
-
-                                    } else { // 1.3 If it was the last report in this annotator, no longer display the latter.
-
-                                        id = 'reportpanel_' + data.pdfannotatorid;
-                                        var target = document.getElementById(id);
-                                        if (target !== null) {
-                                            target.style.setProperty('display', 'none', 'important');
-                                        }
-
-                                    }
-                                    // Adjust global report count.
-                                    var globalReportCount = document.getElementById('count0').innerHTML;
-                                    globalReportCount = globalReportCount.slice(1, globalReportCount.length - 1);
-                                    globalReportCount--;
-                                    document.getElementById('count0').innerHTML = '(' + (globalReportCount) + ')';
-
-                                }
-                                id = 'hiddenreport' + data.reportid;
-                                target = document.getElementById(id);
-                                if (target !== null) {
-
-                                    // 2.1 No longer display the report in the hidden reports category.
-                                    target.style.setProperty('display', 'none', 'important');
-
-                                    // 2.2 Adjust the annotator's hidden report count to -= 1
-                                    id = 'hiddenreportcount' + data.pdfannotatorid;
-                                    var hiddenentrycount = document.getElementById(id).innerHTML;
-                                    hiddenentrycount = hiddenentrycount.slice(1, hiddenentrycount.length - 1);
-                                    var newhiddenentrycount = hiddenentrycount - 1;
-
-                                    if (newhiddenentrycount !== 0) { // Is there at least 1 'unseen'/not hidden report left in this annotator.
-                                        document.getElementById(id).innerHTML = '(' + (newhiddenentrycount) + ')';
-
-                                    } else { // 2.3 If it was the last hidden report in this annotator, no longer display the latter.
-
-                                        id = 'hiddenreportpanel_' + data.pdfannotatorid;
-                                        var target = document.getElementById(id);
-                                        if (target !== null) {
-                                            target.style.setProperty('display', 'none', 'important');
-                                        }
-                                    }
-                                    // Adjust global administration count.
-                                    var globalAdminCount = document.getElementById('count5').innerHTML;
-                                    globalAdminCount = globalAdminCount.slice(1, globalAdminCount.length - 1);
-                                    globalAdminCount--;
-                                    document.getElementById('count5').innerHTML = '(' + (globalAdminCount) + ')';
-                                }
-
-                            } else {
-                                 console.error(M.util.get_string('error:hide', 'pdfannotator'));
-                            }
-
-                        });
-
-                    });
-                })(i);
-            }
-
-        }
-        /**
-         * Students can unsubscribe from a question via the overview page by clicking on the bell icon
-         *
-         * @return {undefined}
-         */
-        function addEventListenerForUnsubscribing() {
-
-            var unsubscribeButtons = document.getElementsByClassName("unsubscribe");
-
-            for (i = 0; i < unsubscribeButtons.length; i++) {
-                (function (innerI) {
-                    unsubscribeButtons[innerI].addEventListener("click", function () {
-
-                        var annotationid = unsubscribeButtons[innerI].id;
-                        annotationid = annotationid.slice(11);
-
-                        return $.ajax({
-                            type: "POST",
-                            url: "action.php",
-                            data: {"documentId": __annotatorid, "annotationid": annotationid, "action": 'unsubscribeQuestion', sesskey: M.cfg.sesskey} // documentID is a dummy passed on pro forma.
-                        }).then(function (data) {
-                            data = JSON.parse(data);
-
-                            if (data.status === "success") {
-                                notification.addNotification({
-                                    message: M.util.get_string('successfullyUnsubscribed', 'pdfannotator'),
-                                    type: "success"
-                                });
-
-                            } else if (data.status === 'error') {
-                                notification.addNotification({
-                                    message: M.util.get_string('error:unsubscribe', 'pdfannotator'),
-                                    type: "error"
-                                });
-                                console.error(M.util.get_string('error:unsubscribe', 'pdfannotator'));
-                            }
-                            setTimeout(function () {
-                                let notificationpanel = document.getElementById("user-notifications");
-                                while (notificationpanel.hasChildNodes()) {
-                                    notificationpanel.removeChild(notificationpanel.firstChild);
-                                }
-                            }, 3000);
-
-                        });
-
-                    });
-                })(i);
-            }
-
+        function addFilterEventlistener(filter, filtername, query, pos) {
+            filter.onchange = function () {
+                var select = this;
+                select = this.options[select.selectedIndex];
+                select.selected = true;
+                var newurl = window.location.pathname + query;
+                var regex = new RegExp(filtername + '(\\d+)');
+                if (pos !== null && pos != -1) {
+                    newurl = newurl.replace(regex, filtername + select.value);
+                } else {
+                    newurl += '&' + filtername + select.value;
+                }
+                // Go back to page 0, because the current page might not exist anymore after filtering.
+                var pagepos = query.indexOf('&page=');
+                if ( (pagepos !== null) && (pagepos != -1)) {
+                    newurl = newurl.replace(/page=(\d+)/, 'page=0');
+                }
+                window.location.href = newurl;
+            };
         }
 
     });
+
     /**
      * Shorten display of any report or question to a maximum of 120 characters and display
      * a 'view more'/'view less' link
@@ -993,7 +368,7 @@ function startOverview(Y, __annotatorid) { // Wrapper function that is called by
      * Copyright 2013 Viral Patel and other contributors
      * http://viralpatel.net
      *
-     * slightly modified by RWTH Aachen in 2018
+     * slightly modified by RWTH Aachen in 2018-2019
      *
      * Permission is hereby granted, free of charge, to any person obtaining
      * a copy of this software and associated documentation files (the
@@ -1025,11 +400,24 @@ function startOverview(Y, __annotatorid) { // Wrapper function that is called by
             var lesstext = M.util.get_string('showless', 'pdfannotator');
             $('.more').each(function () {
                 var content = this.innerText;
-                var widthParent = document.querySelector('.panel-title').offsetWidth;
+                
+                var innerhtml = this.innerHTML;
+                var posbegin = innerhtml.indexOf('<span');
+                var labelspan = '';
+                // If entry has "hidden from students"- or "restricted"- label display it after more/less and don't hide it.
+                if (posbegin !== -1) {
+                    var posend = innerhtml.indexOf('</span>')
+                    labelspan = innerhtml.slice(posbegin, posend + 7);
+                    var labeltext = labelspan.slice(labelspan.indexOf('>') + 1, labelspan.indexOf('</span>'));
+                    content = content.replace(labeltext, '');
+                    labelspan = '<br>' + labelspan;
+                }
+
+                var widthParent = $(this).parent()[0].offsetWidth;
                 if (widthParent === 0) {
                     widthParent = 917; // Minimum width.
                 }
-                showChar = widthParent / 10;
+                showChar = widthParent / 3;
                 if (content.length > (showChar + ellipsestext.length)) {
 
                     let x = 0;
@@ -1068,7 +456,7 @@ function startOverview(Y, __annotatorid) { // Wrapper function that is called by
                     var c = content.substr(0, showChar); // First part of the string.
                     var h = content.slice(showChar); // Second part of the string.
 
-                    var html = c + '<span class="moreellipses">' + ellipsestext + '&nbsp;</span><span class="morecontent"><span>' + h + '</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
+                    var html = c + '<span class="moreellipses">' + ellipsestext + '&nbsp;</span><span class="morecontent"><span>' + h + '</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>' + labelspan;
 
                     $(this).html(html);
                 }
@@ -1095,9 +483,9 @@ function startOverview(Y, __annotatorid) { // Wrapper function that is called by
         let mathjax = function () {
             if (typeof (MathJax) !== "undefined") {
                 MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
-            } else if (counter < 100) {
+            } else if (counter < 10) {
                 counter++;
-                setTimeout(mathjax, 100);
+                setTimeout(mathjax, 200);
             } else {
             }
         };

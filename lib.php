@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 CiL RWTH Aachen (see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Ahmad Obeid, Rabea de Groot, Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
@@ -32,10 +33,18 @@ function pdfannotator_supports($feature) {
         case FEATURE_MOD_INTRO:               return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_SHOW_DESCRIPTION:        return true;       
+        case FEATURE_SHOW_DESCRIPTION:        return true;
 
         default: return null;
     }
+}
+/**
+ * Function currently unused.
+ *
+ * @return string
+ */
+function mod_pdfannotator_before_standard_html_head() {
+
 }
 /**
  * Returns all other caps used in module
@@ -44,7 +53,6 @@ function pdfannotator_supports($feature) {
 function pdfannotator_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
 }
-
 /**
  * This function is used by the reset_course_userdata function in moodlelib.
  * @param $data the data submitted from the reset course.
@@ -96,8 +104,6 @@ function pdfannotator_add_instance($data, $mform) {
     $data->timemodified = time();
     pdfannotator_set_display_options($data);
 
-    pdfannotator_set_annotationtypes();
-
     $data->id = $DB->insert_record('pdfannotator', $data);
 
     // We need to use context now, so we need to make sure all needed info is already in db.
@@ -122,8 +128,8 @@ function pdfannotator_update_instance($data, $mform) {
     require_once("$CFG->dirroot/mod/pdfannotator/locallib.php");
     $data->timemodified = time();
     $data->id = $data->instance;
-    $data->revision++;  
-  
+    $data->revision++;
+
     pdfannotator_set_display_options($data); // Can be deleted or extended.
 
     $DB->update_record('pdfannotator', $data);
@@ -166,9 +172,8 @@ function pdfannotator_delete_instance($id) {
 
     // Note: all context files are deleted automatically.
     // 1.a) Get all annotations of the annotator.
-    if (!$annotations = $DB->get_records('pdfannotator_annotations', ['pdfannotatorid' => $id])) {
-        return false;
-    }
+    $annotations = $DB->get_records('pdfannotator_annotations', ['pdfannotatorid' => $id]);
+
     // 1.b) For every annotation delete all subscriptions attached to it.
     foreach ($annotations as $annotation) {
         if (!$DB->delete_records('pdfannotator_subscriptions', ['annotationid' => $annotation->id]) == 1) {
@@ -181,9 +186,8 @@ function pdfannotator_delete_instance($id) {
     }
 
     // 2.a) Get all comments in this annotator.
-    if (!$comments = $DB->get_records('pdfannotator_comments', ['pdfannotatorid' => $id])) {
-        return false;
-    }
+    $comments = $DB->get_records('pdfannotator_comments', ['pdfannotatorid' => $id]);
+
     // 2.b) Delete all votes in this annotator.
     foreach ($comments as $comment) {
         if (!$DB->delete_records('pdfannotator_votes', ['commentid' => $comment->id]) == 1) {
@@ -425,18 +429,18 @@ function pdfannotator_export_contents($cm, $baseurl) {
     $contents = array();
     $context = context_module::instance($cm->id);
     $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), '*', MUST_EXIST);
-
-    $fs = get_file_storage();
-    $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'content', 0, 'sortorder DESC, id ASC', false);
-
-    foreach ($files as $fileinfo) {
+    if ($pdfannotator->useprint == 1) {
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'content', 0, 'sortorder DESC, id ASC', false);
+        $fileinfo = reset($files);
         $file = array();
         $file['type'] = 'file';
         $file['filename'] = $fileinfo->get_filename();
         $file['filepath'] = $fileinfo->get_filepath();
         $file['filesize'] = $fileinfo->get_filesize();
-        $file['fileurl'] = file_encode_url("$CFG->wwwroot/" . $baseurl, '/' . $context->id . '/mod_pdfannotator/content' .
-                $pdfannotator->revision . $fileinfo->get_filepath() . $fileinfo->get_filename(), true);
+        $file['mimetype'] = 'pdf';
+        $file['fileurl'] = moodle_url::make_webservice_pluginfile_url(
+                    $context->id, 'mod_pdfannotator', 'content', '1', $fileinfo->get_filepath(), $fileinfo->get_filename())->out(false);
         $file['timecreated'] = $fileinfo->get_timecreated();
         $file['timemodified'] = $fileinfo->get_timemodified();
         $file['sortorder'] = $fileinfo->get_sortorder();
@@ -450,7 +454,6 @@ function pdfannotator_export_contents($cm, $baseurl) {
         }
         $contents[] = $file;
     }
-
     return $contents;
 }
 

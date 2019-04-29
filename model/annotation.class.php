@@ -21,56 +21,14 @@
  * read (abstract)
  *
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen, Rabea de Groot and Anna Heynkes(see README.md)
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @authors   Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 defined('MOODLE_INTERNAL') || die();
 
 class pdfannotator_annotation {
-
-    public $id;
-    public $pdfannotatorid; // Instance id.
-    public $page;
-    public $userid;
-    public $annotationtypeid;
-    public $data;
-    public $timecreated;
-    public $timemodified;
-
-    public function __construct($id) {
-        global $DB;
-        $record = $DB->get_record('pdfannotator_annotations', ['id' => $id], '*', MUST_EXIST);
-
-        $this->id = $id;
-        $this->pdfannotatorid = $record->pdfannotatorid;
-        $this->page = $record->page;
-        $this->userid = $record->userid;
-        $this->annotationtypeid = $record->annotationtypeid;
-        $this->data = json_decode($record->data);
-        $this->timecreated = $record->timecreated;
-        $this->timemodified = $record->timemodified;
-    }
-
-    /**
-     * Returns the name of the type of the annotation.
-     * @global type $DB
-     * @return type
-     */
-    public function get_annotationtype() {
-        global $DB;
-        $type = $DB->get_field('pdfannotator_annotationtypes', 'name', ['id' => $this->annotationtypeid]);
-
-        return $type;
-    }
-
-    /**
-     * Returns the number of page on which the annotation was created.
-     * @return type Integer
-     */
-    public function get_page_of_annotation() {
-        return $this->page;
-    }
 
     /**
      * This method creates a new record in the database table named mdl_pdfannotator_annotations and returns its id
@@ -139,21 +97,23 @@ class pdfannotator_annotation {
      * @global type $DB
      * @param type $annotationId
      * @param type $cmid
+     * @param type $deleteanyway Delete annotation in any case. F.e. if right to be forgotten was invoked or
+     *  a user without the capability to delete the annotation deletes it implicitly by deleting the last comment of the annotation
      * @return boolean
      */
-    public static function delete($annotationid, $cmid = null, $righttobeforgottenwasinvoked = null) {
+    public static function delete($annotationid, $cmid = null, $deleteanyway = null) {
 
         global $DB;
-
-        if (!$DB->record_exists('pdfannotator_annotations', array('id' => $annotationid))) {
+        $annotation = $DB->get_record('pdfannotator_annotations', array('id' => $annotationid), '*', $strictness = IGNORE_MISSING);
+        if (!$annotation) {
             return false;
         }
 
         // Check user rights to delete this annotation and all its attached comments.
-        $deletionallowed = self::deletion_allowed($annotationid, $cmid);
+        $deletionallowed = self::deletion_allowed($annotation, $cmid);
 
         // Delete annotation.
-        if ($deletionallowed[0] === true || $righttobeforgottenwasinvoked === true) {
+        if ($deletionallowed[0] === true || $deleteanyway === true) {
 
             // Delete all comments of this annotation.
             // But first insert reported comments into the archive.
@@ -173,7 +133,7 @@ class pdfannotator_annotation {
             // Delete the annotation itself.
             $success = $DB->delete_records('pdfannotator_annotations', array("id" => $annotationid));
 
-            if ($righttobeforgottenwasinvoked) {
+            if ($deleteanyway) {
                 return;
             }
 
@@ -192,11 +152,11 @@ class pdfannotator_annotation {
      * belong to the current user.     *
      * @return
      */
-    public static function deletion_allowed($annotationid, $cmid) {
+    public static function deletion_allowed($annotation, $cmid) {
 
         global $DB, $USER;
-        $thisuser = $USER->id;
-        $annotationauthor = self::get_author($annotationid);
+        $userid = $USER->id;
+        $author = $annotation->userid;
 
         $result = [];
 
@@ -205,34 +165,26 @@ class pdfannotator_annotation {
             error("Course module ID was incorrect");
         }
         $context = context_module::instance($cm->id);
-
-        if (has_capability('mod/pdfannotator:administrateuserinput', $context)) {
+        $deleteany = has_capability('mod/pdfannotator:deleteany', $context);
+        $deleteown = has_capability('mod/pdfannotator:deleteown', $context);
+        if ($deleteany) {
             $result[] = true;
-            return $result;
-        }
-
-        // If not: check user permission to delete the annotation itself.
-        if ($thisuser != $annotationauthor) {
+        } else if (($author !== $userid) || !$deleteown) {
             $result[] = false;
             $result[] = get_string('onlyDeleteOwnAnnotations', 'pdfannotator');
-            return $result;
-        }
-
-        // Check whether other people have commented this annotation.
-        $params = array($annotationid, $thisuser);
-        if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", $params)) {
+        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", [$annotation->id, $userid])) { // Check whether other people have commented this annotation.)
             $result[] = false;
             $result[] = get_string('onlyDeleteUncommentedPosts', 'pdfannotator');
-            return $result;
+        } else {
+            $result[] = true;
         }
 
-        $result[] = true;
         return $result;
     }
 
     /**
      * Method checks whether the annotation in question may be shifted in position.
-     * It returns true if the annotation was made by the user who is trying to shift it
+     * It returns true if the annotation was made by the user who is trying to shift it and no other person has answered
      * or if that user is an admin.
      *
      * @global type $USER
@@ -242,13 +194,17 @@ class pdfannotator_annotation {
     public static function shifting_allowed($annotationid, $context) {
         global $DB;
         global $USER;
-
-        if (has_capability('mod/pdfannotator:editanypost', $context)) {
+        $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
+        $editownpost = has_capability('mod/pdfannotator:edit', $context);
+        if ($editanypost) {
             return true;
         }
-        if ($USER->id != self::get_author($annotationid)) {
+        if (!$editownpost || $USER->id != self::get_author($annotationid)) {
             return false;
-        }    
+        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", array($annotationid, $USER->id))) {
+            // Annotation was answered by other users.
+            return false;
+        }
         return true;
     }
 
@@ -283,6 +239,7 @@ class pdfannotator_annotation {
             $comment->annotation = $annotationid;
             $comment->isdeleted = 0;
             $comment->isquestion = 1;
+            $comment->solved = 0;
 
             return $comment;
         } else {
