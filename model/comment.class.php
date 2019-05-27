@@ -606,13 +606,7 @@ class pdfannotator_comment {
                 . "JOIN (SELECT * FROM {pdfannotator_annotations} WHERE pdfannotatorid = :docid) a "
                 . "ON a.id = c.annotationid WHERE isquestion = 1";
         $questions = $DB->get_records_sql($sql, array('docid' => $documentid));
-//        if (!has_capability('mod/pdfannotator:seehiddencomments', $context)) {
-//            foreach ($questions as $question) {
-//                if ($question->ishidden == 1) {
-//                    $question->content = '<em>' . get_string('hiddenComment', 'pdfannotator') . '</em>';
-//                }
-//            }
-//        }
+
         $ret = [];
         foreach ($questions as $question) {
             $ret[$question->page][] = $question;
@@ -630,7 +624,7 @@ class pdfannotator_comment {
         global $DB;
         $ret = [];
         $i = 0;
-//        $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
+        $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
         $sql = "SELECT c.*, a.page FROM {pdfannotator_comments} c "
                 . "JOIN {pdfannotator_annotations} a ON a.id = c.annotationid "
                 . "WHERE isquestion = 1 AND c.pdfannotatorid = :docid AND "
@@ -649,9 +643,9 @@ class pdfannotator_comment {
             if ($question->isdeleted == 1) {
                 $question->content = '<em>'.get_string('deletedComment', 'pdfannotator').'</em>';
             }
-//            if ($question->ishidden == 1 && !$displayhidden) {
-//                $question->content = get_string('hiddenComment', 'pdfannotator');
-//            }
+            if ($question->ishidden == 1 && !$displayhidden) {
+                $question->content = get_string('hiddenComment', 'pdfannotator');
+            }
             $ret[$i] = $question;   // Without this array the order by page would get lost, because js sorts by id.
             $i++;
         }
