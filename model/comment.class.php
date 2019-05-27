@@ -388,7 +388,8 @@ class pdfannotator_comment {
         $DB->delete_records('pdfannotator_votes', array("commentid" => $commentid));
 
         if ($success == 1) {
-            return ['status' => 'success', 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell, 'deleteannotation' => $deleteannotation];
+            return ['status' => 'success', 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell,
+                'deleteannotation' => $deleteannotation, 'isquestion' => $comment->isquestion];
         } else {
             return ['status' => 'error'];
         }

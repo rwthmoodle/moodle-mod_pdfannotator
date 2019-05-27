@@ -340,11 +340,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                     $('#comment_'+commentId+' .chat-message-meta .user').remove();
                                     $('#comment_'+commentId+' .countVotes').remove();
                                     $('#comment_'+commentId+' .comment-like-a').attr("disabled","disabled").css("visibility", "hidden");
-                                    $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-report-button').remove();
-                                    $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-delete-a').remove();
-                                    $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-edit-a').remove();
                                     $('#comment_'+commentId+' .edited').remove();
-                                }else{
+                                    if (data.isquestion == 0) {
+                                        $('#comment_'+commentId+' .dropdown').remove();
+                                    } else {
+                                        $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-report-button').remove();
+                                        $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-delete-a').remove();
+                                        $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-edit-a').remove();
+                                        $('#comment_'+commentId+' .chat-message-meta .dropdown .comment-forward-a').remove();
+                                        $('#comment_'+commentId+' .chat-message-meta .dropdown #hidebutton'+commentId).remove();
+                                    }
+                                } else {
                                     var parent = child.parentNode;
                                     parent.removeChild(child);
                                 }
