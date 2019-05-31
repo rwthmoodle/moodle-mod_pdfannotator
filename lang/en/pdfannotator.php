@@ -351,6 +351,8 @@ $string['error:putinrecyclebin'] = 'The item could not be placed in the recycle 
 $string['error:markasread'] = 'The item could not be marked as read.';
 $string['error:markasunread'] = 'The item could not be marked as unread.';
 $string['error:forwardquestion'] = 'An error has occured while forwarding the question.';
+$string['error:forwardquestionnorecipient'] = 'An error has occured while forwarding the question.: No person in this course has the capability to receive forwarded questions.';
+
 
 $string['document'] = 'Document';
 

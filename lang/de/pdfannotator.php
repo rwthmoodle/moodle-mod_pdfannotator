@@ -271,6 +271,7 @@ $string['error:putinrecyclebin'] = 'Das Element konnte nicht in den Papierkorb v
 $string['error:markasread'] = 'Das Element konnte nicht als gelesen markiert werden.';
 $string['error:markasunread'] = 'Das Element konnte nicht als ungelesen markiert werden.';
 $string['error:forwardquestion'] = 'Beim Weiterleiten der Frage ist ein Fehler aufgetreten.';
+$string['error:forwardquestionnorecipient'] = 'Beim Weiterleiten der Frage ist ein Fehler aufgetreten: In diesem Kurs gibt es keine Person mit dem Recht, weitergeleitete Fragen zu erhalten.';
 
 $string['document'] = 'Dokument';
 

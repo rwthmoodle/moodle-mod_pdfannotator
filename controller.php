@@ -28,7 +28,7 @@ $taburl = new moodle_url('/mod/pdfannotator/view.php', array('id' => $id));
 
 $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
 
-/* *********************************************** Display overview page *********************************************** */
+/* * ********************************************** Display overview page *********************************************** */
 
 if ($action === 'overview') {
     // Go to question-overview by default.
@@ -41,6 +41,7 @@ if ($action === 'forwardquestion') {
     global $USER;
 
     $commentid = required_param('commentid', PARAM_INT);
+    $fromoverview = optional_param('fromoverview', 0, PARAM_INT);
     $cminfo = pdfannotator_instance::get_cm_info($cm->course);
     // Make sure user is allowed to see cm with the question. (Might happen if user changes commentid in url).
     list($insql, $inparams) = $DB->get_in_or_equal(array_keys($cminfo));
@@ -62,17 +63,33 @@ if ($action === 'forwardquestion') {
         }
     }
 
-    if ($error) { // An error occured e.g. comment doesn't exist.
-        $info = get_string('error:forwardquestion', 'pdfannotator'); // Display error notification.
-        echo "<span id='subscriptionPanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
-        $action = 'overviewquestions'; // And go back to overview.
-    } else {
-
-        $possiblerecipients = get_enrolled_users($context, 'mod/pdfannotator:getforwardedquestions');
-        $recipientslist = [];
-        foreach ($possiblerecipients as $recipient) {
-            $recipientslist[$recipient->id] = $recipient->firstname . ' ' . $recipient->lastname;
+    $possiblerecipients = get_enrolled_users($context, 'mod/pdfannotator:getforwardedquestions');
+    $recipientslist = [];
+    foreach ($possiblerecipients as $recipient) {
+        if ($recipient->id === $USER->id) {
+            continue;
         }
+        $recipientslist[$recipient->id] = $recipient->firstname . ' ' . $recipient->lastname;
+    }
+
+    if (count($recipientslist) === 0) {
+        $error = true;
+        $errorinfo = get_string('error:forwardquestionnorecipient', 'pdfannotator');
+    }
+
+    if ($error) { // An error occured e.g. comment doesn't exist.
+        if (!isset($errorinfo)) {
+            $errorinfo = get_string('error:forwardquestion', 'pdfannotator'); // Display error notification.
+        }
+        echo "<span id='subscriptionPanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$errorinfo</div></span>";
+        if ($fromoverview) {
+            // If user forwarded question from overview go back to overview.
+            $action = 'overviewquestions';
+        } else {
+            // Else go to document.
+            $action = 'view';
+        }
+    } else {
 
         $data = new stdClass();
         $data->course = $cm->course;
@@ -96,7 +113,7 @@ if ($action === 'forwardquestion') {
             }
         } else if ($data = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
             $url = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $comment->cmid,
-                    'page' => $comment->page, 'annoid' => $comment->annotationid, 'commid' => $comment->id)))->out();
+                'page' => $comment->page, 'annoid' => $comment->annotationid, 'commid' => $comment->id)))->out();
 
             $params = new stdClass();
             $params->sender = $USER->firstname . ' ' . $USER->lastname;
@@ -107,7 +124,6 @@ if ($action === 'forwardquestion') {
             if (isset($data->recipients)) {
                 send_forward_message($data->recipients, $params, $course, $cm, $context);
             }
-            $fromoverview = optional_param('fromoverview', 0, PARAM_INT);
             if ($fromoverview) {
                 // If user forwarded question from overview go back to overview.
                 $action = 'overviewquestions';
@@ -115,7 +131,6 @@ if ($action === 'forwardquestion') {
                 // Else go to document.
                 $action = 'view';
             }
-
         } else { // Executed if the form is submitted but the data doesn't validate and the form should be redisplayed
             // or on the first display of the form.
             $PAGE->set_title("forward_form");
@@ -184,7 +199,6 @@ if ($action === 'subscribeQuestion') {
     }
 
     $action = 'overviewanswers';
-
 }
 /*
  * This section unsubscribes the user from a particular question and then rerenders the overview table of
@@ -217,7 +231,6 @@ if ($action === 'unsubscribeQuestion') {
     echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
 
     $action = 'overviewanswers';
-
 }
 /*
  * This section prints a subpage of overview called 'answers'. It lists all answers to questions the current
@@ -240,7 +253,7 @@ if ($action === 'overviewanswers') {
     $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
     pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
-    echo $OUTPUT->heading(get_string('answerstab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('answerstabicon', 'pdfannotator')) . " <span id='pdfannotator-filter'></span>";
+    echo $OUTPUT->heading(get_string('answerstab', 'pdfannotator') . ' ' . $OUTPUT->help_icon('answerstabicon', 'pdfannotator')) . " <span id='pdfannotator-filter'></span>";
 
     $data = pdfannotator_get_answers_for_this_user($thiscourse, $context, $answerfilter);
 
@@ -275,7 +288,7 @@ if ($action === 'overviewownposts') {
     $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
     pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
-    echo $OUTPUT->heading(get_string('ownpoststab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('ownpoststabicon', 'mod_pdfannotator'));
+    echo $OUTPUT->heading(get_string('ownpoststab', 'pdfannotator') . ' ' . $OUTPUT->help_icon('ownpoststabicon', 'mod_pdfannotator'));
 
     $posts = pdfannotator_get_posts_by_this_user($thiscourse, $context);
 
@@ -293,7 +306,6 @@ if ($action === 'overviewownposts') {
  * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
  */
 if ($action === 'markreportasread') { // XXX Rename key and move it into $action === 'overviewreports'
-
     require_capability('mod/pdfannotator:viewreports', $context);
 
     global $DB;
@@ -317,21 +329,18 @@ if ($action === 'markreportasread') { // XXX Rename key and move it into $action
                 $info = get_string('successfullymarkedasread', 'pdfannotator');
         }
         echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
-
     } else {
         $info = get_string('error:markasread', 'pdfannotator');
         echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-error alert-block fade in' role='alert'>$info</div></span>";
     }
 
     $action = 'overviewreports'; // This will do the actual rerendering of the page (see below).
-
 }
 /*
  * This section marks a report as read and then rerenders the overview table of reports
  * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
  */
 if ($action === 'markreportasunread') { // XXX Rename key and move it into $action === 'overviewreports'
-
     require_capability('mod/pdfannotator:viewreports', $context);
 
     global $DB;
@@ -355,14 +364,12 @@ if ($action === 'markreportasunread') { // XXX Rename key and move it into $acti
                 $info = get_string('successfullymarkedasunread', 'pdfannotator');
         }
         echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-success alert-block fade in' role='alert'>$info</div></span>";
-
     } else {
         $info = get_string('error:markasunread', 'pdfannotator');
         echo "<span id='pdfannotator_notificationpanel' class='usernotifications'><div class='alert alert-error alert-block fade in' role='alert'>$info</div></span>";
     }
 
     $action = 'overviewreports'; // This will do the actual rerendering of the page (see below).
-
 }
 /*
  * This section prints a subpage of overview called "Reports" were comments that were reported as inappropriate are listed.
@@ -383,7 +390,7 @@ if ($action === 'overviewreports') {
     $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
     pdfannotator_prepare_overviewpage($id, $myrenderer, $taburl, ['tab' => 'overview', 'action' => $action], $pdfannotator, $context);
-    echo $OUTPUT->heading(get_string('reportstab', 'pdfannotator'). ' ' . $OUTPUT->help_icon('reportstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
+    echo $OUTPUT->heading(get_string('reportstab', 'pdfannotator') . ' ' . $OUTPUT->help_icon('reportstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
 
     $reports = pdfannotator_get_reports($thiscourse, $reportfilter);
 
@@ -400,7 +407,6 @@ if ($action === 'overviewreports') {
                 break;
         }
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
-
     } else {
         $urlparams = array('action' => 'overviewreports', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage, 'reportfilter' => $reportfilter);
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
@@ -408,7 +414,7 @@ if ($action === 'overviewreports') {
     }
 }
 
-/* *********************************** Display the pdf in its editor (default action) *************************************** */
+/* * ********************************** Display the pdf in its editor (default action) *************************************** */
 
 if ($action === 'view') { // Default.
     $PAGE->set_title("annotatorview");
@@ -417,7 +423,7 @@ if ($action === 'view') { // Default.
     pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page, $annoid, $commid);
 }
 
-/* *********************************************** Display statistics *********************************************** */
+/* * ********************************************** Display statistics *********************************************** */
 
 if ($action === 'statistic') {
 
@@ -447,7 +453,7 @@ if ($action === 'statistic') {
     echo $myrenderer->render_statistic(new statistics($cm->instance, $course->id, $capabilities, $id));
 }
 
-/* ****************************************** Display form for reporting a comment  ******************************************** */
+/* * ***************************************** Display form for reporting a comment  ******************************************** */
 
 if ($action === 'report') {
 
@@ -472,7 +478,7 @@ if ($action === 'report') {
     $mform = new pdfannotator_reportform();
     $mform->set_data($data);
 
-    /* ******************** Form processing and displaying is done here ************************ */
+    /*     * ******************* Form processing and displaying is done here ************************ */
     if ($mform->is_cancelled()) {
         $action = 'view';
         echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
