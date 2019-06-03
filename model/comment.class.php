@@ -315,7 +315,6 @@ class pdfannotator_comment {
     /**
      * Deletes a comment.
      * If the comment is answered, it will be displayed as deleted comment.
-     * If the comment was reported it is inserted to the commentsarchive table.
      */
     public static function delete_comment($commentid, $cmid) {
         global $DB, $USER;
@@ -340,16 +339,9 @@ class pdfannotator_comment {
 
         $select = "annotationid = ? AND timecreated > ? AND isdeleted = ?";
         $wasanswered = $DB->record_exists_select('pdfannotator_comments', $select, [$annotationid, $comment->timecreated, 0]);
-        $wasreported = $DB->record_exists('pdfannotator_reports', ['commentid' => $commentid]);
 
         $tobedeletedaswell = [];
         $deleteannotation = 0;
-
-        // Before deleting: If the comment was reported, it should be inserted into the archive.
-        if ($wasreported) {
-            $reportedcomment = clone $comment;
-            $DB->insert_record('pdfannotator_commentsarchive', $reportedcomment);
-        }
 
         if ($wasanswered) { // If the comment was answered, mark it as deleted for a special display.
             $params = array("id" => $commentid, "isdeleted" => 1);

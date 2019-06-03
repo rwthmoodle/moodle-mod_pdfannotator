@@ -76,15 +76,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             'content' => 'privacy:metadata:pdfannotator_comments:content',
                 ], 'privacy:metadata:pdfannotator_comments'
         );
-        // 2.3 Comments which were reported and subsequently deleted are archived/stored.
-        $collection->add_database_table(
-                'pdfannotator_commentsarchive', [
-            'userid' => 'privacy:metadata:pdfannotator_comments:userid',
-            'annotationid' => 'privacy:metadata:pdfannotator_comments:annotationid',
-            'content' => 'privacy:metadata:pdfannotator_comments:content',
-                ], 'privacy:metadata:pdfannotator_commentsarchive'
-        );
-        // 2.4 Users can report other users' comments as inappropriate. These reports stored.
+        // 2.3 Users can report other users' comments as inappropriate. These reports stored.
         $collection->add_database_table(
                 'pdfannotator_reports', [
             'commentid' => 'privacy:metadata:pdfannotator_reports:commentid',
@@ -92,14 +84,14 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             'userid' => 'privacy:metadata:pdfannotator_reports:userid',
                 ], 'privacy:metadata:pdfannotator_reports'
         );
-        // 2.5 A user's subscriptions are stored.
+        // 2.4 A user's subscriptions are stored.
         $collection->add_database_table(
                 'pdfannotator_subscriptions', [
             'annotationid' => 'privacy:metadata:pdfannotator_subscriptions:annotationid',
             'userid' => 'privacy:metadata:pdfannotator_subscriptions:userid',
                 ], 'privacy:metadata:pdfannotator_subscriptions'
         );
-        // 2.6 Votes are stored.
+        // 2.5 Votes are stored.
         $collection->add_database_table(
                 'pdfannotator_votes', [
             'commentid' => 'privacy:metadata:pdfannotator_votes:commentid',
@@ -130,7 +122,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             'userid1' => $userid,
             'userid2' => $userid,
             'userid3' => $userid,
-            'userid4' => $userid,
             'userid5' => $userid,
             'userid6' => $userid,
         ];
@@ -143,14 +134,12 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 LEFT JOIN {pdfannotator_annotations} a ON a.pdfannotatorid = p.id
                 LEFT JOIN {pdfannotator_subscriptions} s ON s.annotationid = a.id
                 LEFT JOIN {pdfannotator_comments} k ON k.annotationid = a.id
-                LEFT JOIN {pdfannotator_commentsarchive} ka ON ka.annotationid = a.id
                 LEFT JOIN {pdfannotator_reports} r ON r.commentid = k.id
                 LEFT JOIN {pdfannotator_votes} v ON v.commentid = k.id
                     WHERE (
                     a.userid        = :userid1 OR
                     s.userid        = :userid2 OR
                     k.userid        = :userid3 OR
-                    ka.userid       = :userid4 OR
                     r.userid        = :userid5 OR
                     v.userid        = :userid6
                     )
@@ -245,11 +234,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             // WHERE v.userid = :userid AND a.pdfannotatorid = :pdfannotator";
             $myvotes = $DB->get_records_sql($sql4, array('userid' => $userid, 'pdfannotator' => $pdfannotator->id));
 
-            // Get all archived comments by this user
-            // $sql5 = "SELECT c.*
-            // FROM {pdfannotator_commentsarchive} c JOIN {pdfannotator_annotations} a ON c.annotationid = a.id
-            // WHERE AND c.userid = :userid AND c.pdfannotatorid = :pdfannotator";
-            // $myarchive = $DB->get_records_sql($sql5, array('userid' => $userid, 'pdfannotator' => $pdfannotator->id));
             // Get all reports this user wrote.
             $sql6 = "SELECT r.message
                     FROM {pdfannotator_reports} r JOIN {pdfannotator_comments} c ON c.id = r.commentid
@@ -272,7 +256,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             $pdfannotator->myvotes = $myvotes;
             $pdfannotator->myreportmessages = $myreportmessages;
             $pdfannotator->mydrawingsandtextboxes = $mydrawingsandtextboxes;
-            // $pdfannotator->myarchive = $myarchive;
 
             writer::with_context($context)->export_data([], $pdfannotator);
         }
@@ -335,17 +318,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             // }
         }
 
-        // 5. Select the ID and isquestion attributes of every archived comment this user made in this annotator
-        // $sql = "SELECT c.id, c.isquestion FROM {pdfannotator_commentsarchive} c "
-              // . "WHERE c.annotationid IN (SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?)";
-        // $archivedcomments = $DB->get_records_sql($sql, array($instanceid));
-        // foreach($archivedcomments as $archivedcomment) {
-        // if ($archivedcomment->isquestion === 1) { // delete question comments, their underlying annotation as well as all answers and subscriptions
-        // annotation::delete($archivedcomment->annotationid, null, true);
-        // } else { // empty all other comments
-        // $DB->update_record('pdfannotator_commentsarchive', array("id" => $archivedcomment->id, "userid" => -1, "content" => "", "isdeleted" => 1), $bulk=false);
-        // }
-        // }
         // 6. Select the IDs of all annotations that were made by this user in this annotator. Then call the function to delete the annotation and any adjacent comments.
         $annotations = $DB->get_fieldset_select('pdfannotator_annotations', 'id', "pdfannotatorid = ?", array($instanceid));
         foreach ($annotations as $annotationid) {
@@ -412,17 +384,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 self::empty_or_delete_comment($comment);
             }
 
-            // 5. Select the ID and isquestion attributes of every archived comment this user made in this annotator.
-            $sql = "SELECT c.id, c.isquestion FROM {pdfannotator_commentsarchive} c WHERE c.annotationid IN "
-                    . "(SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?) AND c.userid = ?";
-            // $archivedcomments = $DB->get_records_sql($sql, array($instanceid, $userid));
-            // foreach($archivedcomments as $archivedcomment) {
-            // if ($archivedcomment->isquestion === 1) { // Delete question comments, their underlying annotation as well as all answers and subscriptions.
-            // annotation::delete($archivedcomment->annotationid, null, true);
-            // } else { // Empty all other comments.
-            // $DB->update_record('pdfannotator_commentsarchive', array("id" => $archivedcomment->id, "userid" => -1, "content" => "", "isdeleted" => 1), $bulk=false);
-            // }
-            // }
             // 6. Select the IDs of all annotations that were made by this user in this annotator. Then call the function to delete the annotation and any adjacent comments.
             $annotations = $DB->get_fieldset_select('pdfannotator_annotations', 'id', "pdfannotatorid = ? AND userid = ?", array($instanceid, $userid));
             foreach ($annotations as $annotationid) {
@@ -436,8 +397,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     // Status quo:
     // Deleting the initial or final comment of a 'thread' will remove it from the comments table.
     // Deleting any other comment will merely set the field isdeleted of the comments table to 1, so that the comment will be displayed as deleted within the 'thread'.
-    // When a reported comment is deleted, a copy is saved in the archive table (but no longer visible to users).
-    // The archive tables field isdeleted should be set to 1 per default (is currently 0).
+
     /**
      * Function deletes an annotation and all comments and subscriptions attached to it.
      *
@@ -457,14 +417,9 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             // 1.2 Delete any votes for these comments.
             $DB->delete_records('pdfannotator_votes', array("commentid" => $comment->id));
 
-            // 1.3 Insert reported comments into the archive, unless they're already there.
-            if ($comment->isdeleted == 0 && $DB->record_exists('pdfannotator_reports', ['commentid' => $comment->id])) {
-                unset($comment->id);
-                $DB->insert_record('pdfannotator_commentsarchive', $comment);
-            }
         }
 
-        // 1.4 Now delete all comments.
+        // 1.3 Now delete all comments.
         $DB->delete_records('pdfannotator_comments', array("annotationid" => $annotationid));
 
         // 2. Delete subscriptions to the question.
@@ -478,7 +433,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
         global $DB;
 
-        self::archive_comment_if_necessary($comment);
         $select = "annotationid = ? AND timecreated > ? AND isdeleted = ?";
         $wasanswered = $DB->record_exists_select('pdfannotator_comments', $select, array($comment->annotationid, $comment->timecreated, 0));
 
@@ -504,20 +458,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
             // Now delete the selected comment.
             $DB->delete_records('pdfannotator_comments', array("id" => $comment->id));
-        }
-    }
-
-    public static function archive_comment_if_necessary($comment) {
-
-        global $DB;
-
-        $wasreported = $DB->record_exists('pdfannotator_reports', ['commentid' => $comment->id]);
-
-        // Before updating, insert the comment into the archive, if it was reported. // TODO: Mit Datenschutzbeauftragtem klären!
-        if ($wasreported) {
-            $reportedcomment = clone $comment;
-            unset($reportedcomment->id);
-            $DB->insert_record('pdfannotator_commentsarchive', $reportedcomment);
         }
     }
 

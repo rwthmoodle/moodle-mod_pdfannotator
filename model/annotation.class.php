@@ -116,14 +116,9 @@ class pdfannotator_annotation {
         if ($deletionallowed[0] === true || $deleteanyway === true) {
 
             // Delete all comments of this annotation.
-            // But first insert reported comments into the archive.
             $comments = $DB->get_records('pdfannotator_comments', array("annotationid" => $annotationid));
             foreach ($comments as $commentdata) {
                 $DB->delete_records('pdfannotator_votes', array("commentid" => $commentdata->id));
-                // If the comment was not deleted, but reported, then insert the record into the archive.
-                if ($commentdata->isdeleted == 0 && $DB->record_exists('pdfannotator_reports', ['commentid' => $commentdata->id])) {
-                    $DB->insert_record('pdfannotator_commentsarchive', $commentdata);
-                }
             }
             $success = $DB->delete_records('pdfannotator_comments', array("annotationid" => $annotationid));
 

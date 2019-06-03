@@ -305,7 +305,6 @@ $string['deletedQuestion'] = 'deleted question';
 $string['deletedComment'] = 'deleted comment';
 $string['hiddenComment'] = 'hidden comment';
 $string['deleteComment'] = 'Delete comment';
-$string['deleteAndArchiveComment'] = 'Archive and delete comment';
 $string['annotationDeleted'] = 'Annotation has been deleted';
 $string['commentDeleted'] = 'Comment has been deleted';
 
@@ -584,9 +583,6 @@ $string['privacy:metadata:pdfannotator_comments'] = "Information about a user's 
 $string['privacy:metadata:pdfannotator_comments:userid'] = "The ID of the comment's author.";
 $string['privacy:metadata:pdfannotator_comments:annotationid'] = 'The ID of the underlying annotation.';
 $string['privacy:metadata:pdfannotator_comments:content'] = 'The literal comment.';
-
-// pdfannotator_commentsarchive table
-$string['privacy:metadata:pdfannotator_commentsarchive'] = "Comments which were reported and subsequently deleted are archived here. The information stored is the same as for other comments.";
 
 // pdfannotator_reports table
 $string['privacy:metadata:pdfannotator_reports'] = "Users can report other users' comments as inappropriate. These reports stored. This includes the ID of the reported comment as well as the author, content and time of the report.";

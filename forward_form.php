@@ -63,12 +63,12 @@ class pdfannotator_forward_form extends moodleform {
         $recipients = $this->_customdata['recipients'];
 
         // 'selectgroups' instead of 'select' because the required-rule didn't work properly with a multi-select.
-        $select = $mform->addElement('selectgroups', 'recipients', get_string('recipient', 'pdfannotator'));      
+        $select = $mform->addElement('selectgroups', 'recipients', get_string('recipient', 'pdfannotator'));
         $select->addOptGroup('', $recipients);
         $select->setMultiple(true);
         $mform->addHelpButton('recipients', 'recipient', 'pdfannotator');
         $mform->addRule('recipients', get_string('recipientrequired', 'pdfannotator'), 'required', null, 'client');
-         
+
         // Textarea for message to the recipient.
         $mform->addElement('textarea', 'message', get_string('messageforwardform', 'pdfannotator'), 'wrap="virtual" rows="5" cols="109"');
 

@@ -546,5 +546,19 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019030100, 'pdfannotator');
     }
 
+    if ($oldversion < 2019060300) {
+
+        // Define table pdfannotator_commentsarchive to be dropped.
+        $table = new xmldb_table('pdfannotator_commentsarchive');
+
+        // Conditionally launch drop table for pdfannotator_commentsarchive.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2019060300, 'pdfannotator');
+    }
+
     return true;
 }

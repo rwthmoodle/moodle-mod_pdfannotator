@@ -280,7 +280,6 @@ $string['deletedQuestion'] = 'gelöschte Frage';
 $string['deletedComment'] = 'gelöschter Kommentar';
 $string['hiddenComment'] = 'verborgener Beitrag';
 $string['deleteComment'] = 'Kommentar löschen';
-$string['deleteAndArchiveComment'] = 'Kommentar archivieren und löschen';
 $string['delete'] = 'Löschen';
 $string['edit'] = 'Bearbeiten';
 $string['editButton'] = 'Speichern';
@@ -598,9 +597,6 @@ $string['privacy:metadata:pdfannotator_comments'] = "Informationen über die Kom
 $string['privacy:metadata:pdfannotator_comments:userid'] = 'Die ID des Nutzers, der diesen Kommentar verfasst hat.';
 $string['privacy:metadata:pdfannotator_comments:annotationid'] = 'Die ID der zugrunde liegenden Annotation.';
 $string['privacy:metadata:pdfannotator_comments:content'] = 'Der Wortlaut des Kommentars.';
-
-// pdfannotator_commentsarchive-table
-$string['privacy:metadata:pdfannotator_commentsarchive'] = "Kommentare die gemeldet und anschließend gelöscht wurde, werden hier archiviert. Dabei werden dieselben Daten wie bei anderen Kommentaren gespeichert.";
 
 // pdfannotator_reports-table
 $string['privacy:metadata:pdfannotator_reports'] = "Nutzer können die Kommentare anderer Nutzer als unangemessen melden. Diese Meldung werden gespeichert. Folgende Informationen über Meldung werden gespeichert: Die ID des gemeldeten Kommentars sowie der Verfasser, Wortlaut und Zeitpunkt der Meldung.";
