@@ -103,9 +103,9 @@ $string['setting_use_studentdrawing_help'] = "Allow participants to save and pri
 
 $string['setting_useprint'] = "save and print";
 $string['setting_useprint_help'] = "Please note that drawings are not anonymous and can neither be commented nor reported.";
-$string['setting_useprint_document'] = 'save and print pdf document';
+$string['setting_useprint_document'] = 'Save and print pdf document';
 $string['setting_useprint_document_help'] = 'Allow participants to save and print the pdf document';
-$string['setting_useprint_comments'] = 'save and print comments';
+$string['setting_useprint_comments'] = 'Save and print comments';
 $string['setting_useprint_comments_help'] = 'Allow participants to save and print the annotations and comments';
 
 $string['setting_choosetimespanfornews'] = "For how long should a comment be marked as new?";

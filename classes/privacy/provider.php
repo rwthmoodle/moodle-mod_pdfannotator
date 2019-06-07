@@ -182,8 +182,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                    )
         ";
 
-        // $params = [];
-        // $params += $contextparams;
         // Keep a mapping of pdfannotatorid to contextid.
         $mappings = [];
 
@@ -198,9 +196,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             $sql1 = "SELECT c.content, c.timecreated, c.visibility
                     FROM {pdfannotator_comments} c
                     WHERE c.isquestion = 1 AND c.userid = :userid AND c.pdfannotatorid = :pdfannotator";
-            // $sql1 = "SELECT c.content, c.timecreated, c.visibility
-            // FROM {pdfannotator_comments} c JOIN {pdfannotator_annotations} a ON c.annotationid = a.id
-            // WHERE c.isquestion = 1 AND c.userid = :userid AND a.pdfannotatorid = :pdfannotator";
             $myquestions = $DB->get_records_sql($sql1, array('userid' => $userid, 'pdfannotator' => $pdfannotator->id));
 
             foreach ($myquestions as $myquestion) {
@@ -229,9 +224,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             $sql4 = "SELECT c.content
                     FROM {pdfannotator_comments} c JOIN {pdfannotator_votes} v on v.commentid = c.id
                     WHERE v.userid = :userid AND c.pdfannotatorid = :pdfannotator";
-            // $sql4 = "SELECT c.content
-            // FROM {pdfannotator_comments} c JOIN {pdfannotator_votes} v on v.commentid = c.id JOIN {pdfannotator_annotations} a ON c.annotationid = a.id
-            // WHERE v.userid = :userid AND a.pdfannotatorid = :pdfannotator";
             $myvotes = $DB->get_records_sql($sql4, array('userid' => $userid, 'pdfannotator' => $pdfannotator->id));
 
             // Get all reports this user wrote.
@@ -270,8 +262,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
-        // require_once($CFG->dirroot.'/mod/pdfannotator/model/annotation.class.php');
-
         if ($context->contextlevel != CONTEXT_MODULE) {
             return;
         }
@@ -304,25 +294,16 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
         }
 
         // 4. Delete all comments in this annotator.
-        $sql = "SELECT c.id, c.isquestion, c.annotationid FROM {pdfannotator_comments} c "
-                . "WHERE c.annotationid IN (SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?)";
-        // $comments = $DB->get_records_sql($sql, array($instanceid));
         $sql = "SELECT c.id FROM {pdfannotator_comments} c WHERE c.annotationid IN (SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?)";
         $comments = $DB->get_records_sql($sql, array($instanceid));
         foreach ($comments as $comment) {
             $DB->delete_records('pdfannotator_comments', array("id" => $comment->id));
-            // if ($comment->isquestion === 1) { // delete question comments, their underlying annotation as well as all answers and subscriptions
-            // annotation::delete($comment->annotationid, null, true);
-            // } else { // empty all other comments
-            // $DB->update_record('pdfannotator_comments', array("id" => $comment->id, "content" => "", "isdeleted" => 1), $bulk=false);
-            // }
         }
 
-        // 6. Select the IDs of all annotations that were made by this user in this annotator. Then call the function to delete the annotation and any adjacent comments.
+        // 5. Delete all annotations in this annotator.
         $annotations = $DB->get_fieldset_select('pdfannotator_annotations', 'id', "pdfannotatorid = ?", array($instanceid));
         foreach ($annotations as $annotationid) {
             $DB->delete_records('pdfannotator_annotations', array("id" => $annotationid));
-            // annotation::delete($annotationid, null, true);
         }
     }
 
@@ -335,8 +316,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     public static function delete_data_for_user(approved_contextlist $contextlist) {
 
         global $DB;
-
-        // require_once($CFG->dirroot.'/mod/pdfannotator/model/annotation.class.php');
 
         if (empty($contextlist->count())) {
             return;
@@ -353,9 +332,6 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             // 2. Delete all votes this user made in this annotator.
             $sql = "SELECT v.id FROM {pdfannotator_votes} v WHERE v.userid = ? AND v.commentid IN (SELECT c.id FROM {pdfannotator_comments} c WHERE c.pdfannotatorid = ?)";
             $votes = $DB->get_records_sql($sql , array($userid, $instanceid));
-            // $sql = "SELECT v.id FROM {pdfannotator_votes} v WHERE v.userid = ? AND v.commentid IN "
-                   // . "(SELECT c.id FROM {pdfannotator_comments} c JOIN {pdfannotator_annotations} a ON c.annotationid = a.id WHERE a.pdfannotatorid = ?)";
-            // $votes = $DB->get_records_sql($sql, array($userid, $instanceid));
             foreach ($votes as $vote) {
                 $DB->delete_records('pdfannotator_votes', array("id" => $vote->id));
             }
@@ -368,11 +344,8 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 $DB->delete_records('pdfannotator_subscriptions', array("id" => $subscription->id));
             }
 
-            // 4. Select (the ID and isquestion attributes of) every comment this user made in this annotator.
+            // 4. Select all comments this user made in this annotator.
             $comments = $DB->get_records_sql("SELECT c.* FROM {pdfannotator_comments} c WHERE c.pdfannotatorid = ? AND c.userid = ?", array($instanceid, $userid));
-            // $sql = "SELECT c.* FROM {pdfannotator_comments} c WHERE c.annotationid IN "
-                   // . "(SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?) AND c.userid = ?";
-            // $comments = $DB->get_records_sql($sql, array($instanceid, $userid));
             foreach ($comments as $comment) {
 
                 // Delete question comments, their underlying annotation as well as all answers and subscriptions.
@@ -384,12 +357,10 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
                 self::empty_or_delete_comment($comment);
             }
 
-            // 6. Select the IDs of all annotations that were made by this user in this annotator. Then call the function to delete the annotation and any adjacent comments.
+            // 5. Select the IDs of all annotations that were made by this user in this annotator. Then call the function to delete the annotation and any adjacent comments.
             $annotations = $DB->get_fieldset_select('pdfannotator_annotations', 'id', "pdfannotatorid = ? AND userid = ?", array($instanceid, $userid));
             foreach ($annotations as $annotationid) {
                 self::delete_annotation($annotationid);
-                // $DB->delete_records('pdfannotator_annotations', array("id" => $annotationid));
-                // annotation::delete($annotationid, null, true);
             }
         }
     }

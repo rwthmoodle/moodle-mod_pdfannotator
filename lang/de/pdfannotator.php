@@ -100,11 +100,11 @@ $string['setting_use_studenttextbox_help'] = "Bitte beachten Sie, dass mit der T
 $string['setting_use_studentdrawing'] = "Freihandzeichnung";
 $string['setting_use_studentdrawing_help'] = "Bitte beachten Sie, dass Freihandzeichnungen immer mit Verfasser und Erstellungsdatum angezeigt werden. Diese Annotationen können weder kommentiert noch gemeldet wedern.";
 
-$string['setting_useprint'] = "Speichern/Drucken";
+$string['setting_useprint'] = "Dokument speichern/drucken";
 $string['setting_useprint_help'] = "Sollen Teilnehmer/innen das PDF-Dokument ohne Annotationen und Kommentare herunterladen dürfen?";
-$string['setting_useprint_document'] = 'Dokument Speichern/Drucken';
-$string['setting_useprint_document_help'] = 'Sollen Teilnehmer/innen das PDF-Dokument herunterladen dürfen?';
-$string['setting_useprint_comments'] = 'Kommentare Speichern/Drucken';
+$string['setting_useprint_document'] = 'Dokument speichern/drucken';
+$string['setting_useprint_document_help'] = 'Sollen Teilnehmer/innen das PDF-Dokument ohne Annotationen und Kommentare herunterladen dürfen?';
+$string['setting_useprint_comments'] = 'Kommentare speichern/drucken';
 $string['setting_useprint_comments_help'] = 'Sollen Teilnehmer/innen die Annotationen und Kommentaren herunterladen dürfen?';
 
 $string['setting_choosetimespanfornews'] = "Wie lange soll ein Kommentar als neu angezeigt werden?";

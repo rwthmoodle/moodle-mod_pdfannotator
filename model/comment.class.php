@@ -106,7 +106,7 @@ class pdfannotator_comment {
                 $question->answeruser = $visibility == 'public' ? fullname($USER) : 'Anonymous';
                 $question->content = $content;
 
-                $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST); // annotation::getPageID($annotationid);
+                $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST);
                 $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
@@ -286,7 +286,7 @@ class pdfannotator_comment {
         $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
 
         if ($success == 1) {
-            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell]; // , 'deleteannotation' => $deleteannotation];
+            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell];
         } else {
             return ['status' => 'error'];
         }
