@@ -68,7 +68,8 @@ class questionstable extends overviewtable {
         $this->define_baseurl($url);
         $columns = array('col0', 'col1', 'col2', 'col3', 'col4', 'col5');
         if ($showdropdown) {
-            $columns[] = 'col6';
+            $columns[] = 'col6'; // Action dropdown menu.
+            $this->no_sorting('col6');
         }
         $this->define_columns($columns);
         $this->column_style('col0', 'width', '30% !important'); // Question.
