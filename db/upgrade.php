@@ -559,6 +559,21 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2019060300, 'pdfannotator');
     }
+    
+        if ($oldversion < 2019070100) {
+
+        // Define field useprintcomments to be added to pdfannotator.
+        $table = new xmldb_table('pdfannotator');
+        $field = new xmldb_field('useprintcomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'useprint');
+
+        // Conditionally launch add field useprintcomments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2019030100, 'pdfannotator');
+    }
 
     return true;
 }
