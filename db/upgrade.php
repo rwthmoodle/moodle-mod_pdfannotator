@@ -572,7 +572,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         }
 
         // Pdfannotator savepoint reached.
-        upgrade_mod_savepoint(true, 2019030100, 'pdfannotator');
+        upgrade_mod_savepoint(true, 2019070100, 'pdfannotator');
     }
 
     return true;
