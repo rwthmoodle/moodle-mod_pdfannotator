@@ -334,9 +334,9 @@ $string['rectangle'] = 'Add a Rectangle in the document and write a comment.';
 $string['removeCorrect'] = 'Remove marking as correct';
 $string['removehidden'] = 'Show';
 $string['report'] = 'Report';
-$string['reportaddedhtml'] = '{$a->reportinguser} has reportet a comment with the message: <br /><br /> "{$a->introduction}"<br /><br />
+$string['reportaddedhtml'] = '{$a->reportinguser} has reported a comment with the message: <br /><br /> "{$a->introduction}"<br /><br />
 It is <a href="{$a->urltoreport}">available on the web site</a>.';
-$string['reportaddedtext'] = '{$a->reportinguser} has reportet a comment with the message:
+$string['reportaddedtext'] = '{$a->reportinguser} has reported a comment with the message:
 
     "{$a->introduction}"
 
