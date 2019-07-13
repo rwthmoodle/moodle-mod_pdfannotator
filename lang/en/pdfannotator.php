@@ -349,10 +349,10 @@ $string['decision:overlappingAnnotation'] = 'You clicked an area, in which is mo
 
 $string['eventreport_added'] = 'A comment was reported';
 
-$string['reportaddedhtml'] = '{$a->reportinguser} has reportet a comment with the message: <br /><br /> "{$a->introduction}"<br /><br />
+$string['reportaddedhtml'] = '{$a->reportinguser} has reported a comment with the message: <br /><br /> "{$a->introduction}"<br /><br />
 It is <a href="{$a->urltoreport}">available on the web site</a>.';
 
-$string['reportaddedtext'] = '{$a->reportinguser} has reportet a comment with the message:
+$string['reportaddedtext'] = '{$a->reportinguser} has reported a comment with the message:
 
     "{$a->introduction}"
 
