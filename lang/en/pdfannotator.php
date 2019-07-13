@@ -212,9 +212,9 @@ $string['myanswers'] = 'my answers';
 $string['mypost'] = 'My post';
 $string['myquestion'] = 'Question';
 $string['myquestions'] = 'my questions';
-$string['newanswerhtml'] = 'Your subscribed question "{$a->question}" was ansered by {$a->answeruser} with the comment: <br /> <br /> "{$a->content}"<br /><br />
+$string['newanswerhtml'] = 'Your subscribed question "{$a->question}" was answered by {$a->answeruser} with the comment: <br /> <br /> "{$a->content}"<br /><br />
 The answer is <a href="{$a->urltoanswer}">here</a> available.';
-$string['newanswertext'] = 'Your subscribed question "{$a->question}" was ansered by {$a->answeruser} with the comment:
+$string['newanswertext'] = 'Your subscribed question "{$a->question}" was answered by {$a->answeruser} with the comment:
 
     "{$a->content}"
 
