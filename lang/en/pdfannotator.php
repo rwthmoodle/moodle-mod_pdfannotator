@@ -118,6 +118,7 @@ $string['error:renderPage'] = 'An error has occured while rendering the page.';
 $string['error:reportComment'] = 'An error has occured while saving the report.';
 $string['error:subscribe'] = 'An error has occured while subscribing to the question.';
 $string['error:unsubscribe'] = 'An error has occured while unsubscribing to the question.';
+$string['error:redihideCommentsplayComment'] = 'An error occurred while re-inserting the comment for attendees.';
 $string['error:voteComment'] = 'An error has occured while saving the vote.';
 $string['error'] = 'Error!';
 $string['eventreport_added'] = 'A comment was reported';
