@@ -514,7 +514,7 @@ if ($action === 'unsubscribeQuestion') {
     }
 }
 
-/* * ****************************************** Mark a question as solved  ****************************************** */
+/* * ****************************************** Mark a question as closed or an answer as correct ****************************************** */
 
 if ($action === 'markSolved') {
     global $DB;
