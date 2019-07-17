@@ -35,12 +35,6 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform =& $this->_form;
         $config = get_config('mod_pdfannotator');
 
-        $mform->addElement('hidden', 'idcreator', $USER->id);
-        $mform->setType('idcreator', PARAM_INT);
-
-        $mform->addElement('hidden', 'idCourse', $COURSE->id);
-        $mform->setType('idCourse', PARAM_INT);
-
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->setType('general', PARAM_TEXT);
         $mform->addElement('text', 'name', get_string('setting_alternative_name', 'pdfannotator'), array('size' => '48'));
