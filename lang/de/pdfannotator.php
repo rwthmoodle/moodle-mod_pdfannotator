@@ -305,10 +305,10 @@ $string['reportaddedtext'] = '{$a->reportinguser} hat einen Kommentar gemeldet m
 
 Die Meldung ist verfügbar unter: {$a->urltoreport}';
 
-$string['questionstitle'] = 'Fragen auf Seite ';
+$string['questionstitle'] = 'Fragen auf Seite';
 $string['noquestions'] = 'Keine Fragen auf dieser Seite!';
-$string['allquestionstitle'] = 'Alle Fragen in ';
-$string['searchresults'] = 'Suchergebnisse ';
+$string['allquestionstitle'] = 'Alle Fragen in';
+$string['searchresults'] = 'Suchergebnisse';
 $string['nosearchresults'] = 'Keine Suchergebnisse gefunden.';
 
 $string['newanswerhtml'] = 'Die von Ihnen abonnierte Frage "{$a->question}" wurde von {$a->answeruser} beantwortet mit dem Kommentar: <br /> <br /> "{$a->content}"<br /><br />

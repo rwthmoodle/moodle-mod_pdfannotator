@@ -6509,7 +6509,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     let container = document.querySelector('.comment-list-container');
                     let title = $('#comment-wrapper > h4')[0];
                     if(pattern === '') {
-                        title.innerHTML = M.util.get_string('questionstitle','pdfannotator') + pageNumber;
+                        title.innerHTML = M.util.get_string('questionstitle','pdfannotator') + ' ' + pageNumber;
                     } else {
                         title.innerHTML = M.util.get_string('searchresults','pdfannotator');
                     }
@@ -6614,7 +6614,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 _PDFJSAnnotate2.default.getStoreAdapter().getQuestions(documentId).then(function(questions){
                     let container = document.querySelector('.comment-list-container');
                     let title = $('#comment-wrapper > h4')[0];
-                    title.innerHTML = M.util.get_string('allquestionstitle','pdfannotator') + questions.pdfannotatorname;
+                    title.innerHTML = M.util.get_string('allquestionstitle','pdfannotator') + ' ' + questions.pdfannotatorname;
                     
                     container.innerHTML = '';
 

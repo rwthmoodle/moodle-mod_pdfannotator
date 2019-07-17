@@ -373,8 +373,8 @@ $string['reportaddedtext'] = '{$a->reportinguser} has reportet a comment with th
 
 It is available under: {$a->urltoreport}';
 
-$string['allquestionstitle'] = 'All questions in ';
-$string['questionstitle'] = 'Questions on page ';
+$string['allquestionstitle'] = 'All questions in';
+$string['questionstitle'] = 'Questions on page';
 $string['noquestions'] = 'No questions on this page!';
 $string['searchresults'] = 'Search results';
 $string['nosearchresults'] = 'No search results found.';
