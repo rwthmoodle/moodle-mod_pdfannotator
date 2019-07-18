@@ -211,7 +211,7 @@ function pdfannotator_process_latex($string) {
         $latexdata = urlencode($string);
         $requesturl = LATEX_TO_PNG_REQUEST . $latexdata;
         $im = @file_get_contents($requesturl); // '@' suppresses warnings so that one failed google request doesn't prevent the pdf from being printed,
-                                               // but just the one formula from being presented as a picture.
+        // but just the one formula from being presented as a picture.
     }
     if ($im != null) {
         $array = [];
@@ -231,7 +231,7 @@ function pdfannotator_process_latex($string) {
     }
 }
 
-function send_forward_message($recipients, $messageparams, $course, $cm, $context) {
+function pdfannotator_send_forward_message($recipients, $messageparams, $course, $cm, $context) {
     $name = 'forwardedquestion';
     $text = new stdClass();
     $module = get_string('modulename', 'pdfannotator');
@@ -287,6 +287,7 @@ function pdfannotator_format_notification_message_text($course, $cm, $context, $
     $posttext .= get_string($messagetype . 'text', 'pdfannotator', $paramsforlanguagestring) . "\n---------------------------------------------------------------------\n";
     return $posttext;
 }
+
 /**
  * Format a notification for HTML.
  *
@@ -613,6 +614,7 @@ function pdfannotator_subscribed($annotatorid) {
         return -1;
     }
 }
+
 /**
  *
  * @param type $timestamp
@@ -622,6 +624,7 @@ function pdfannotator_get_user_datetime($timestamp) {
     $userdatetime = userdate($timestamp, $format = '', $timezone = 99, $fixday = true, $fixhour = true); // Method in lib/moodlelib.php
     return $userdatetime;
 }
+
 /**
  *
  * @param type $timestamp
@@ -672,8 +675,8 @@ function pdfannotator_prepare_overviewpage($cmid, $myrenderer, $taburl, $action,
 
     $params = array($pdfannotator->id, $cmid, $capabilities, $action['action']);
     $PAGE->requires->js_init_call('startOverview', $params, true); // 1. name of JS function, 2. parameters.
-
 }
+
 /**
  * Function serves as subcontroller that tells the annotator model to collect
  * all or all unsolved/solved questions asked in this course.
@@ -758,7 +761,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
             $question->displayhidden = true;
         }
         if ($cminfo[$question->cmid]['availableinfo']) { // Annotator is restricted.
-            $question->content = $question->content . $labelunavailable . " ". $cminfo[$question->cmid]['availableinfo'];
+            $question->content = $question->content . $labelunavailable . " " . $cminfo[$question->cmid]['availableinfo'];
             $question->displayhidden = true;
         }
 
@@ -768,6 +771,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     }
     return $questions;
 }
+
 /**
  * Function serves as subcontroller that tells the annotator model to collect all
  * questions and answers this user posted in the course.
@@ -830,17 +834,17 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
             $post->displayhidden = true;
         }
         if ($cminfo[$post->cmid]['availableinfo']) {  // Annotator is restricted.
-            $post->content = $post->content . $labelunavailable . " ". $cminfo[$post->cmid]['availableinfo'];
+            $post->content = $post->content . $labelunavailable . " " . $cminfo[$post->cmid]['availableinfo'];
             $post->displayhidden = true;
         }
 
         $params = array('id' => $post->cmid, 'page' => $post->page, 'annoid' => $post->annotationid, 'commid' => $post->commid);
         $post->link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
         $post->content = format_text($post->content);
-
     }
     return $posts;
 }
+
 /**
  * Function serves as subcontroller that tells the annotator model to collect
  * all answers given to questions that the current user asked or subscribed to
@@ -866,33 +870,30 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS answeredby, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
-            . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
-            . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
-            . "FROM {pdfannotator_annotations} a "
-            . "LEFT JOIN {pdfannotator_subscriptions} s ON a.id = s.annotationid AND s.userid = ? "
-            . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
-            . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "WHERE p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
-            . "ORDER BY annoid ASC";
-
+                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+                . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
+                . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
+                . "FROM {pdfannotator_annotations} a "
+                . "LEFT JOIN {pdfannotator_subscriptions} s ON a.id = s.annotationid AND s.userid = ? "
+                . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
+                . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
+                . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+                . "JOIN {course_modules} cm ON p.id = cm.instance "
+                . "WHERE p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
+                . "ORDER BY annoid ASC";
     } else { // Or: get answers to those questions the user subscribed to.
-
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS answeredby, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
-            . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
-            . "p.name AS pdfannotatorname, cm.id AS cmid "
-            . "FROM {pdfannotator_subscriptions} s "
-            . "JOIN {pdfannotator_annotations} a ON a.id = s.annotationid "
-            . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
-            . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "WHERE s.userid = ? AND p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
-            . "ORDER BY annoid ASC";
-
+                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+                . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
+                . "p.name AS pdfannotatorname, cm.id AS cmid "
+                . "FROM {pdfannotator_subscriptions} s "
+                . "JOIN {pdfannotator_annotations} a ON a.id = s.annotationid "
+                . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
+                . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
+                . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+                . "JOIN {course_modules} cm ON p.id = cm.instance "
+                . "WHERE s.userid = ? AND p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
+                . "ORDER BY annoid ASC";
     }
 
     $params = array_merge([$USER->id, $courseid], $inparams);
@@ -907,7 +908,6 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
         if ($entry->questiondeleted == 1) {
             $entry->answeredquestion = get_string('deletedComment', 'pdfannotator');
-
         } else if ($entry->questionhidden) {
             switch ($seehidden) {
                 case 0:
@@ -949,11 +949,11 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
         $entry->answeredquestion = format_text($entry->answeredquestion);
         $entry->answer = format_text($entry->answer);
-
     }
 
     return $entries;
 }
+
 /**
  * Function retrieves reports and their respective reported comments from db.
  * Depending on the reportfilter, only read/unread reports or all reports are retrieved.
@@ -993,139 +993,145 @@ function pdfannotator_get_reports($courseid, $reportfilter = 0) {
     foreach ($reports as $report) {
             $report->link = (new moodle_url('/mod/pdfannotator/view.php',
                         array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
-            $report->reportedcomment = format_text($report->reportedcomment);
-            $report->report = format_text($report->report);
+        $report->reportedcomment = format_text($report->reportedcomment);
+        $report->report = format_text($report->report);
     }
     return $reports;
 }
 
-// Comparison function for question objects.
-function compare_votes_ascending($a, $b) {
-    if ($a->usevotes == 0 && $b->usevotes == 0 && $a->votes == $b->votes) {
-        return 0;
-    }
-    return ($a->usevotes != 1 || ($a->votes < $b->votes)) ? -1 : 1;
-}
+/**
+ * Comparison functions (for sorting tables on overview tab).
+ */
+class pdfannotator_compare {
 
-function compare_votes_descending($a, $b) {
-    if ($a->usevotes == 0 && $b->usevotes == 0 && $a->votes == $b->votes) {
-        return 0;
+    public static function compare_votes_ascending($a, $b) {
+        if ($a->usevotes == 0 && $b->usevotes == 0 && $a->votes == $b->votes) {
+            return 0;
+        }
+        return ($a->usevotes != 1 || ($a->votes < $b->votes)) ? -1 : 1;
     }
-    return ($b->usevotes != 1 || ($a->votes > $b->votes)) ? -1 : 1;
-}
 
-// Comparison function for question objects.
-function compare_answers_ascending($a, $b) {
-    if ($a->answercount == $b->answercount) {
-        return 0;
+    public static function compare_votes_descending($a, $b) {
+        if ($a->usevotes == 0 && $b->usevotes == 0 && $a->votes == $b->votes) {
+            return 0;
+        }
+        return ($b->usevotes != 1 || ($a->votes > $b->votes)) ? -1 : 1;
     }
-    return ($a->answercount < $b->answercount) ? -1 : 1;
-}
 
-function compare_answers_descending($a, $b) {
-    if ($a->answercount == $b->answercount) {
-        return 0;
+    public static function compare_answers_ascending($a, $b) {
+        if ($a->answercount == $b->answercount) {
+            return 0;
+        }
+        return ($a->answercount < $b->answercount) ? -1 : 1;
     }
-    return ($a->answercount > $b->answercount) ? -1 : 1;
-}
 
-function compare_time_ascending($a, $b) {
-    if ($a->timemodified == $b->timemodified) {
-        return 0;
+    public static function compare_answers_descending($a, $b) {
+        if ($a->answercount == $b->answercount) {
+            return 0;
+        }
+        return ($a->answercount > $b->answercount) ? -1 : 1;
     }
-    return ($a->timemodified < $b->timemodified) ? -1 : 1;
-}
 
-function compare_time_descending($a, $b) {
-    if ($a->timemodified == $b->timemodified) {
-        return 0;
+    public static function compare_time_ascending($a, $b) {
+        if ($a->timemodified == $b->timemodified) {
+            return 0;
+        }
+        return ($a->timemodified < $b->timemodified) ? -1 : 1;
     }
-    return ($a->timemodified > $b->timemodified) ? -1 : 1;
-}
 
-function compare_lastanswertime_ascending($a, $b) {
-    if ($a->lastanswered == $b->lastanswered) {
-        return 0;
+    public static function compare_time_descending($a, $b) {
+        if ($a->timemodified == $b->timemodified) {
+            return 0;
+        }
+        return ($a->timemodified > $b->timemodified) ? -1 : 1;
     }
-    return ($a->lastanswered < $b->lastanswered) ? -1 : 1;
-}
 
-function compare_lastanswertime_descending($a, $b) {
-    if ($a->lastanswered == $b->lastanswered) {
-        return 0;
+    public static function compare_lastanswertime_ascending($a, $b) {
+        if ($a->lastanswered == $b->lastanswered) {
+            return 0;
+        }
+        return ($a->lastanswered < $b->lastanswered) ? -1 : 1;
     }
-    return ($a->lastanswered > $b->lastanswered) ? -1 : 1;
-}
 
-function compare_commenttime_ascending($a, $b) {
-    if ($a->commenttime == $b->commenttime) {
-        return 0;
+    public static function compare_lastanswertime_descending($a, $b) {
+        if ($a->lastanswered == $b->lastanswered) {
+            return 0;
+        }
+        return ($a->lastanswered > $b->lastanswered) ? -1 : 1;
     }
-    return ($a->commenttime < $b->commenttime) ? -1 : 1;
-}
 
-function compare_commenttime_descending($a, $b) {
-    if ($a->commenttime == $b->commenttime) {
-        return 0;
+    public static function compare_commenttime_ascending($a, $b) {
+        if ($a->commenttime == $b->commenttime) {
+            return 0;
+        }
+        return ($a->commenttime < $b->commenttime) ? -1 : 1;
     }
-    return ($a->commenttime > $b->commenttime) ? -1 : 1;
-}
 
-function compare_creationtime_ascending($a, $b) {
-    if ($a->timecreated == $b->timecreated) {
-        return 0;
+    public static function compare_commenttime_descending($a, $b) {
+        if ($a->commenttime == $b->commenttime) {
+            return 0;
+        }
+        return ($a->commenttime > $b->commenttime) ? -1 : 1;
     }
-    return ($a->timecreated < $b->timecreated) ? -1 : 1;
-}
 
-function compare_creationtime_descending($a, $b) {
-    if ($a->timecreated == $b->timecreated) {
-        return 0;
+    public static function compare_creationtime_ascending($a, $b) {
+        if ($a->timecreated == $b->timecreated) {
+            return 0;
+        }
+        return ($a->timecreated < $b->timecreated) ? -1 : 1;
     }
-    return ($a->timecreated > $b->timecreated) ? -1 : 1;
-}
 
-function compare_alphabetically_ascending($a, $b) {
-    if ($a->pdfannotatorname == $b->pdfannotatorname) {
-        return 0;
+    public static function compare_creationtime_descending($a, $b) {
+        if ($a->timecreated == $b->timecreated) {
+            return 0;
+        }
+        return ($a->timecreated > $b->timecreated) ? -1 : 1;
     }
-    if (strcasecmp($a->pdfannotatorname, $b->pdfannotatorname) < 0) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
-function compare_alphabetically_descending($a, $b) {
-    if ($a->pdfannotatorname == $b->pdfannotatorname) {
-        return 0;
-    }
-    if (strcasecmp($a->pdfannotatorname, $b->pdfannotatorname) > 0) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
 
-function compare_question_ascending($a, $b) {
-    if ($a->answeredquestion == $b->answeredquestion) {
-        return 0;
+    public static function compare_alphabetically_ascending($a, $b) {
+        if ($a->pdfannotatorname == $b->pdfannotatorname) {
+            return 0;
+        }
+        if (strcasecmp($a->pdfannotatorname, $b->pdfannotatorname) < 0) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
-    if (strcasecmp($a->answeredquestion, $b->answeredquestion) < 0) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
 
-function compare_question_descending($a, $b) {
-    if ($a->answeredquestion == $b->answeredquestion) {
-        return 0;
+    public static function compare_alphabetically_descending($a, $b) {
+        if ($a->pdfannotatorname == $b->pdfannotatorname) {
+            return 0;
+        }
+        if (strcasecmp($a->pdfannotatorname, $b->pdfannotatorname) > 0) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
-    if (strcasecmp($a->answeredquestion, $b->answeredquestion) > 0) {
-        return -1;
-    } else {
-        return 1;
+
+    public static function compare_question_ascending($a, $b) {
+        if ($a->answeredquestion == $b->answeredquestion) {
+            return 0;
+        }
+        if (strcasecmp($a->answeredquestion, $b->answeredquestion) < 0) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
+
+    public static function compare_question_descending($a, $b) {
+        if ($a->answeredquestion == $b->answeredquestion) {
+            return 0;
+        }
+        if (strcasecmp($a->answeredquestion, $b->answeredquestion) > 0) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
 }
 
 /**
@@ -1140,70 +1146,72 @@ function pdfannotator_sort_entries($questions, $sortcriterium, $sortorder) {
     switch ($sortcriterium) {
         case 'col1':
             if ($sortorder === 4) {
-                usort($questions, 'compare_time_ascending');
+                usort($questions, 'pdfannotator_compare::compare_time_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_time_descending');
+                usort($questions, 'pdfannotator_compare::compare_time_descending');
             }
             break;
         case 'col2':
             if ($sortorder === 3) {
-                usort($questions, 'compare_votes_ascending');
+                usort($questions, 'pdfannotator_compare::compare_votes_ascending');
             } else if ($sortorder === 4) {
-                usort($questions, 'compare_votes_descending');
+                usort($questions, 'pdfannotator_compare::compare_votes_descending');
             }
             break;
         case 'col3':
             if ($sortorder === 4) {
-                usort($questions, 'compare_alphabetically_ascending');
+                usort($questions, 'pdfannotator_compare::compare_alphabetically_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_alphabetically_descending');
+                usort($questions, 'pdfannotator_compare::compare_alphabetically_descending');
             }
             break;
         default:
     }
     return $questions;
 }
+
 function pdfannotator_sort_questions($questions, $sortcriterium, $sortorder) {
     switch ($sortcriterium) {
         case 'col1':
             if ($sortorder === 4) {
-                usort($questions, 'compare_creationtime_ascending');
+                usort($questions, 'pdfannotator_compare::compare_creationtime_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_creationtime_descending');
+                usort($questions, 'pdfannotator_compare::compare_creationtime_descending');
             }
             break;
         case 'col2':
             if ($sortorder === 3) {
-                usort($questions, 'compare_votes_ascending');
+                usort($questions, 'pdfannotator_compare::compare_votes_ascending');
             } else if ($sortorder === 4) {
-                usort($questions, 'compare_votes_descending');
+                usort($questions, 'pdfannotator_compare::compare_votes_descending');
             }
             break;
         case 'col3':
             if ($sortorder === 4) {
-                usort($questions, 'compare_answers_ascending');
+                usort($questions, 'pdfannotator_compare::compare_answers_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_answers_descending');
+                usort($questions, 'pdfannotator_compare::compare_answers_descending');
             }
             break;
         case 'col4':
             if ($sortorder === 4) {
-                usort($questions, 'compare_lastanswertime_ascending');
+                usort($questions, 'pdfannotator_compare::compare_lastanswertime_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_lastanswertime_descending');
+                usort($questions, 'pdfannotator_compare::compare_lastanswertime_descending');
             }
             break;
         case 'col5':
             if ($sortorder === 4) {
-                usort($questions, 'compare_alphabetically_ascending');
+                usort($questions, 'pdfannotator_compare::compare_alphabetically_ascending');
             } else if ($sortorder === 3) {
-                usort($questions, 'compare_alphabetically_descending');
+                usort($questions, 'pdfannotator_compare::compare_alphabetically_descending');
             }
             break;
         default:
     }
     return $questions;
 }
+
 /**
  * Function sorts entries in a table according to annotator or time.
  * Applicable for overview answers category.
@@ -1219,29 +1227,30 @@ function pdfannotator_sort_answers($answers, $sortcriterium, $sortorder) {
     switch ($sortcriterium) {
         case 'col4':
             if ($sortorder === 4) {
-                usort($answers, 'compare_alphabetically_ascending');
+                usort($answers, 'pdfannotator_compare::compare_alphabetically_ascending');
             } else if ($sortorder === 3) {
-                usort($answers, 'compare_alphabetically_descending');
+                usort($answers, 'pdfannotator_compare::compare_alphabetically_descending');
             }
             break;
         case 'col2':
             if ($sortorder === 4) {
-                usort($answers, 'compare_time_ascending');
+                usort($answers, 'pdfannotator_compare::compare_time_ascending');
             } else if ($sortorder === 3) {
-                usort($answers, 'compare_time_descending');
+                usort($answers, 'pdfannotator_compare::compare_time_descending');
             }
             break;
         case 'col3':
             if ($sortorder === 4) {
-                usort($answers, 'compare_question_ascending');
+                usort($answers, 'pdfannotator_compare::compare_question_ascending');
             } else if ($sortorder === 3) {
-                usort($answers, 'compare_question_descending');
+                usort($answers, 'pdfannotator_compare::compare_question_descending');
             }
             break;
         default:
     }
     return $answers;
 }
+
 /**
  *
  * @param array $reports
@@ -1253,22 +1262,23 @@ function pdfannotator_sort_reports($reports, $sortcriterium, $sortorder) {
     switch ($sortcriterium) {
         case 'col1':
             if ($sortorder === 4) {
-                usort($reports, 'compare_creationtime_ascending');
+                usort($reports, 'pdfannotator_compare::compare_creationtime_ascending');
             } else if ($sortorder === 3) {
-                usort($reports, 'compare_creationtime_descending');
+                usort($reports, 'pdfannotator_compare::compare_creationtime_descending');
             }
             break;
         case 'col3':
             if ($sortorder === 4) {
-                usort($reports, 'compare_commenttime_ascending');
+                usort($reports, 'pdfannotator_compare::compare_commenttime_ascending');
             } else if ($sortorder === 3) {
-                usort($reports, 'compare_commenttime_descending');
+                usort($reports, 'pdfannotator_compare::compare_commenttime_descending');
             }
             break;
         default:
     }
     return $reports;
 }
+
 /**
  * Function takes an array and returns its first key.
  *
@@ -1284,6 +1294,7 @@ function pdfannotator_get_first_key_in_array($array) {
          * @param array $array
          * @return mixed
          */
+
         function array_key_first(array $array) {
             if (count($array)) {
                 reset($array);
@@ -1291,9 +1302,11 @@ function pdfannotator_get_first_key_in_array($array) {
             }
             return null;
         }
+
     }
     return array_key_first($array);
 }
+
 /**
  * This function renders the table of unsolved questions on the overview page.
  *
@@ -1323,7 +1336,6 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
     $table = new questionstable($url, $showdropdown);
     $table->setup();
     // $table->pageable(false);
-
     // Sort the entries of the table according to time or number of votes.
     if (!empty($sortinfo = $table->get_sort_columns())) {
         $sortcriterium = pdfannotator_get_first_key_in_array($sortinfo); // Returns the name (e.g. col2) of the column which was clicked for sorting.
@@ -1349,6 +1361,7 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
     }
     $table->finish_html();
 }
+
 /**
  * Function prints a table view of all answers to questions the current
  * user asked or subscribed to.
@@ -1395,6 +1408,7 @@ function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $ite
     }
     $table->finish_html();
 }
+
 /**
  *
  * @global type $CFG
@@ -1439,6 +1453,7 @@ function pdfannotator_print_this_users_posts($posts, $thiscourse, $url, $current
     }
     $table->finish_html();
 }
+
 /**
  * Function prints a table view of all comments that were reported as inappropriate.
  *
@@ -1466,7 +1481,6 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
         foreach ($reports as $report) {
             pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage);
         }
-
     } else {
         $reportcount = count($reports);
         $table->pagesize($itemsperpage, $reportcount);
@@ -1483,6 +1497,7 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
     }
     $table->finish_html();
 }
+
 /**
  * This function adds a row of data to the overview table that displays all
  * unsolved questions in the course.
@@ -1518,7 +1533,7 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
     $content = "<a href=$question->link class='more'>$question->content</a>";
     $pdfannotatorname = $question->pdfannotatorname;
 
-    $data = array($content, $author . '<br>' . $time, $question->votes, $question->answercount,  $lastanswered, $pdfannotatorname);
+    $data = array($content, $author . '<br>' . $time, $question->votes, $question->answercount, $lastanswered, $pdfannotatorname);
 
     if ($showdropdown) {
         require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/questionmenu.php');
@@ -1528,6 +1543,7 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
     }
     $table->add_data($data, $classname);
 }
+
 /**
  * This function adds a row of data to the overview table that displays
  * answers to any question the user subscribed to.
@@ -1541,9 +1557,9 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
     global $CFG, $PAGE;
 
     if (isset($answer->displayquestionhidden)) {
-        $question = "<a class='".$answer->annoid." more dimmed' href=$answer->questionlink>$answer->answeredquestion</a>";
+        $question = "<a class='" . $answer->annoid . " more dimmed' href=$answer->questionlink>$answer->answeredquestion</a>";
     } else {
-        $question = "<a class='".$answer->annoid." more' href=$answer->questionlink>$answer->answeredquestion</a>";
+        $question = "<a class='" . $answer->annoid . " more' href=$answer->questionlink>$answer->answeredquestion</a>";
     }
     $pdfannotatorname = $answer->pdfannotatorname;
     if ($answer->correct) {
@@ -1578,6 +1594,7 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
 
     $table->add_data(array($answerlink, $checked, $answeredby . '<br>' . $answertime, $question, $pdfannotatorname, $dropdown), $classname);
 }
+
 /**
  * This function adds a row of data to the overview table that displays all
  * comments the current user posted in this course.
@@ -1596,6 +1613,7 @@ function pdfannotator_userspoststable_add_row($table, $post) {
     $pdfannotatorname = $post->pdfannotatorname;
     $table->add_data(array($content, $time, $post->votes, $pdfannotatorname), $classname);
 }
+
 /**
  * This function adds a row of data to the overview table that displays all
  * comments reported in this course.
@@ -1634,38 +1652,8 @@ function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, 
     // Add a new row to the reports table.
     $table->add_data(array($report->report, $reportedby . '<br>' . $reporttime, $reportedcommmentlink, $writtenby . '<br>' . $commenttime, $dropdown), $classname);
 }
-/**
- * This function receives data from our feedback form and sends it to the
- * developers via email.
- *
- * @global type $USER
- * @param type $formdata
- */
-function pdfannotator_send_feedbackmail ($formdata, $url) {
 
-    global $USER;
 
-    $subject = 'Feedback zum PDF-Annotation-Tool aus Aachen';
-    $messagetext = $formdata->feedback;
-    $from = $USER->firstname . ' ' . $USER->lastname . '<' . $USER->email . '>';
-    $headers = "From: $from\r\n";
-    $headers .= "Content-type: text/html\r\n";
-    $to = 'obeid@cil.rwth-aachen.de, schwager@cil.rwth-aachen.de, heynkes@cil.rwth-aachen.de';
-    $html = <<<EOF
-          <html>
-			<head>
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-    </head>
-    <body dir='auto'>
-		<div dir='ltr'>$messagetext</div>
-                <br><br>
-                Gesendet von $url
-	</body>
- </html>
-EOF;
-
-    mail($to, $subject, $html, $headers);
-}
 /**
  * Function takes a moodle timestamp, calculates how much time has since elapsed
  * and returns this information as a string (e.g.: '3 days ago').
@@ -1702,6 +1690,7 @@ function pdfannotator_timeago($timestamp) {
         return get_string('ago', 'pdfannotator', $diff);
     }
 }
+
 /**
  * Function takes a moodle timestamp, calculates how much time has since elapsed
  * and returns this information as a string. If the timestamp is older than 2 days,

@@ -122,7 +122,7 @@ if ($action === 'forwardquestion') {
             $params->urltoquestion = $url;
 
             if (isset($data->recipients)) {
-                send_forward_message($data->recipients, $params, $course, $cm, $context);
+                pdfannotator_send_forward_message($data->recipients, $params, $course, $cm, $context);
             }
             if ($fromoverview) {
                 // If user forwarded question from overview go back to overview.
