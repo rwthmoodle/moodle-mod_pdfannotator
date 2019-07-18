@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package   mod_pdfannotator
- * @copyright 2018 RWTH Aachen (see README.md)
- * @author    Anna Heynkes
+ * @copyright 2019 RWTH Aachen (see README.md)
+ * @author    Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */

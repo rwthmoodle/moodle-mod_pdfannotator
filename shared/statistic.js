@@ -1,7 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @package   mod_pdfannotator
+ * @copyright 2018 RWTH Aachen, Friederike Schwager (see README.md)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  */
 
 // R: The first parameter has to be Y, because it is a default YUI-object (demanded by moodle).
