@@ -1524,6 +1524,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             if(!comments.comments){
                comments = {comments: [comments]};
             }
+            comments.comments.forEach(function(comment) {
+                comment.content = comment.content.replace(/\n/g, "<br>");
+            });
             (function(templates, data) {
                 templates.render('mod_pdfannotator/comment', data)
                     .then(function(html,js){
