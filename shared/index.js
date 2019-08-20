@@ -967,9 +967,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                   elem.style.height = PAGE_HEIGHT+'px';
               });
 
-
-              var pageheight100 = pdfPage.getViewport(1, 0).height;
-              $('#body-wrapper').css('height',pageheight100+40);
+              if (! $('.path-mod-pdfannotator').first().hasClass('fullscreenWrapper')) {
+                  var pageheight100 = pdfPage.getViewport(1, 0).height;
+                  $('#body-wrapper').css('height',pageheight100+40);
+              }              
               document.getElementById('currentPage').value = _page;
               document.getElementById('currentPage').max = NUM_PAGES;
               document.getElementById('sumPages').innerHTML = NUM_PAGES;
