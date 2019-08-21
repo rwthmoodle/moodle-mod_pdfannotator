@@ -244,6 +244,7 @@ $string['missingAnnotation'] = 'Die zugehörige Annotation konnte nicht gefunden
 $string['error'] = 'Fehler!';
 $string['error:openingPDF'] = 'Beim Öffnen der PDF-Datei ist ein Fehler aufgetreten';
 $string['error:addAnnotation'] = 'Beim Hinzufügen einer Annotation ist ein Fehler aufgetreten.';
+$string['error:missingAnnotationtype'] = 'Annotationstyp nicht vorhanden. Möglicherweise fehlt der Eintrag in der Tabelle pdfannotator_annotationtypes.';
 $string['error:editAnnotation'] = 'Beim Ändern einer Annotation ist ein Fehler aufgetreten.';
 $string['error:deleteAnnotation'] = 'Beim Löschen der Annotation ist ein Fehler aufgetreten.';
 $string['error:getAnnotation'] = 'Beim Auslesen der Annotation ist ein Fehler aufgetreten.';

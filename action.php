@@ -127,7 +127,11 @@ if ($action === 'create') {
     $annotation = json_decode($annotationjs, true);
     // 1.2 Determine the type of the annotation.
     $type = $annotation['type'];
-    $typeid = pdfannotator_get_annotationtype_id($type);
+    $typeid = pdfannotator_get_annotationtype_id($type);    
+    if ($typeid == null) {
+        echo json_encode(['status' => 'error', 'log' => get_string('error:missingAnnotationtype', 'pdfannotator')]);
+        return;
+    }
     // 1.3 Set the type-specific data of the annotation.
     $data = [];
     switch ($type) {

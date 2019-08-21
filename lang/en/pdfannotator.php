@@ -323,6 +323,7 @@ $string['missingAnnotation'] = 'The corresponding annotation could not be found!
 $string['error'] = 'Error!';
 $string['error:openingPDF'] = 'An error occurred while opening the PDF file.';
 $string['error:addAnnotation'] = 'An error has occurred while adding an annotation.';
+$string['error:missingAnnotationtype'] = 'Annotationtype does not exists. Possibly the entry in table pdfannotator_annotationtypes is missing.';
 $string['error:editAnnotation'] = 'An error has occurred while editing an annotation.';
 $string['error:deleteAnnotation'] = 'An error has occured while deleting an annotation.';
 $string['error:getAnnotation'] = 'An error has occured while getting the annotation.';

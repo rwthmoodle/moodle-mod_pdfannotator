@@ -185,6 +185,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                 message: data.reason,
                                 type: "error"
                             });
+                            if (data.log){
+                                console.error(data.log);
+                            }
                             setTimeout(function(){
                             let notificationpanel = document.getElementById("user-notifications");
                             while (notificationpanel.hasChildNodes()) {  
