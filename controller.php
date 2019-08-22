@@ -28,6 +28,8 @@ $taburl = new moodle_url('/mod/pdfannotator/view.php', array('id' => $id));
 
 $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
 
+require_course_login($pdfannotator->course, true, $cm);
+
 /* * ********************************************** Display overview page *********************************************** */
 
 if ($action === 'overview') {
@@ -36,6 +38,7 @@ if ($action === 'overview') {
 }
 
 if ($action === 'forwardquestion') {
+    require_sesskey();
     require_capability('mod/pdfannotator:forwardquestions', $context);
     require_once($CFG->dirroot . '/mod/pdfannotator/forward_form.php');
     global $USER;
@@ -182,7 +185,7 @@ if ($action === 'overviewquestions') {
  * all answers.
  */
 if ($action === 'subscribeQuestion') {
-
+    require_sesskey();
     require_capability('mod/pdfannotator:subscribe', $context);
 
     global $DB;
@@ -205,7 +208,7 @@ if ($action === 'subscribeQuestion') {
  * answers to questions to which the user is subscribed.
  */
 if ($action === 'unsubscribeQuestion') {
-
+    require_sesskey();
     require_capability('mod/pdfannotator:subscribe', $context);
 
     global $DB;
@@ -306,6 +309,7 @@ if ($action === 'overviewownposts') {
  * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
  */
 if ($action === 'markreportasread') { // XXX Rename key and move it into $action === 'overviewreports'
+    require_sesskey();
     require_capability('mod/pdfannotator:viewreports', $context);
 
     global $DB;
@@ -341,6 +345,7 @@ if ($action === 'markreportasread') { // XXX Rename key and move it into $action
  * (either unread reports (reportfiler == 0) or all reports (reportfilter == 2)).
  */
 if ($action === 'markreportasunread') { // XXX Rename key and move it into $action === 'overviewreports'
+    require_sesskey();
     require_capability('mod/pdfannotator:viewreports', $context);
 
     global $DB;
@@ -484,6 +489,7 @@ if ($action === 'report') {
         echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
         pdfannotator_display_embed($pdfannotator, $cm, $course, $file);
     } else if ($report = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
+        require_sesskey();
         global $USER;
 
         // 1. Notify course manager(s).

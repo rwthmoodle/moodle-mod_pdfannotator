@@ -44,6 +44,7 @@ class questionmenu implements \renderable, \templatable {
         $urlparams['action'] = 'forwardquestion';
         $urlparams['fromoverview'] = '1';
         $urlparams['commentid'] = $commentid;
+        $urlparams['sesskey'] = sesskey();
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
         $this->url = $url;

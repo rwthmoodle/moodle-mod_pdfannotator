@@ -58,6 +58,7 @@ class answermenu implements \renderable, \templatable {
         $urlparams['annotationid'] = $annotationid;
         $urlparams['itemsperpage'] = $itemsperpage;
         $urlparams['answerfilter'] = $answerfilter;
+        $urlparams['sesskey'] = sesskey();
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
         $this->url = $url;

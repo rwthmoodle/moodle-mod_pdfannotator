@@ -261,7 +261,7 @@ class comment implements \renderable, \templatable {
     private function addforwardbutton($comment, $forwardquestions, $cm) {
         if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions) {
             global $CFG;
-            $urlparams = ['id' => $cm->id, 'action' => 'forwardquestion', 'commentid' => $comment->uuid];
+            $urlparams = ['id' => $cm->id, 'action' => 'forwardquestion', 'commentid' => $comment->uuid, 'sesskey' => sesskey()];
             $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
             $comment->buttons[] = ["classes" => "comment-forward-a", "attributes" => ["name" => "onclick", "value" => "window.location.href = '$url';"],
