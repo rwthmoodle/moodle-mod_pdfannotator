@@ -94,7 +94,7 @@ $string['setting_anonymous'] = 'Anonymes Posten erlauben?';
 $string['setting_fileupload'] = 'Bitte wählen Sie eine PDF-Datei aus.';
 $string['setting_fileupload_help'] = "Sie können die ausgewählte Datei nur solange ändern, bis Sie den Annotator mit Klick auf 'Speichern' erstellt haben.";
 $string['setting_usevotes'] = "Votes/Likes";
-$string['setting_usevotes_help'] = "Ist diese Option ausgewählt, so kann ein Nutzer jeden Beitrag bis zu einmal 'liken'. Eigene Beiträge sind hiervon ausgenommen. ";
+$string['setting_usevotes_help'] = "Ist diese Option ausgewählt, so kann ein Nutzer jeden Beitrag bis zu einmal 'liken'. Eigene Beiträge sind hiervon ausgenommen.";
 $string['setting_use_studenttextbox'] = "Textbox";
 $string['setting_use_studenttextbox_help'] = "Bitte beachten Sie, dass mit der Textbox erstellte Annotationen immer mit Verfasser und Erstellungsdatum angezeigt werden. Diese Annotationen können weder kommentiert noch gemeldet wedern.";
 $string['setting_use_studentdrawing'] = "Freihandzeichnung";
@@ -163,7 +163,7 @@ $string['mypost'] = 'Mein Beitrag';
 $string['question'] = 'Frage';
 $string['askedby'] = 'Gestellt von / am';
 $string['answeredby'] = 'von / am';
-$string['by'] = 'von, ';
+$string['by'] = 'von,';
 $string['on'] = 'am';
 $string['votes'] = 'Likes';
 $string['answers'] = 'Antworten';
@@ -203,8 +203,8 @@ $string['prevPage'] = 'Vorherige Seite';
 
 $string['addAComment'] = 'Kommentar hinzufügen';
 $string['createAnnotation'] = 'Annotation erstellen';
-$string['editedComment'] = 'zuletzt bearbeitet ';// 'zuletzt bearbeitet am ';
-$string['modifiedby'] = ' von ';
+$string['editedComment'] = 'zuletzt bearbeitet';// 'zuletzt bearbeitet am';
+$string['modifiedby'] = 'von';
 
 $string['activities'] = 'Aktivitäten';
 
@@ -473,7 +473,7 @@ $string['reportinfotitle'] = 'Gemeldete Kommentare';
 $string['unsolvedquestionstitle'] = 'Offene Fragen';
 $string['interestedpeople'] = 'weitere Interessenten';
 
-$string['entity_helptitle'] = 'Hilfe für ';
+$string['entity_helptitle'] = 'Hilfe für';
 
 $string['reportinfotitle_help'] = 'Hier finden Sie alle Meldungen in diesem Kurs. Der gemeldete Kommentar ist jeweils fettgedruckt. Unter ihm steht die Meldung.';
 $string['unsolvedquestionstitle_help'] = 'Hier finden Sie alle offenen Fragen in diesem Kurs.';

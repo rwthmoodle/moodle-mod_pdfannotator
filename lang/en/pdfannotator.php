@@ -278,8 +278,8 @@ $string['prevPage'] = 'Previous page';
 
 $string['addAComment'] = 'Add a comment';
 $string['createAnnotation'] = 'Create Annotation';
-$string['editedComment'] = 'last edited ';
-$string['modifiedby'] = ' by ';
+$string['editedComment'] = 'last edited';
+$string['modifiedby'] = 'by';
 $string['activities'] = 'Activities';
 $string['editNotAllowed'] = 'Panning not allowed!';
 
@@ -341,7 +341,6 @@ $string['error:openprintview'] = 'An error has occured while trying to open the 
 $string['error:printcomments'] = 'An error has occured while trying to open the comments in a pdf.';
 $string['error:editcomment'] = 'An error has occured while trying to edit a comment.';
 $string['error:hideComment'] = "An error has occured while trying to hide the comment from participants' view.";
-$string['error:redihideCommentsplayComment'] = 'Beim Wiedereinblenden des Kommentars für Teilnehmer ist ein Fehler aufgetreten.';
 $string['error:closequestion'] = 'An error has occured while closing/openingthe question.';
 $string['error:markcorrectanswer'] = 'An error has occured while marking the answer as correct.';
 $string['error:settimespan'] = "An error has occured while trying to set the timespan for new questions.";
@@ -460,7 +459,7 @@ $string['reportinfotitle'] = 'Reported comments';
 $string['unsolvedquestionstitle'] = 'Unsolved Questions';
 $string['interestedpeople'] = 'other people interested in the question';
 
-$string['entity_helptitle'] = 'Help for ';
+$string['entity_helptitle'] = 'Help for';
 
 $string['reportinfotitle_help'] = 'All reports in this course are listed.';
 $string['unsolvedquestionstitle_help'] = 'All unsolved questions in this course are listed.';

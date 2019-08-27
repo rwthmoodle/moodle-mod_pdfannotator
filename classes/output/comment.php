@@ -80,7 +80,7 @@ class comment implements \renderable, \templatable {
             }
 
             if (!empty($comment->modifiedby) && ($comment->modifiedby != $comment->userid) && ($comment->userid != 0)) {
-                $comment->modifiedby = get_string('modifiedby', 'pdfannotator') . pdfannotator_get_username($comment->modifiedby);
+                $comment->modifiedby = get_string('modifiedby', 'pdfannotator') . ' '. pdfannotator_get_username($comment->modifiedby);
             } else {
                 $comment->modifiedby = null;
             }
