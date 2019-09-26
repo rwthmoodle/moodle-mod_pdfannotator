@@ -114,7 +114,7 @@ class pdfannotator_comment {
                 $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
-                    if ($recipient == $USER) {
+                    if ($recipient->id == $USER->id) {
                         continue;
                     }
                     $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newquestion', $messagetext, $anonymous);
