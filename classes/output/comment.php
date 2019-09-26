@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The purpose of this script is to collect the output data for the statistic template and
- * make it available to the renderer. The data is collected via the statistic model and then processed.
- * Therefore, class statistic can be seen as a view controller.
+ * Renderable for comments.
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -30,6 +28,14 @@ class comment implements \renderable, \templatable {
 
     private $comments = [];
 
+    /**
+     * Constructor of renderable for comments.
+     *
+     * @param object $data Comment or array of comments
+     * @param object $cm Course module
+     * @param object $context Context
+     * @return type
+     */
     public function __construct($data, $cm, $context) {
         global $USER;
 
