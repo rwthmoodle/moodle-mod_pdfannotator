@@ -127,7 +127,7 @@ if ($action === 'create') {
     $annotation = json_decode($annotationjs, true);
     // 1.2 Determine the type of the annotation.
     $type = $annotation['type'];
-    $typeid = pdfannotator_get_annotationtype_id($type);    
+    $typeid = pdfannotator_get_annotationtype_id($type);
     if ($typeid == null) {
         echo json_encode(['status' => 'error', 'log' => get_string('error:missingAnnotationtype', 'pdfannotator')]);
         return;
@@ -326,7 +326,8 @@ if ($action === 'addComment') {
     $PAGE->set_context($context);
 
     // Get the comment data.
-    $content = required_param('content', PARAM_TEXT);
+    $content = required_param('content', PARAM_RAW);
+    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
@@ -427,8 +428,9 @@ if ($action === 'editComment') {
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);
-    $content = required_param('content', PARAM_TEXT);
-
+    $content = required_param('content', PARAM_RAW);
+    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
+    
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }

@@ -401,7 +401,7 @@ class pdfannotator_comment {
         }
 
         if ($success) {
-            $result = array('status' => 'success', 'timemodified' => $time);
+            $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
             if ($comment->userid != $USER->id) {
                 $result['modifiedby'] = pdfannotator_get_username($USER->id);
             }
