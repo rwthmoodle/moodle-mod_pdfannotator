@@ -702,6 +702,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     
                     function openDocumentCallback() {
                         var url = document.getElementById('myprinturl').innerHTML;
+                        url = url.replace(/%/g, "%25");
+                        url = url.replace(/#/g, "%23");
                         location.href = url;
                     }
                 }
@@ -827,6 +829,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                         // jsPDF needs \n-linebreaks so we replace <br \> with \n. But first we remove all \n that already exist.
                                         text = text.replace(/\n/g, "");
                                         text = text.replace(/<br \/>/g, "\n");
+                                        // Remove all other HTML-Tags.
+                                        text = $("<div>").html(text).text();
                                         if (author !== null) {
                                             printAuthor(author, timemodified);
                                         }
@@ -6966,7 +6970,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                             exists = false;
                         }
                         //call this function to repeat in 5 secs
-                        setTimeout(loadNewAnnotations, 5000); 
+                    //    setTimeout(loadNewAnnotations, 5000); 
                 }, function (err){
                     notification.addNotification({
                         message: M.util.get_string('error:getAnnotations', 'pdfannotator'),
