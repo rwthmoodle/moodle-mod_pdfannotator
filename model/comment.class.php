@@ -394,7 +394,7 @@ class pdfannotator_comment {
             $comment->content = $content;
             $comment->timemodified = time();
             $comment->modifiedby = $USER->id;
-            $time = pdfannotator_get_user_datetime($comment->timemodified);
+            $time = pdfannotator_optional_timeago($comment->timemodified);
             $success = $DB->update_record('pdfannotator_comments', $comment);
         } else {
             $success = false;
