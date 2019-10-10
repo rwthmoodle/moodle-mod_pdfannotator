@@ -156,13 +156,13 @@ class userspoststable extends overviewtable {
         $this->column_style('col0', 'width', '60%'); // The user's post.
         $this->column_style('col1', 'width', '18%'); // Time of last modification.
         $this->column_style('col2', 'width', '7%'); // Number of votes for this post.
-        $this->column_style('col3', 'width', '15%'); // Annotator in which they posted it
+        $this->column_style('col3', 'width', '15%'); // Annotator in which they posted it.
         $this->attributes['id'] = $this->id;
         $mypost = get_string('mypost', 'pdfannotator'); // $OUTPUT->pix_icon('t/message', '') . self::wrap(get_string('mypost', 'pdfannotator'));
         $lastedited = get_string('lastedited', 'pdfannotator'); // $OUTPUT->pix_icon('e/insert_time', '') . self::wrap(get_string('lastedited', 'pdfannotator'));
         $votes = "<i class='icon fa fa-thumbs-up fa-fw' style='float:left'></i>" . ' ' . $OUTPUT->help_icon('voteshelpicontwo', 'pdfannotator');; // "<i class='icon fa fa-chevron-up fa-lg' style='float:left'></i>" . self::wrap(get_string('votes', 'pdfannotator')). ' ' . $OUTPUT->help_icon('voteshelpicon', 'pdfannotator');
         $document = get_string('pdfannotatorcolumn', 'pdfannotator'); // "<i class='icon fa fa-book fa-fw'></i>" . self::wrap(get_string('pdfannotatorcolumn', 'pdfannotator'));
-        $this->define_headers(array($mypost, $lastedited, $votes, $document)); // get_string('unsubscribeQuestion', 'pdfannotator'), get_string('putinrecyclebin', 'pdfannotator')
+        $this->define_headers(array($mypost, $lastedited, $votes, $document));
         $this->no_sorting('col0');
         $this->sortable(true, 'col2', SORT_ASC);
         $this->sortable(true, 'col3', SORT_DESC);
@@ -192,7 +192,7 @@ class reportstable extends overviewtable {
         $reportedcomment = get_string('reportedcomment', 'pdfannotator'); // $OUTPUT->pix_icon('i/flagged', '') . self::wrap(get_string('reportedcomment', 'pdfannotator'));
         $writtenby = get_string('by', 'pdfannotator') . ' ' . get_string('on', 'pdfannotator'); // $OUTPUT->pix_icon('i/user', '') . self::wrap(get_string('by', 'pdfannotator')) . ' ' . $OUTPUT->pix_icon('e/insert_time', '') . self::wrap(get_string('on', 'pdfannotator'));
         $actionmenu = get_string('overviewactioncolumn', 'pdfannotator'); // $OUTPUT->pix_icon('i/settings', '') . self::wrap(get_string('overviewactioncolumn', 'pdfannotator'));
-        $this->define_headers(array($report, $reportedby, $reportedcomment, $writtenby, $actionmenu)); // get_string('unsubscribeQuestion', 'pdfannotator'), get_string('putinrecyclebin', 'pdfannotator')
+        $this->define_headers(array($report, $reportedby, $reportedcomment, $writtenby, $actionmenu));
         $this->no_sorting('col0');
         $this->no_sorting('col2');
         $this->no_sorting('col4');

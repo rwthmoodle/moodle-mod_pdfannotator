@@ -59,6 +59,7 @@ class reportmenu implements \renderable, \templatable {
         $urlparams['reportid'] = $report->reportid;
         $urlparams['itemsperpage'] = $itemsperpage;
         $urlparams['reportfilter'] = $reportfilter;
+        $urlparams['sesskey'] = sesskey();
 
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 

@@ -141,7 +141,7 @@ class pdfannotator_instance {
         }
 
         foreach ($questions as $question) {
-            
+
             $question->answeredquestion = html_entity_decode($question->answeredquestion);
             $question->timemodified = pdfannotator_get_user_datetime($question->timemodified);
             if ($question->visibility === 'anonymous') {
