@@ -63,7 +63,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
                 $subscription = new backup_nested_element('subscription', array('id'), array('userid'));
 
                 $comments = new backup_nested_element('comments');
-                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'seen');
+                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'ishidden', 'solved');
                 $comment = new backup_nested_element('comment', array('id'), $c);
 
                     $votes = new backup_nested_element('votes');

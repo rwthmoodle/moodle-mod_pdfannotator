@@ -324,6 +324,7 @@ $string['questionstabicon'] = 'Questions';
 $string['questionstabicon_help'] = 'This page displays all unsolved questions that were asked in this course. You can also choose to see all or all solved questions in this course.';
 $string['questionstitle'] = 'Questions on page';
 $string['read'] = 'Read';
+$string['reason'] = 'Explanation';
 $string['recievenewquestionnotifications'] = 'Notify about new questions';
 $string['recipient'] = 'Recipient/s';
 $string['recipient_help'] = 'To select several persons, hold down "Ctrl"';
