@@ -331,7 +331,7 @@ body {
     margin: 0;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 991px) {
     .path-mod-pdfannotator #content-wrapper, .path-mod-pdfannotator #comment-wrapper {
         height: 50%;
     }
