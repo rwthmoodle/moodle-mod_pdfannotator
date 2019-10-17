@@ -35,6 +35,15 @@ class statistics implements \renderable, \templatable {
     private $isteacher;
     private $tabledata;
 
+    /**
+     * Constructor of renderable for statistics tab.
+     * @global type $USER
+     * @global type $PAGE
+     * @param int $annotatorid Id of the annotator
+     * @param int $courseid ID of the course
+     * @param object $capabilities Some of the capabilities the user has-
+     * @param int $id Course module id
+     */
     public function __construct($annotatorid, $courseid, $capabilities, $id) {
         global $USER, $PAGE;
         $userid = $USER->id;

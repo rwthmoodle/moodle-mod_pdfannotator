@@ -50,7 +50,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $paths[] = new restore_path_element('pdfannotator_annotation', '/activity/pdfannotator/annotations/annotation');
 
         $paths[] = new restore_path_element('pdfannotator_subscription', '/activity/pdfannotator/annotations/annotation/subscriptions/subscription');
-        $paths[] = new restore_path_element('pdfannotator_commentarchive', '/activity/pdfannotator/annotations/annotation/commentsarchive/commentarchive');
         $paths[] = new restore_path_element('pdfannotator_comment', '/activity/pdfannotator/annotations/annotation/comments/comment');
 
         $paths[] = new restore_path_element('pdfannotator_vote', '/activity/pdfannotator/annotations/annotation/comments/comment/votes/vote');
@@ -107,25 +106,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $this->set_mapping('pdfannotator_subscription', $oldid, $newitemid);
 
     }
-
-    protected function process_pdfannotator_commentarchive($data) {
-        global $DB;
-
-        $data = (object)$data;
-        $oldid = $data->id;
-
-        $data->annotationid = $this->get_new_parentid('pdfannotator_annotation');
-        $data->userid = $this->get_mappingid('user', $data->userid);
-
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
-
-        $data->pdfannotatorid = $this->get_mappingid('pdfannotator', $data->pdfannotatorid);
-
-        $newitemid = $DB->insert_record('pdfannotator_commentsarchive', $data);
-        $this->set_mapping('pdfannotator_commentarchive', $oldid, $newitemid);
-    }
-
 
     protected function process_pdfannotator_comment($data) {
         global $DB;

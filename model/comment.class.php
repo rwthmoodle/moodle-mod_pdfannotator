@@ -106,7 +106,7 @@ class pdfannotator_comment {
                 $question->answeruser = $visibility == 'public' ? fullname($USER) : 'Anonymous';
                 $question->content = $content;
 
-                $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST); // annotation::getPageID($annotationid);
+                $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST);
                 $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
@@ -114,7 +114,7 @@ class pdfannotator_comment {
                 $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
-                    if ($recipient == $USER) {
+                    if ($recipient->id == $USER->id) {
                         continue;
                     }
                     $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newquestion', $messagetext, $anonymous);
@@ -260,13 +260,6 @@ class pdfannotator_comment {
         $tobedeletedaswell = [];
         $hideannotation = 0;
 
-//        $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
-
-//        if ($wasanswered) { // If the comment was answered, mark it as deleted for a special display.
-//            $params = array("id" => $commentid, "isdeleted" => 1);
-//            $success = $DB->update_record('pdfannotator_comments', $params, $bulk = false);
-//        } else { // If not, just delete it.
-//        //
         if (!$wasanswered) {
             // But first: Check if the predecessor was already marked as deleted, too and if so, delete it completely.
             $sql = "SELECT id, isdeleted, isquestion from {pdfannotator_comments} "
@@ -280,8 +273,7 @@ class pdfannotator_comment {
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
-//                            pdfannotator_annotation::delete($annotationid, $cmid, true);
-                                $hideannotation = 1; //$annotationid;
+                                $hideannotation = 1; // $annotationid;
                         }
                     }
                 } else {
@@ -289,22 +281,12 @@ class pdfannotator_comment {
                 }
             }
 
-            // If the comment is a question and has no answers, delete the annotion.
-//            if ($comment->isquestion) {
-//                pdfannotator_annotation::delete($annotationid, $cmid, true);
-//                $deleteannotation = $annotationid;
-//            }
-
-//            $success = $DB->delete_records('pdfannotator_comments', array("id" => $commentid));
         }
 
         $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
 
-        // Delete votes to the comment.
-//        $DB->delete_records('pdfannotator_votes', array("commentid" => $commentid));
-
         if ($success == 1) {
-            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell]; //, 'deleteannotation' => $deleteannotation];
+            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell];
         } else {
             return ['status' => 'error'];
         }
@@ -333,7 +315,6 @@ class pdfannotator_comment {
     /**
      * Deletes a comment.
      * If the comment is answered, it will be displayed as deleted comment.
-     * If the comment was reported it is inserted to the commentsarchive table.
      */
     public static function delete_comment($commentid, $cmid) {
         global $DB, $USER;
@@ -358,16 +339,9 @@ class pdfannotator_comment {
 
         $select = "annotationid = ? AND timecreated > ? AND isdeleted = ?";
         $wasanswered = $DB->record_exists_select('pdfannotator_comments', $select, [$annotationid, $comment->timecreated, 0]);
-        $wasreported = $DB->record_exists('pdfannotator_reports', ['commentid' => $commentid]);
 
         $tobedeletedaswell = [];
         $deleteannotation = 0;
-
-        // Before deleting: If the comment was reported, it should be inserted into the archive.
-        if ($wasreported) {
-            $reportedcomment = clone $comment;
-            $DB->insert_record('pdfannotator_commentsarchive', $reportedcomment);
-        }
 
         if ($wasanswered) { // If the comment was answered, mark it as deleted for a special display.
             $params = array("id" => $commentid, "isdeleted" => 1);
@@ -406,7 +380,8 @@ class pdfannotator_comment {
         $DB->delete_records('pdfannotator_votes', array("commentid" => $commentid));
 
         if ($success == 1) {
-            return ['status' => 'success', 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell, 'deleteannotation' => $deleteannotation];
+            return ['status' => 'success', 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell,
+                'deleteannotation' => $deleteannotation, 'isquestion' => $comment->isquestion];
         } else {
             return ['status' => 'error'];
         }
@@ -419,14 +394,14 @@ class pdfannotator_comment {
             $comment->content = $content;
             $comment->timemodified = time();
             $comment->modifiedby = $USER->id;
-            $time = pdfannotator_get_user_datetime($comment->timemodified);
+            $time = pdfannotator_optional_timeago($comment->timemodified);
             $success = $DB->update_record('pdfannotator_comments', $comment);
         } else {
             $success = false;
         }
 
         if ($success) {
-            $result = array('status' => 'success', 'timemodified' => $time);
+            $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
             if ($comment->userid != $USER->id) {
                 $result['modifiedby'] = pdfannotator_get_username($USER->id);
             }
@@ -623,13 +598,7 @@ class pdfannotator_comment {
                 . "JOIN (SELECT * FROM {pdfannotator_annotations} WHERE pdfannotatorid = :docid) a "
                 . "ON a.id = c.annotationid WHERE isquestion = 1";
         $questions = $DB->get_records_sql($sql, array('docid' => $documentid));
-//        if (!has_capability('mod/pdfannotator:seehiddencomments', $context)) {
-//            foreach ($questions as $question) {
-//                if ($question->ishidden == 1) {
-//                    $question->content = '<em>' . get_string('hiddenComment', 'pdfannotator') . '</em>';
-//                }
-//            }
-//        }
+
         $ret = [];
         foreach ($questions as $question) {
             $ret[$question->page][] = $question;
@@ -647,7 +616,7 @@ class pdfannotator_comment {
         global $DB;
         $ret = [];
         $i = 0;
-//        $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
+        $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
         $sql = "SELECT c.*, a.page FROM {pdfannotator_comments} c "
                 . "JOIN {pdfannotator_annotations} a ON a.id = c.annotationid "
                 . "WHERE isquestion = 1 AND c.pdfannotatorid = :docid AND "
@@ -666,9 +635,9 @@ class pdfannotator_comment {
             if ($question->isdeleted == 1) {
                 $question->content = '<em>'.get_string('deletedComment', 'pdfannotator').'</em>';
             }
-//            if ($question->ishidden == 1 && !$displayhidden) {
-//                $question->content = get_string('hiddenComment', 'pdfannotator');
-//            }
+            if ($question->ishidden == 1 && !$displayhidden) {
+                $question->content = get_string('hiddenComment', 'pdfannotator');
+            }
             $ret[$i] = $question;   // Without this array the order by page would get lost, because js sorts by id.
             $i++;
         }

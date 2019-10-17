@@ -34,7 +34,7 @@
                                 </span>
                             {{/ report }}
                             {{#buttons}}
-                                    <button class="dropdown-item {{classes}}" type=button {{#attributes}} {{name}}="{{value}}"{{/attributes}}>
+                                    <button class="dropdown-item {{classes}}" type=button {{#attributes}} {{name}}="{{&value}}"{{/attributes}}>
                                         {{#moodleicon}} {{#pix}} {{key}},{{component}},{{title}} {{/pix}} {{/moodleicon}}
                                         {{#faicon}} <i class=" icon fa {{class}} fa-fw"></i> {{/faicon}}
                                         <span class="menu-action-text">
@@ -52,22 +52,22 @@
             </div>
            
             <div class="chat-message-text">
-                <p id="chatmessage{{ uuid }}" class="chat-message-p"> {{{ content }}}</p>
+                <div id="chatmessage{{ uuid }}">{{{ content }}}</div>
                 
                 {{#displayhidden}}<span id="taghidden{{uuid}}" class="tag tag-info">{{# str }} hiddenforparticipants, pdfannotator {{/ str }}</span>{{/displayhidden}}
-
+            
                 <form id="edit{{ uuid }}" class="edit-comment-form" style="display:none;">
                     <textarea id="editarea{{ uuid }}" placeholder="" cols="40" rows="3"></textarea>                  
                     <input id="commentSubmit" class="owner btn btn-primary" type="submit" value="{{# str }} editButton, pdfannotator {{/ str }}">
                     <input id="commentCancel" class="owner btn btn-secondary" type="reset" value="{{# str }} cancelButton, pdfannotator {{/ str }}" >
                 </form>
-
-            </div>
+            
+            </div>            
                 {{^ isdeleted }}
                     <em class="edited">
                         {{# edited }}
                             <div>
-                                <span id="timemodified_{{ uuid }}">{{# str }} editedComment, pdfannotator {{/ str }}{{timemodified}}</span>
+                                <span id="timemodified_{{ uuid }}">{{# str }} editedComment, pdfannotator {{/ str }} {{timemodified}}</span>
                                 <span id="modifiedby_{{ uuid }}">{{modifiedby}}</span>
                             </div>
                         {{/ edited }}
