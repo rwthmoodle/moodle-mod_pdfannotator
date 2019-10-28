@@ -22,7 +22,7 @@
 defined('MOODLE_INTERNAL') || die; // Prevents crashes on misconfigured production server.
 
 if ($ADMIN->fulltree) {
-
+    require_once('constants.php');
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/usevotes',
             get_string('global_setting_usevotes', 'pdfannotator'), get_string('global_setting_usevotes_desc', 'pdfannotator'), 1));
 
@@ -39,4 +39,11 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/use_studentdrawing',
             get_string('global_setting_use_studentdrawing', 'pdfannotator'),
             get_string('global_setting_use_studentdrawing_desc', 'pdfannotator'), 0));
+
+    //Define what API to use for converting latex formulas into png.
+    $options = array();
+    $options[LATEX_TO_PNG_MOODLE] = get_string("global_setting_latexusemoodle", "pdfannotator");
+    $options[LATEX_TO_PNG_GOOGLE_API] = get_string("global_setting_latexusegoogle", "pdfannotator");
+    $settings->add(new admin_setting_configselect('mod_pdfannotator/latexapi', get_string('global_setting_latexapisetting', 'pdfannotator'),
+        get_string('global_setting_latexapisetting_desc', 'pdfannotator'), LATEX_TO_PNG_MOODLE, $options));
 }

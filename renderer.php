@@ -23,8 +23,6 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once('../../config.php');
-
 class mod_pdfannotator_renderer extends plugin_renderer_base {
 
     /**
