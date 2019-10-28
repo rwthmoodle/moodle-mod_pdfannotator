@@ -150,17 +150,16 @@ function pdfannotator_get_annotationtype_name($typeid) {
     }
 }
 
-function pdfannotator_handle_latex($subject) {
-
+function pdfannotator_handle_latex($context, string $subject) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
+    $latexapi = get_config('mod_pdfannotator','latexapi');
 
     // Look for these formulae: $$ ... $$, \( ... \) and \[ ... \]
     // !!! keep indentation!
     $pattern = <<<'SIGN'
 ~(?:\$\$.*?\$\$)|(?:\\\(.*?\\\))|(?:\\\[.*?\\\])~
 SIGN;
-    // Working, but less readable, alternative: $pattern = '~(?:\\$\\$.*?\\$\\$)|(?:\\\\\\(.*?\\\\\\))|(?:\\\\\\[.*?\\\\\\])~';
 
     $matches = array();
     $hits = preg_match_all($pattern, $subject, $matches, PREG_OFFSET_CAPTURE);
@@ -178,7 +177,11 @@ SIGN;
         $formulalength = strlen($match[0]);
         $formulaoffset = $match[1];
         $result[] = trim(substr($subject, $textstart, $formulaoffset - $textstart));
-        $result[] = pdfannotator_process_latex($match[0]);
+        if($latexapi == LATEX_TO_PNG_GOOGLE_API) {
+            $result[] = pdfannotator_process_latex_google($match[0]);
+        } else {
+            $result[] = pdfannotator_process_latex_moodle($context, $match[0]);
+        }
         $textstart = $formulaoffset + $formulalength;
     }
     if ($textstart != strlen($subject) - 1) {
@@ -187,6 +190,22 @@ SIGN;
     return $result;
 }
 
+function pdfannotator_process_latex_moodle($context, $string) {
+    global $CFG;
+    require_once($CFG->libdir . '/moodlelib.php');
+    require_once($CFG->dirroot . '/filter/tex/latex.php');
+    require_once($CFG->dirroot . '/filter/tex/lib.php');
+    $result = array();
+    $tex = new latex();
+    $md5 = md5($string);
+    $image = $tex->render($string, $md5 . 'png');
+    $imagedata = file_get_contents($image);
+    $result['image'] = IMAGE_PREFIX . base64_encode($imagedata);
+    //imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only thing needed here
+    $imageinfo = getimagesize($image);
+    $result['imageheight'] = $imageinfo[1];
+    return $result;
+}
 /**
  * Function takes a latex code string, modifies and url encodes it for the Google Api to process,
  * and returns the resulting image along with its height
@@ -194,7 +213,7 @@ SIGN;
  * @param type $string
  * @return type
  */
-function pdfannotator_process_latex($string) {
+function pdfannotator_process_latex_google(string $string) {
     $string = str_replace('\xrightarrow', '\rightarrow', $string);
     $string = str_replace('\xlefttarrow', '\leftarrow', $string);
 

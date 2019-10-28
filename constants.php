@@ -29,6 +29,13 @@ defined('MOODLE_INTERNAL') || die();
 define('LATEX_TO_PNG_REQUEST',   'https://chart.googleapis.com/chart?cht=tx&chl=');
 
 /**
+ * Define whether to use googleapi or moodle Latex Library
+ */
+define('LATEX_TO_PNG_MOODLE', 0);
+define('LATEX_TO_PNG_GOOGLE_API', 1);
+
+
+/**
  * Prefix needed for encode64 imaged
  */
 define('IMAGE_PREFIX', 'data:image/png;base64,');
