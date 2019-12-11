@@ -20,7 +20,7 @@
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Rabea de Groot and Anna Heynkes
+ * @authors   Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -35,15 +35,16 @@ $messageproviders = array (
     // Concerns answers to questions the student subscribed to.
     'newanswer' => array (
         'capability'  => 'mod/pdfannotator:viewanswers', // Student capability.
-        'defaults' => array(
-            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
-            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN + MESSAGE_DEFAULT_LOGGEDOFF,
-        )
     ),
 
     // Notify teacher about a newly reported comment.
     'newreport' => array (
         'capability'  => 'mod/pdfannotator:viewreports' // Teacher capability.
+    ),
+
+    // Notify when receiving a forwarded question.
+    'forwardedquestion' => array (
+        'capability'  => 'mod/pdfannotator:getforwardedquestions', // Teacher capability.
     )
 
 );

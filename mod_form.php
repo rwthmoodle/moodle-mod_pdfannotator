@@ -35,12 +35,6 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform =& $this->_form;
         $config = get_config('mod_pdfannotator');
 
-        $mform->addElement('hidden', 'idcreator', $USER->id);
-        $mform->setType('idcreator', PARAM_INT);
-
-        $mform->addElement('hidden', 'idCourse', $COURSE->id);
-        $mform->setType('idCourse', PARAM_INT);
-
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->setType('general', PARAM_TEXT);
         $mform->addElement('text', 'name', get_string('setting_alternative_name', 'pdfannotator'), array('size' => '48'));
@@ -92,15 +86,15 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->addHelpButton('use_studentdrawing', 'setting_use_studentdrawing', 'pdfannotator');
 
         // XXX second checkbox or change to select.
-        $mform->addElement('advcheckbox', 'useprint', get_string('setting_useprint', 'pdfannotator'), get_string('useprint', 'pdfannotator'), null, array(0, 1));
+        $mform->addElement('advcheckbox', 'useprint', get_string('setting_useprint_document', 'pdfannotator'), get_string('useprint', 'pdfannotator'), null, array(0, 1));
         $mform->setType('useprint', PARAM_BOOL);
         $mform->setDefault('useprint', $config->useprint);
-        $mform->addHelpButton('useprint', 'setting_useprint', 'pdfannotator');
+        $mform->addHelpButton('useprint', 'setting_useprint_document', 'pdfannotator');
 
         $mform->addElement('advcheckbox', 'useprintcomments', get_string('setting_useprint_comments', 'pdfannotator'), get_string('useprint_comments', 'pdfannotator'), null, array(0, 1));
-        $mform->setType('useprint', PARAM_BOOL);
-        $mform->setDefault('useprint', $config->useprintcomments);
-        $mform->addHelpButton('useprint', 'setting_useprint_comments', 'pdfannotator');
+        $mform->setType('useprintcomments', PARAM_BOOL);
+        $mform->setDefault('useprintcomments', $config->useprintcomments);
+        $mform->addHelpButton('useprintcomments', 'setting_useprint_comments', 'pdfannotator');
 
         // Add legacy files flag only if used.
         if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {

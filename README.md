@@ -14,7 +14,16 @@ You should have received a copy of the GNU General Public License
 along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 Please note that this plugin also contains files that are under the
-- MIT License: namely index.js, jquery-3.2.1, textclipper.js.
+- MIT License: namely index.js, jquery-3.2.1, textclipper.js, chart.js
 - Apache License, Version 2.0: namely pdf.js.
 
 Google Charts API is used in download function to convert [LaTeX](https://www.latex-project.org/) formulae to PNG: <https://chart.googleapis.com/chart>.
+
+
+### Installation:
+
+- Unzip and copy "pdfannotator" folder into Moodle's "mod" folder
+- Visit admin page to install module
+
+For further installation instructions please see: <http://docs.moodle.org/en/Installing_contributed_modules_or_plugins>
+
