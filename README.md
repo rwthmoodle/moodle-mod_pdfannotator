@@ -1,4 +1,4 @@
-# Pdf Annotation Tool for Moodle
+PDF Annotation Tool for Moodle
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@ Please note that this plugin also contains files that are under the
 - MIT License: namely index.js, jquery-3.2.1, textclipper.js, chart.js
 - Apache License, Version 2.0: namely pdf.js.
 
-Google Charts Api is used in download function to convert latex formulae to png: <https://chart.googleapis.com/chart>.
+Google Charts API is used in download function to convert [LaTeX](https://www.latex-project.org/) formulae to PNG: <https://chart.googleapis.com/chart>.
+
 
 ### Installation:
 
@@ -25,3 +26,4 @@ Google Charts Api is used in download function to convert latex formulae to png:
 - Visit admin page to install module
 
 For further installation instructions please see: <http://docs.moodle.org/en/Installing_contributed_modules_or_plugins>
+
