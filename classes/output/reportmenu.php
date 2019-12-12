@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The purpose of this script is to collect the output data for the statistic template and
- * make it available to the renderer. The data is collected via the statistic model and then processed.
- * Therefore, class statistic can be seen as a view controller.
+ * Dropdown menu in reportstable on overview tab.
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -32,6 +30,15 @@ class reportmenu implements \renderable, \templatable {
     private $iconclass;
     private $label;
 
+    /**
+     * Constructor of renderable for dropdown menu in reportstable.
+     * @global type $CFG
+     * @param object $report Report object
+     * @param int $cmid Course module id
+     * @param int $currentpage Page of the table on overviewpage
+     * @param int $itemsperpage Number of entries on every page in the table
+     * @param int $reportfilter Value of the filter for the answerstable
+     */
     public function __construct($report, $cmid, $currentpage, $itemsperpage, $reportfilter) {
         global $CFG;
         if ($report->seen == 0) {
@@ -52,6 +59,7 @@ class reportmenu implements \renderable, \templatable {
         $urlparams['reportid'] = $report->reportid;
         $urlparams['itemsperpage'] = $itemsperpage;
         $urlparams['reportfilter'] = $reportfilter;
+        $urlparams['sesskey'] = sesskey();
 
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 

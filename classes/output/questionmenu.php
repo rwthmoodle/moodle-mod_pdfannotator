@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dropdown menu in answerstable on overview tab.
+ * Dropdown menu in questionstable on overview tab.
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -24,7 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-class answermenu implements \renderable, \templatable {
+class questionmenu implements \renderable, \templatable {
 
     private $url;
     private $iconclass;
@@ -32,40 +32,22 @@ class answermenu implements \renderable, \templatable {
     private $buttonclass;
 
     /**
-     * Constructor of renderable for dropdown menu in answerstable.
-     * @global type $CFG
-     * @param int $annotationid Id of the annotation the answer belongs to
-     * @param bool $issubscribed Is the user subscribed to the question?
-     * @param int $cmid Course module id
-     * @param int $currentpage Page of the table on overviewpage
-     * @param int $itemsperpage Number of entries on every page in the table
-     * @param int $answerfilter Value of the filter for the answerstable
+     * Constructor of renderable for dropdown menu in questionstable.
+     *
+     * @param int $commentid Id of the question
+     * @param array $urlparams Parameters for the link
      */
-    public function __construct($annotationid, $issubscribed, $cmid, $currentpage, $itemsperpage, $answerfilter) {
+    public function __construct($commentid, $urlparams) {
 
         global $CFG;
-        if ($answerfilter == 0 && empty($issubscribed)) { // Show all answers and this answer is not subscribed.
-            // No one size fits all.
-            $urlparams = array('action' => 'subscribeQuestion');
-            $iconclass = "icon fa fa-bell fa-fw";
-            $label = get_string('subscribeQuestion', 'pdfannotator');
-            $buttonclass = 'comment-subscribe subscribe';
-        } else { // Show answers to subscribed questions.
-            $urlparams = array('action' => 'unsubscribeQuestion');
-            $iconclass = "icon fa fa-bell-slash fa-fw";
-            $label = get_string('unsubscribeQuestion', 'pdfannotator');
-            $buttonclass = 'comment-subscribe unsubscribe';
-        }
+
+        $iconclass = "icon fa fa-share fa-fw";
+        $label = get_string('forward', 'pdfannotator');
+        $buttonclass = 'comment-subscribe subscribe';
+
+        $urlparams['action'] = 'forwardquestion';
         $urlparams['fromoverview'] = '1';
-        $urlparams['id'] = $cmid;
-        if ($answerfilter == 0) {
-            $urlparams['page'] = $currentpage;
-        } else {
-            $urlparams['page'] = '0';
-        }
-        $urlparams['annotationid'] = $annotationid;
-        $urlparams['itemsperpage'] = $itemsperpage;
-        $urlparams['answerfilter'] = $answerfilter;
+        $urlparams['commentid'] = $commentid;
         $urlparams['sesskey'] = sesskey();
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 

@@ -128,6 +128,10 @@ if ($action === 'create') {
     // 1.2 Determine the type of the annotation.
     $type = $annotation['type'];
     $typeid = pdfannotator_get_annotationtype_id($type);
+    if ($typeid == null) {
+        echo json_encode(['status' => 'error', 'log' => get_string('error:missingAnnotationtype', 'pdfannotator')]);
+        return;
+    }
     // 1.3 Set the type-specific data of the annotation.
     $data = [];
     switch ($type) {
@@ -322,7 +326,8 @@ if ($action === 'addComment') {
     $PAGE->set_context($context);
 
     // Get the comment data.
-    $content = required_param('content', PARAM_TEXT);
+    $content = required_param('content', PARAM_RAW);
+    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
@@ -423,8 +428,9 @@ if ($action === 'editComment') {
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);
-    $content = required_param('content', PARAM_TEXT);
-
+    $content = required_param('content', PARAM_RAW);
+    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
+    
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }
@@ -514,7 +520,7 @@ if ($action === 'unsubscribeQuestion') {
     }
 }
 
-/* * ****************************************** Mark a question as solved  ****************************************** */
+/* * ****************************************** Mark a question as closed or an answer as correct ****************************************** */
 
 if ($action === 'markSolved') {
     global $DB;
