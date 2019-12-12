@@ -236,6 +236,27 @@ $capabilities = array(
         ),
     ),
 
+    'mod/pdfannotator:forwardquestions' => array ( // Forward a question (to an other teacher/manager).
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+    ),
+
+    'mod/pdfannotator:getforwardedquestions' => array ( // Receive forwarded questions.
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+    ),
+
+
     // Get a notification about new questions.
     'mod/pdfannotator:recievenewquestionnotifications' => array (
         'captype' => 'read',

@@ -204,12 +204,7 @@ function pdfannotator_delete_instance($id) {
         return false;
     }
 
-    // 4. Delete all archived comments.
-    if (!$DB->delete_records('pdfannotator_commentsarchive', ['pdfannotatorid' => $id]) == 1) {
-        return false;
-    }
-
-    // 5. Delete the annotator itself.
+    // 4. Delete the annotator itself.
     if (!$DB->delete_records('pdfannotator', array('id' => $id)) == 1) {
         return false;
     }

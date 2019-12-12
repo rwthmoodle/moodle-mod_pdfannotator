@@ -62,12 +62,8 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
                 $subscriptions = new backup_nested_element('subscriptions');
                 $subscription = new backup_nested_element('subscription', array('id'), array('userid'));
 
-                $commentsarchive = new backup_nested_element('commentsarchive');
-                $ca = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'seen');
-                $commentarchive = new backup_nested_element('commentarchive', array('id'), $ca);
-
                 $comments = new backup_nested_element('comments');
-                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'seen');
+                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'ishidden', 'solved');
                 $comment = new backup_nested_element('comment', array('id'), $c);
 
                     $votes = new backup_nested_element('votes');
@@ -82,9 +78,6 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
                 $annotation->add_child($subscriptions);
                     $subscriptions->add_child($subscription);
-
-                $annotation->add_child($commentsarchive);
-                    $commentsarchive->add_child($commentarchive);
 
                 $annotation->add_child($comments);
                     $comments->add_child($comment);
@@ -107,9 +100,6 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
                 // Add any subscriptions to this annotation.
                 $subscription->set_source_table('pdfannotator_subscriptions', array('annotationid' => backup::VAR_PARENTID));
 
-                // Add any archived comments on the annotation.
-                $commentarchive->set_source_table('pdfannotator_commentsarchive', array('annotationid' => backup::VAR_PARENTID));
-
                 // Add any comments of this annotation.
                 $comment->set_source_table('pdfannotator_comments', array('annotationid' => backup::VAR_PARENTID));
 
@@ -124,8 +114,6 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // 5. Define id annotations (some attributes are foreign keys).
         $annotation->annotate_ids('user', 'userid');
         $subscription->annotate_ids('user', 'userid');
-        $commentarchive->annotate_ids('user', 'userid');
-        $commentarchive->annotate_ids('pdfannotator', 'pdfannotatorid');
         $comment->annotate_ids('user', 'userid');
         $comment->annotate_ids('pdfannotator', 'pdfannotatorid');
         $vote->annotate_ids('user', 'userid');

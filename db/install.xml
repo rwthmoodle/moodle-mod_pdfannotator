@@ -117,26 +117,6 @@ answer: marked as correct answer"/>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" COMMENT="An index for userid."/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="pdfannotator_commentsarchive" COMMENT="comments, which were deleted and reported">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="pdfannotatorid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="-1" SEQUENCE="false"/>
-        <FIELD NAME="annotationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="modifiedby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="visibility" TYPE="char" LENGTH="45" NOTNULL="true" DEFAULT="public" SEQUENCE="false"/>
-        <FIELD NAME="isquestion" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="isdeleted" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="seen" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="pdfannotatorid" TYPE="foreign" FIELDS="pdfannotatorid" REFTABLE="pdfannotator" REFFIELDS="id"/>
-      </KEYS>
-    </TABLE>
     <TABLE NAME="pdfannotator_subscriptions" COMMENT="saves which users subscribed to which questions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
