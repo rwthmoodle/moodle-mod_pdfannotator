@@ -55,6 +55,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Method to use the language-strings in javascript.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator');
     // Load and execute the javascript files.
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/jspdf.debug.js?ver=00001"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf_viewer.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
