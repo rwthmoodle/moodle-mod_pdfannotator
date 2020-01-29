@@ -42,7 +42,7 @@ function adjustPdfannotatorNavbar(Y) {
 function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSettings, _page = 1,_annoid = null,_commid = null){ // 3. parameter war mal _fileid
 
     // Require amd modules.
-    require(['jquery','core/templates','core/notification'], function($,templates,notification) {
+    require(['jquery','core/templates','core/notification','jsPDF'], function($,templates,notification,jsPDF) {
         var currentAnnotations = [];
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -6784,20 +6784,20 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     var parent = document.querySelector(parentselector);
                 }
                 if(parent !== null){
-                    
+
                     let minCharacters = 80;
                     let maxCharacters = 120;
-                    
+
                     let nCharactersToDisplay = parent.offsetWidth / divisor;
-                    
+
                     if (nCharactersToDisplay < minCharacters) {
                         shortenText(selector);
                                 
                     } else if (nCharactersToDisplay > maxCharacters) {
-                        nCharactersToDisplay = maxCharacters;                                        
+                        nCharactersToDisplay = maxCharacters;
                     } 
-                    shortenText(selector, nCharactersToDisplay);
-                    
+                        shortenText(selector, nCharactersToDisplay);
+
                 }else{
                     shortenText(selector); // Default: 80 characters
                 }
