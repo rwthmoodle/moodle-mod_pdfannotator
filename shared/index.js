@@ -6783,21 +6783,19 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 } else {
                     var parent = document.querySelector(parentselector);
                 }
-                if(parent !== null){
-                    
+                if (parent !== null) {
                     let minCharacters = 80;
                     let maxCharacters = 120;
-                    
                     let nCharactersToDisplay = parent.offsetWidth / divisor;
 
                     if (nCharactersToDisplay < minCharacters) {
                         shortenText(selector);
-                                
                     } else if (nCharactersToDisplay > maxCharacters) {
                         nCharactersToDisplay = maxCharacters;
-                    } 
                         shortenText(selector, nCharactersToDisplay);
-                    
+                    } else {
+                        shortenText(selector, nCharactersToDisplay);
+                    }
                 }else{
                     shortenText(selector); // Default: 80 characters
                 }
