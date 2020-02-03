@@ -54,6 +54,8 @@ class pdfannotator_forward_form extends moodleform {
         // Action = 'forwardquestion'.
         $mform->addElement('hidden', 'action');
         $mform->setType('action', PARAM_ALPHA);
+        $mform->addElement('hidden', 'fromoverview');
+        $mform->setType('fromoverview', PARAM_INT);
 
         // Display question.
         $comment = $this->_customdata['comment'];
