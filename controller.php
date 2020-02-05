@@ -101,6 +101,7 @@ if ($action === 'forwardquestion') {
         $data->commentid = $commentid;
         $data->id = $cm->id; // Course module id.
         $data->action = 'forwardquestion';
+        $data->fromoverview = $fromoverview;
 
         // Initialise mform and pass on $data-object to it.
         $mform = new pdfannotator_forward_form(null, ['comment' => $comment, 'recipients' => $recipientslist]);
@@ -108,7 +109,6 @@ if ($action === 'forwardquestion') {
 
         if ($mform->is_cancelled()) { // Form was cancelled.
             // Go back to overview or document.
-            $fromoverview = optional_param('fromoverview', 0, PARAM_INT);
             if ($fromoverview) {
                 $action = 'overviewquestions';
             } else {
