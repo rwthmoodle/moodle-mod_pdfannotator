@@ -36,5 +36,12 @@
         <license>MIT</license>
         <licenseversion></licenseversion>
     </library>
+    <library>
+        <location>amd/src/jspdf.js</location>
+        <name>jsPDF</name>
+        <version>1.4.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
 
 </libraries>
