@@ -720,7 +720,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     function openCommentsCallback() {
                         _2.default.getStoreAdapter().getCommentsToPrint(RENDER_OPTIONS.documentId)
                             .then(function(data){
-
                                 if(data.status === "success") {
 
                                     // Get annotation type images.
@@ -786,7 +785,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                             var timeasked = post['timemodified'];
                                             doc.setTextColor(0,84,159);
                                             breakLines(author, timeasked, question);                                            
-
                                             // Add answers to the question in black (extremely dark blue which looks better).
                                             doc.setTextColor(0,0,51);
                                             var answers = post['answers'];
@@ -808,7 +806,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                      * it contains latex formulae images or not and place its text and/or images on the pdf
                                      */
                                     function breakLines(author=null, timemodified=null, post, characters = 150) {
-
                                         if (typeof post === "string") { // Answer contains text only.
                                             printTextblock(author, timemodified, post);        
                                         }
