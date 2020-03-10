@@ -1475,7 +1475,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 let changed = false;
                 do {
                     changed = false;
-                    let lastElement = $('#toolbarContent').children(':not(.hidden)').last(); // Last visible element in toolbar.
+                    let lastElement = $('#toolbarContent').children(':not(.pdf-annotator-hidden)').last(); // Last visible element in toolbar.
                     let firstDropdownElement = $('#toolbar-dropdown-content').children().first(); // First element in dropdown.
                     let firstWidth = parseInt(firstDropdownElement.attr('visibleWidth')); // Width of first element in dropdown.
                     // If lastElem is displayed in a second row because screen isn't wide enough.
@@ -1485,15 +1485,16 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         if(toolbarElements.length > 0) {
                             lastElement = toolbarElements.last();
                             $('#toolbar-dropdown-content').prepend(lastElement);
-                            $('#toolbar-dropdown-button').removeClass('hidden');
+                            $('#toolbar-dropdown-button').removeClass('pdf-annotator-hidden');
                             changed = true;
                         }
                     // If there is enough space to display the next hidden element.
-                    } else if ((firstDropdownElement.length !== 0) && (lastElement.offset().left + lastElement.outerWidth() + firstWidth + 20 < $('#toolbarContent').offset().left + $('#toolbarContent').width())){
+                    } else if ((firstDropdownElement.length !== 0) && 
+                            (lastElement.offset().left + lastElement.outerWidth() + firstWidth + 20 < $('#toolbarContent').offset().left + $('#toolbarContent').width())){
                         firstDropdownElement.insertBefore('#toolbar-dropdown-button'); // Move element from dropdown to toolbar.
                         // Hide button if all elements are shown.
                         if ($('#toolbar-dropdown-content').children().length === 0){
-                            $('#toolbar-dropdown-button').addClass('hidden');
+                            $('#toolbar-dropdown-button').addClass('pdf-annotator-hidden');
                         }
                         changed = true;
                     }
