@@ -55,7 +55,6 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Method to use the language-strings in javascript.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator');
     // Load and execute the javascript files.
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/jspdf.debug.js?ver=00001"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf_viewer.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
@@ -159,6 +158,35 @@ SIGN;
     foreach ($matches as $match) {
         $formulalength = strlen($match[0]);
         $formulaoffset = $match[1];
+        $string = $match[0];
+        $string = str_replace('\xrightarrow', '\rightarrow', $string);
+        $string = str_replace('\xlefttarrow', '\leftarrow', $string);
+
+        $pos = strpos($string, '\\[');
+        if ($pos !== false) {
+            $string = substr_replace($string, '', $pos, strlen('\\['));
+        }
+
+        $pos = strpos($string, '\\(');
+        if ($pos !== false) {
+            $string = substr_replace($string, '', $pos, strlen('\\('));
+        }
+
+        $string = str_replace('\\]', '', $string);
+
+        $string = str_replace('\\)', '', $string);
+
+        $string = str_replace('\begin{aligned}', '', $string);
+        $string = str_replace('\end{aligned}', '', $string);
+
+        $string = str_replace('\begin{align*}', '', $string);
+        $string = str_replace('\end{align*}', '', $string);
+
+        // Find any backslash preceding a ( or [ and replace it with \backslash
+        $pattern = '~\\\\(?=[\\\(\\\[])~';
+        $string = preg_replace($pattern, '\\backslash', $string);
+        $match[0] = $string;
+
         $result[] = trim(substr($subject, $textstart, $formulaoffset - $textstart));
         if($latexapi == LATEX_TO_PNG_GOOGLE_API) {
             $result[] = pdfannotator_process_latex_google($match[0]);
@@ -182,6 +210,9 @@ function pdfannotator_process_latex_moodle($context, $string) {
     $tex = new latex();
     $md5 = md5($string);
     $image = $tex->render($string, $md5 . 'png');
+    if($image == false) {
+        return false;
+    }
     $imagedata = file_get_contents($image);
     $result['image'] = IMAGE_PREFIX . base64_encode($imagedata);
     //imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only thing needed here
@@ -197,35 +228,8 @@ function pdfannotator_process_latex_moodle($context, $string) {
  * @return type
  */
 function pdfannotator_process_latex_google(string $string) {
-    $string = str_replace('\xrightarrow', '\rightarrow', $string);
-    $string = str_replace('\xlefttarrow', '\leftarrow', $string);
-
-    $pos = strpos($string, '\\[');
-    if ($pos !== false) {
-        $string = substr_replace($string, '', $pos, strlen('\\['));
-    }
-
-    $pos = strpos($string, '\\(');
-    if ($pos !== false) {
-        $string = substr_replace($string, '', $pos, strlen('\\('));
-    }
-
-    $string = str_replace('\\]', '', $string);
-
-    $string = str_replace('\\)', '', $string);
-
-    $string = str_replace('\begin{aligned}', '', $string);
-    $string = str_replace('\end{aligned}', '', $string);
-
-    $string = str_replace('\begin{align*}', '', $string);
-    $string = str_replace('\end{align*}', '', $string);
-
-    // Find any backslash preceding a ( or [ and replace it with \backslash
-    $pattern = '~\\\\(?=[\\\(\\\[])~';
-    $string = preg_replace($pattern, '\\backslash', $string);
-
+    
     $length = strlen($string);
-
     $im = null;
     if ($length <= 200) { // Google API constraint XXX find better alternative if possible.
         $latexdata = urlencode($string);

@@ -491,6 +491,23 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     return JSON.parse(data);
                 });
             },
+            
+            /**
+             * Gets the content of a specific comment.
+             * @param {type} documentId
+             * @param {type} commentId
+             * @returns {unresolved}
+             */
+            getCommentContent(documentId, commentId){
+                return $.ajax({
+                    type: "POST",
+                    url: "action.php",
+                    data: { "documentId": documentId, "commentId": commentId, "action": 'getCommentContent', sesskey: M.cfg.sesskey}
+                }).then(function(data){
+                    return JSON.parse(data);
+                });
+            },
+
 
             /**
              * This function collects all Questions (Annotations with min. one comment)
@@ -720,7 +737,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     function openCommentsCallback() {
                         _2.default.getStoreAdapter().getCommentsToPrint(RENDER_OPTIONS.documentId)
                             .then(function(data){
-
                                 if(data.status === "success") {
 
                                     // Get annotation type images.
@@ -786,7 +802,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                             var timeasked = post['timemodified'];
                                             doc.setTextColor(0,84,159);
                                             breakLines(author, timeasked, question);                                            
-
                                             // Add answers to the question in black (extremely dark blue which looks better).
                                             doc.setTextColor(0,0,51);
                                             var answers = post['answers'];
@@ -808,7 +823,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                      * it contains latex formulae images or not and place its text and/or images on the pdf
                                      */
                                     function breakLines(author=null, timemodified=null, post, characters = 150) {
-
                                         if (typeof post === "string") { // Answer contains text only.
                                             printTextblock(author, timemodified, post);        
                                         }
@@ -850,8 +864,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                     function printItem(item, index) {
                                         if (typeof item === "object") { //item.includes('data:image/png;base64,')) {
                                             printImage(item);
-                                        } else {
+                                        } else if (typeof item === "string"){
                                             printTextblock(null, null, item);
+                                        } else {
+                                            console.error(M.util.get_string('error:printlatex', 'pdfannotator'));
+                                            notification.addNotification({
+                                                message: M.util.get_string('error:printlatex','pdfannotator'),
+                                                type: "error"
+                                            });
                                         }
                                     }
                                     /**
@@ -1478,7 +1498,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 let changed = false;
                 do {
                     changed = false;
-                    let lastElement = $('#toolbarContent').children(':not(.hidden)').last(); // Last visible element in toolbar.
+                    let lastElement = $('#toolbarContent').children(':not(.pdf-annotator-hidden)').last(); // Last visible element in toolbar.
                     let firstDropdownElement = $('#toolbar-dropdown-content').children().first(); // First element in dropdown.
                     let firstWidth = parseInt(firstDropdownElement.attr('visibleWidth')); // Width of first element in dropdown.
                     // If lastElem is displayed in a second row because screen isn't wide enough.
@@ -1488,15 +1508,16 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         if(toolbarElements.length > 0) {
                             lastElement = toolbarElements.last();
                             $('#toolbar-dropdown-content').prepend(lastElement);
-                            $('#toolbar-dropdown-button').removeClass('hidden');
+                            $('#toolbar-dropdown-button').removeClass('pdf-annotator-hidden');
                             changed = true;
                         }
                     // If there is enough space to display the next hidden element.
-                    } else if ((firstDropdownElement.length !== 0) && (lastElement.offset().left + lastElement.outerWidth() + firstWidth + 20 < $('#toolbarContent').offset().left + $('#toolbarContent').width())){
+                    } else if ((firstDropdownElement.length !== 0) && 
+                            (lastElement.offset().left + lastElement.outerWidth() + firstWidth + 20 < $('#toolbarContent').offset().left + $('#toolbarContent').width())){
                         firstDropdownElement.insertBefore('#toolbar-dropdown-button'); // Move element from dropdown to toolbar.
                         // Hide button if all elements are shown.
                         if ($('#toolbar-dropdown-content').children().length === 0){
-                            $('#toolbar-dropdown-button').addClass('hidden');
+                            $('#toolbar-dropdown-button').addClass('pdf-annotator-hidden');
                         }
                         changed = true;
                     }
@@ -1735,9 +1756,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     var editArea = document.getElementById("editarea"+comment.uuid);
                     var text = document.getElementById("chatmessage"+comment.uuid);
                     if (editForm.style.display === "none") {
-                        editArea.innerHTML = comment.content;
-                        editForm.style.display = "block";
-                        text.innerHTML = "";
+                        _2.default.getStoreAdapter().getCommentContent(documentId, comment.uuid)
+                            .then(function(content){
+                                editArea.innerHTML = content;
+                                editForm.style.display = "block";
+                                text.innerHTML = "";
+                            });
                         // Add an event handler to the form for submitting any changes to the database.
                         editForm.onsubmit = function (e) {
                             let newContent = editArea.value.trim();
@@ -3479,6 +3503,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         */
                         {key:'getComments',value:function getComments(documentId,annotationId){
                                 (0,_abstractFunction2.default)('getComments');
+                            }
+                        },
+                        
+                        {key:'getCommentContent',value:function getCommentContent(documentId,commentId){
+                                (0,_abstractFunction2.default)('getCommentContent');
                             }
                         },
                         /**

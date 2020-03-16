@@ -327,7 +327,6 @@ if ($action === 'addComment') {
 
     // Get the comment data.
     $content = required_param('content', PARAM_RAW);
-    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
@@ -388,6 +387,18 @@ if ($action === 'getComments') {
     echo json_encode($data);
 }
 
+/* * ********************************* Retrieve content of a specific comment from db ********************************* */
+
+if ($action === 'getCommentContent') {
+    global $DB;
+    $commentid = required_param('commentId', PARAM_INT);
+
+    $content = $DB->get_field('pdfannotator_comments', 'content', ['id' => $commentid]);
+
+
+    echo json_encode($content);
+}
+
 /* * ****************************************** Hide a comment for participants ****************************************** */
 
 if ($action === 'hideComment') {
@@ -428,9 +439,8 @@ if ($action === 'editComment') {
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);
-    $content = required_param('content', PARAM_RAW);
-    $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
-    
+    $content = required_param('content', PARAM_RAW);    
+        
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }
