@@ -491,6 +491,23 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     return JSON.parse(data);
                 });
             },
+            
+            /**
+             * Gets the content of a specific comment.
+             * @param {type} documentId
+             * @param {type} commentId
+             * @returns {unresolved}
+             */
+            getCommentContent(documentId, commentId){
+                return $.ajax({
+                    type: "POST",
+                    url: "action.php",
+                    data: { "documentId": documentId, "commentId": commentId, "action": 'getCommentContent', sesskey: M.cfg.sesskey}
+                }).then(function(data){
+                    return JSON.parse(data);
+                });
+            },
+
 
             /**
              * This function collects all Questions (Annotations with min. one comment)
@@ -847,8 +864,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                     function printItem(item, index) {
                                         if (typeof item === "object") { //item.includes('data:image/png;base64,')) {
                                             printImage(item);
-                                        } else {
+                                        } else if (typeof item === "string"){
                                             printTextblock(null, null, item);
+                                        } else {
+                                            console.error(M.util.get_string('error:printlatex', 'pdfannotator'));
+                                            notification.addNotification({
+                                                message: M.util.get_string('error:printlatex','pdfannotator'),
+                                                type: "error"
+                                            });
                                         }
                                     }
                                     /**
@@ -1732,9 +1755,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     var editArea = document.getElementById("editarea"+comment.uuid);
                     var text = document.getElementById("chatmessage"+comment.uuid);
                     if (editForm.style.display === "none") {
-                        editArea.innerHTML = comment.content;
-                        editForm.style.display = "block";
-                        text.innerHTML = "";
+                        _2.default.getStoreAdapter().getCommentContent(documentId, comment.uuid)
+                            .then(function(content){
+                                editArea.innerHTML = content;
+                                editForm.style.display = "block";
+                                text.innerHTML = "";
+                            });
                         // Add an event handler to the form for submitting any changes to the database.
                         editForm.onsubmit = function (e) {
                             let newContent = editArea.value.trim();
@@ -3476,6 +3502,11 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         */
                         {key:'getComments',value:function getComments(documentId,annotationId){
                                 (0,_abstractFunction2.default)('getComments');
+                            }
+                        },
+                        
+                        {key:'getCommentContent',value:function getCommentContent(documentId,commentId){
+                                (0,_abstractFunction2.default)('getCommentContent');
                             }
                         },
                         /**
