@@ -113,6 +113,7 @@ $string['error:missingAnnotationtype'] = 'Annotationtype does not exists. Possib
 $string['error:openingPDF'] = 'An error occurred while opening the PDF file.';
 $string['error:openprintview'] = 'An error has occured while trying to open the pdf in Acrobat Reader.';
 $string['error:printcomments'] = 'An error has occured while trying to open the comments in a pdf.';
+$string['error:printlatex'] = 'An error has occured while trying to add a LaTeX formula to the pdf.';
 $string['error:redisplayComment'] = 'An error has occured while redisplaying the comment.';
 $string['error:renderPage'] = 'An error has occured while rendering the page.';
 $string['error:reportComment'] = 'An error has occured while saving the report.';
