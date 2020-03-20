@@ -147,7 +147,10 @@ $string['fullscreenBack'] = 'Exit Fullscreen';
 $string['global_setting_anonymous'] = 'Allow anonymous posting?';
 $string['global_setting_anonymous_desc'] = 'With this option you allow your user to post comments anonymously. This option activates anonymous posting globally';
 $string['global_setting_latexapisetting'] = 'LaTeX to PNG API';
-$string['global_setting_latexapisetting_desc'] = 'API for converting Latex to PNG for PDF Downloads. Note: If you use the Google Chart API, Google will get all formulas in the document if someone chooses to use LaTeX';
+$string['global_setting_latexapisetting_desc'] = 'API for converting Latex to PNG for PDF Downloads.<br>'
+        . 'Note: If you use the Google Chart API, Google will get all formulas in the document if someone chooses to use LaTeX<br>'
+        . 'If you use the Moodle API, you need a latex, dvips and convert binary installed on your server. '
+        . '(See  <a href="https://docs.moodle.org/38/en/TeX_notation_filter">Moodle Documentation</a> )';
 $string['global_setting_latexusemoodle'] = 'Internal Moodle API';
 $string['global_setting_latexusegoogle'] = 'Google Chart API';
 $string['global_setting_use_studentdrawing'] = 'Allow drawings for participants?';
