@@ -58,6 +58,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:create' => array ( // Create annotation or comment.
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -80,6 +81,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:deleteany' => array ( // Delete all comments or annotations (including comments/annotations by other users).
+        'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -110,6 +112,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:edit' => array ( // Update/Edit own annotations or comments.
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -132,6 +135,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:report' => array ( // Report comments.
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -186,7 +190,6 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:markcorrectanswer' => array( // Mark answers as correct.
-        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -197,6 +200,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:usetextbox' => array ( // Always use textbox (even if using textbox (for students) is disabled in settings).
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -207,6 +211,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:usedrawing' => array ( // Always use drawing (even if using textbox (for students) is disabled in settings).
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
@@ -237,6 +242,7 @@ $capabilities = array(
     ),
 
     'mod/pdfannotator:forwardquestions' => array ( // Forward a question (to an other teacher/manager).
+        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
