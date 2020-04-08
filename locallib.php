@@ -260,10 +260,10 @@ function pdfannotator_send_forward_message($recipients, $messageparams, $course,
     $text = new stdClass();
     $module = get_string('modulename', 'pdfannotator');
     $text->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $cm->name, $messageparams, $name);
-    $text->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $messageparams, $name);
     $text->url = $messageparams->urltoquestion;
 
     foreach ($recipients as $recipient) {
+        $text->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $messageparams, $name, $recipient);
         pdfannotator_notify_manager($recipient, $course, $cm, $name, $text);
     }
 }
@@ -323,7 +323,7 @@ function pdfannotator_format_notification_message_text($course, $cm, $context, $
  * @param stdClass $coursemodule
  * @param string $assignmentname
  */
-function pdfannotator_format_notification_message_html($course, $cm, $context, $modulename, $pdfannotatorname, $report, $messagetype) {
+function pdfannotator_format_notification_message_html($course, $cm, $context, $modulename, $pdfannotatorname, $report, $messagetype, $recipientid) {
     global $CFG, $USER;
     $formatparams = array('context' => $context->get_course_context());
     $posthtml = '<p><font face="sans-serif">' .
@@ -339,7 +339,7 @@ function pdfannotator_format_notification_message_html($course, $cm, $context, $
     $posthtml .= '<hr /><font face="sans-serif">';
     $report->urltoreport = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
     $posthtml .= '<p>' . get_string($messagetype . 'html', 'pdfannotator', $report) . '</p>';
-    $linktonotificationsettingspage = new moodle_url('/message/notificationpreferences.php', array('userid' => $USER->id));
+    $linktonotificationsettingspage = new moodle_url('/message/notificationpreferences.php', array('userid' => $recipientid));
     $linktonotificationsettingspage = $linktonotificationsettingspage->__toString();
     $posthtml .= '</font><hr />';
     $posthtml .= '<font face="sans-serif"><p>' . get_string('unsubscribe_notification', 'pdfannotator', $linktonotificationsettingspage) . '</p></font>';
