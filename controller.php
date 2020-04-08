@@ -498,11 +498,11 @@ if ($action === 'report') {
         $report->reportinguser = fullname($USER);
         $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
         $messagetext = new stdClass();
-        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');
-        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');
+        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');      
         $messagetext->url = $report->url;
         try {
             foreach ($recipients as $recipient) {
+                $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded', $recipient->id);
                 $messageid = pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext);
             }
             // 2. Notify the reporting user that their report has been sent off (display blue toast box at top of page).
