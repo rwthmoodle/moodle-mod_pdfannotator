@@ -1842,7 +1842,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 } else {
                     confirmDelete = M.util.get_string('deletingComment', 'pdfannotator');
                 }
-                notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), dialogCallbackForDelete, null);                     
+                var deleteCallback = function() {
+                    dialogCallbackForDelete.call(this, comment)
+                };
+                notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), deleteCallback, null);                     
             });
 
             function dialogCallbackForDelete(args = comment){
