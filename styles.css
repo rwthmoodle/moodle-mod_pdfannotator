@@ -472,6 +472,7 @@ body {
 
 .path-mod-pdfannotator .chat-message button, .path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
+    background-color: transparent;
 }
 
 .path-mod-pdfannotator .chat-message.questioncomment {
