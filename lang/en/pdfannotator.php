@@ -130,15 +130,15 @@ $string['forwardedquestionhtml'] = '{$a->sender} forwarded the following questio
         with the message: <br /> <br />
         "{$a->message}" <br /> <br />
         The question is available <a href="{$a->urltoquestion}">here</a>.';
-$string['forwardedquestiontext'] = '{$a->sender} hat folgende Frage an sie weitergeleitet:
+$string['forwardedquestiontext'] = '{$a->sender} forwarded the following question to you:
 
         "{$a->questioncontent}"
 
-        mit folgender Nachricht:
+        with the message:
 
         "{$a->message}"
 
-        Die Frage ist verfügbar unter: {$a->urltoquestion}';
+        The question is available at: {$a->urltoquestion}';
 $string['fullscreen'] = 'Fullscreen';
 $string['fullscreenBack'] = 'Exit Fullscreen';
 $string['global_setting_anonymous'] = 'Allow anonymous posting?';

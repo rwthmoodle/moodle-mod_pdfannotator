@@ -470,21 +470,6 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018111901, 'pdfannotator');
     }
 
-    if ($oldversion < 2018112203) {
-
-        // Define field solved to be added to pdfannotator_comments.
-        $table = new xmldb_table('pdfannotator_comments');
-        $field = new xmldb_field('solved', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'seen');
-
-        // Conditionally launch add field solved.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Pdfannotator savepoint reached.
-        upgrade_mod_savepoint(true, 2018112203, 'pdfannotator');
-    }
-
     if ($oldversion < 2018112100) {
 
         // Define field modifiedby to be added to pdfannotator_annotations.
@@ -516,6 +501,21 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Pdfannotator savepoint reached.
         upgrade_mod_savepoint(true, 2018112100, 'pdfannotator');
+    }
+
+    if ($oldversion < 2018112203) {
+
+        // Define field solved to be added to pdfannotator_comments.
+        $table = new xmldb_table('pdfannotator_comments');
+        $field = new xmldb_field('solved', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'seen');
+
+        // Conditionally launch add field solved.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2018112203, 'pdfannotator');
     }
 
     if ($oldversion < 2019013000) {
