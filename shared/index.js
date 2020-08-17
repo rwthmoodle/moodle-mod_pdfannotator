@@ -5503,7 +5503,46 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(lines.length<=1){return;}
                 if(path){svg.removeChild(path);}
                 path=(0,_appendChild2.default)(svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
-            }/**
+            }
+            function handeContentTouchstart(e) {
+                document.documentElement.style.overflow = 'hidden';
+                document.getElementById('content-wrapper').style.overflow = 'hidden';
+                path=null;
+                lines=[];
+                savePoint(e.pageX,e.pageY);
+            }
+            function handeContentTouchmove(e) {
+                savePoint(e.pageX,e.pageY);
+            }
+            function handeContentTouchend(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                var svg=void 0;
+                if (lines.length > 1 && (svg = (0,_utils.findSVGAtPoint)(e.pageX,e.pageY))){
+                    var _getMetadata=(0,_utils.getMetadata)(svg);
+                    var documentId=_getMetadata.documentId;
+                    var pageNumber=_getMetadata.pageNumber;
+                    _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,{type:'drawing',width:_penSize,color:_penColor,lines:lines})
+                            .then(function(annotation){
+                                if(path){svg.removeChild(path);}
+                                (0,_appendChild2.default)(svg,annotation);
+                            }, function (err){
+                                // Remove path
+                                if(path){svg.removeChild(path);}
+                                notification.addNotification({
+                                    message: M.util.get_string('error:addAnnotation','pdfannotator'),
+                                    type: "error"
+                                });
+                            });
+                }
+            }
+            function handeContentTouchcancel(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                lines=null;
+                path.parentNode.removeChild(path);
+            }
+            /**
             * Set the attributes of the pen.
             *
             * @param {Number} penSize The size of the lines drawn by the pen
@@ -5515,9 +5554,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=true;
-                           document.getElementById('content-wrapper').classList.add('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.add('cursor-pen');
                            document.addEventListener('mousedown',handleDocumentMousedown);
                            document.addEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.addEventListener('touchstart',handeContentTouchstart);
+                           contentWrapper.addEventListener('touchmove',handeContentTouchmove);
+                           contentWrapper.addEventListener('touchend',handeContentTouchend);
+                           contentWrapper.addEventListener('touchcancel',handeContentTouchcancel);
                            (0,_utils.disableUserSelect)();
                        }/**
             * Disable the pen behavior
@@ -5526,9 +5570,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=false;
-                           document.getElementById('content-wrapper').classList.remove('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.remove('cursor-pen');
                            document.removeEventListener('mousedown',handleDocumentMousedown);
                            document.removeEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.removeEventListener('touchstart',handeContentTouchstart);
+                           contentWrapper.removeEventListener('touchmove',handeContentTouchmove);
+                           contentWrapper.removeEventListener('touchend',handeContentTouchend);
+                           contentWrapper.removeEventListener('touchcancel',handeContentTouchcancel);
                            (0,_utils.enableUserSelect)();
                        }
     /***/},
