@@ -97,7 +97,7 @@ if ($action === 'forwardquestion') {
         $data = new stdClass();
         $data->course = $cm->course;
         $data->pdfannotatorid = $cm->instance;
-        $data->pdfname = $cm->name;
+        $data->pdfname = format_string($cm->name, true);
         $data->commentid = $commentid;
         $data->id = $cm->id; // Course module id.
         $data->action = 'forwardquestion';
@@ -474,7 +474,7 @@ if ($action === 'report') {
     $data = new stdClass();
     $data->course = $cm->course;
     $data->pdfannotatorid = $cm->instance;
-    $data->pdfname = $cm->name;
+    $data->pdfname = format_string($cm->name, true);
     $data->commentid = $commentid;
     $data->id = $id; // Course module id.
     $data->action = 'report';
@@ -498,11 +498,12 @@ if ($action === 'report') {
         $report->reportinguser = fullname($USER);
         $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
         $messagetext = new stdClass();
-        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded');      
+        $modulename = format_string($cm->name, true);
+        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded');      
         $messagetext->url = $report->url;
         try {
             foreach ($recipients as $recipient) {
-                $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $report, 'reportadded', $recipient->id);
+                $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded', $recipient->id);
                 $messageid = pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagetext);
             }
             // 2. Notify the reporting user that their report has been sent off (display blue toast box at top of page).

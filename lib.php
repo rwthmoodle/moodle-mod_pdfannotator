@@ -605,14 +605,12 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
         return;
     }
 
-    $aname = format_string($cm->name, true);
-
     foreach ($printposts as $post) {
         $tmpactivity = new stdClass();
 
         $tmpactivity->type = 'pdfannotator';
         $tmpactivity->cmid = $cm->id;
-        $tmpactivity->name = $aname;
+        $tmpactivity->name = format_string($cm->name, true);
         $tmpactivity->sectionnum = $cm->sectionnum;
         $tmpactivity->timestamp = $post->timecreated;
 
