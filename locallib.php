@@ -259,11 +259,12 @@ function pdfannotator_send_forward_message($recipients, $messageparams, $course,
     $name = 'forwardedquestion';
     $text = new stdClass();
     $module = get_string('modulename', 'pdfannotator');
-    $text->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $cm->name, $messageparams, $name);
+    $modulename = format_string($cm->name, true);
+    $text->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename, $messageparams, $name);
     $text->url = $messageparams->urltoquestion;
 
     foreach ($recipients as $recipient) {
-        $text->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $messageparams, $name, $recipient);
+        $text->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $modulename, $messageparams, $name, $recipient);
         pdfannotator_notify_manager($recipient, $course, $cm, $name, $text);
     }
 }
@@ -272,10 +273,11 @@ function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagete
 
     global $USER;
     $userfrom = $USER;
+    $modulename = format_string($cm->name, true);
     if ($anonymous) {
         $userfrom = clone($USER);
         $userfrom->firstname = get_string('pdfannotatorname', 'pdfannotator') . ':';
-        $userfrom->lastname = $cm->name;
+        $userfrom->lastname = $modulename;
     }
     $message = new \core\message\message();
     $message->component = 'mod_pdfannotator';
@@ -283,11 +285,11 @@ function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagete
     $message->courseid = $course->id;
     $message->userfrom = $userfrom;
     $message->userto = $recipient;
-    $message->subject = get_string('notificationsubject:' . $name, 'pdfannotator', $cm->name);
+    $message->subject = get_string('notificationsubject:' . $name, 'pdfannotator', $modulename);
     $message->fullmessage = $messagetext->text;
     $message->fullmessageformat = FORMAT_PLAIN;
     $message->fullmessagehtml = $messagetext->html;
-    $message->smallmessage = get_string('notificationsubject:' . $name, 'pdfannotator', $cm->name);
+    $message->smallmessage = get_string('notificationsubject:' . $name, 'pdfannotator', $modulename);
     $message->notification = 1; // For personal messages '0'. Important: the 1 without '' and 0 with ''.
     $message->contexturl = $messagetext->url;
     $message->contexturlname = 'Context name';

@@ -76,6 +76,7 @@ class pdfannotator_comment {
             $datarecord->solved = false;
 
             $anonymous = $visibility == 'anonymous' ? true : false;
+            $modulename = format_string($cm->name, true);
             if ($isquestion == 0) {
                 // Notify subscribed users.
                 $comment = new stdClass();
@@ -88,12 +89,12 @@ class pdfannotator_comment {
 
                 $messagetext = new stdClass();
                 $module = get_string('modulename', 'pdfannotator');
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $cm->name, $comment, 'newanswer');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename, $comment, 'newanswer');
                 $messagetext->url = $comment->urltoanswer;
                 $recipients = self::get_subscribed_users($annotationid);
                 foreach ($recipients as $recipient) {
                     if ($recipient != $USER->id) {
-                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $cm->name, $comment, 'newanswer', $recipient);
+                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $modulename, $comment, 'newanswer', $recipient);
                         $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newanswer', $messagetext, $anonymous);
                     }
                 }
@@ -111,13 +112,13 @@ class pdfannotator_comment {
                 $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
                     if ($recipient->id == $USER->id) {
                         continue;
                     }
-                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $cm->name, $question, 'newquestion', $recipient->id);
+                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion', $recipient->id);
                     $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newquestion', $messagetext, $anonymous);
                 }
 
