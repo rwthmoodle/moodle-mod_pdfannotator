@@ -46,12 +46,13 @@ if ($r) {
 }
 
 $course = get_course($cm->course); // Get course by id.
-
 require_course_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-
 require_capability('mod/pdfannotator:view', $context);
+
+// Apply filters, e.g. multilang.
+$pdfannotator->name = format_text($pdfannotator->name, FORMAT_MOODLE, ['para' => false]);
 
 // Completion and trigger events.
 pdfannotator_view($pdfannotator, $course, $cm, $context);
