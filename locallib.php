@@ -736,7 +736,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     if ($questionfilter == 1) {
         $sql = $sql . ' AND NOT c.solved = 0 ';
     }
-    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id";
+    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden";
     $params = array_merge([$courseid], $inparams);
     $questions = $DB->get_records_sql($sql, $params);
 
@@ -827,7 +827,7 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
             . "JOIN {course_modules} cm ON p.id = cm.instance "
             . "LEFT JOIN {pdfannotator_votes} v ON c.id = v.commentid "
             . "WHERE c.userid = ? AND p.course = ? AND cm.id $insql "
-            . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id";
+            . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, c.annotationid, c.content, c.timemodified, c.ishidden, a.page, a.pdfannotatorid";
 
     $params = array_merge([$USER->id, $courseid], $inparams);
 
