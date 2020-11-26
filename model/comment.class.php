@@ -145,7 +145,9 @@ class pdfannotator_comment {
         // Get the ids and text content of all comments attached to this annotation/highlight.
         $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, SUM(vote) AS votes "
                 . "FROM {pdfannotator_comments} c LEFT JOIN {pdfannotator_votes} v"
-                . " ON c.id=v.commentid WHERE annotationid = ? GROUP BY c.id ORDER BY c.timecreated";
+                . " ON c.id=v.commentid WHERE annotationid = ?"
+                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved"
+                . " ORDER BY c.timecreated";
         $a = array();
         $a[] = $annotationid;
         $comments = $DB->get_records_sql($sql, $a); // Records taken from table 'comments' as an array of objects.
