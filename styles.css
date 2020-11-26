@@ -870,3 +870,11 @@ header, section, footer, aside, nav, main, article, figure {
 .path-mod-pdfannotator .pdfannotator-statistic #chart-container {
     min-height: 500px;
 }
+
+.lock-screen {
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+    position: fixed;
+}
+
