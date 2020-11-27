@@ -5479,7 +5479,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             * Handle document.mousemove event
             *
             * @param {Event} e The DOM event to be handled
-            */function handleDocumentMousemove(e){savePoint(e.clientX,e.clientY);}/**
+            */function handleDocumentMousemove(e){
+                savePoint(e.clientX,e.clientY);}/**
             * Handle document.keyup event
             *
             * @param {Event} e The DOM event to be handled
@@ -5504,7 +5505,78 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(lines.length<=1){return;}
                 if(path){svg.removeChild(path);}
                 path=(0,_appendChild2.default)(svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
-            }/**
+            }
+            function handeContentTouchstart(e) {
+                document.documentElement.style.overflow = 'hidden';
+                document.getElementById('content-wrapper').style.overflow = 'hidden';
+                document.getElementById('body-wrapper').style.overflow = 'hidden';
+                document.body.classList.add("lock-screen");
+                path=null;
+                lines=[];
+                savePoint(e.touches[0].pageX,e.touches[0].pageY);
+            }
+            function handeContentTouchmove(e) {
+                savePoint(e.touches[0].pageX,e.touches[0].pageY);
+            }
+            function handeContentTouchend(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                document.getElementById('body-wrapper').style.overflow = 'auto';
+                document.body.classList.remove("lock-screen");
+                var svg=void 0;
+                if (lines.length > 1 && (svg = (0,findSVGAtTouchPoint(lines[lines.length-1][0],lines[lines.length-1][1])))){
+                    var _getMetadata=(0,_utils.getMetadata)(svg);
+                    var documentId=_getMetadata.documentId;
+                    var pageNumber=_getMetadata.pageNumber;
+                    _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,{type:'drawing',width:_penSize,color:_penColor,lines:lines})
+                            .then(function(annotation){
+                                if(path){svg.removeChild(path);}
+                                (0,_appendChild2.default)(svg,annotation);
+                            }, function (err){
+                                // Remove path
+                                if(path){svg.removeChild(path);}
+                                notification.addNotification({
+                                    message: M.util.get_string('error:addAnnotation','pdfannotator'),
+                                    type: "error"
+                                });
+                            });
+                }
+            }
+            function handeContentTouchcancel(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove("lock-screen");
+                lines=null;
+                path.parentNode.removeChild(path);
+            }
+            /**
+             * Determine if a point intersects a rect
+             *
+             * @param {Number} x The x coordinate of the point
+             * @param {Number} y The y coordinate of the point
+             * @param {Object} rect The points of a rect (likely from getBoundingClientRect)
+             * @return {Boolean} True if a collision occurs, otherwise false
+             */function pointIntersectsRect(x,y,rect){return y>=rect.top&&y<=rect.bottom;}/**
+
+            /* Find an SVGElement container at a given touchpoint
+            *
+            * @param {Number} x The x coordinate of the point
+            * @param {Number} y The y coordinate of the point
+            * @return {SVGElement} The container SVG or null if one can't be found.
+            */function findSVGAtTouchPoint(x,y){
+                var elements=document.querySelectorAll('svg[data-pdf-annotate-container="true"]');
+                    for(var i=0,l=elements.length;i<l;i++){ 
+                        var el=elements[i];
+                        var rect=el.getBoundingClientRect();
+                        if(rect.top > 0 && rect.bottom > 0){
+                            return el;
+                        }
+                    }
+                return null;
+            }
+            
+            /**
             * Set the attributes of the pen.
             *
             * @param {Number} penSize The size of the lines drawn by the pen
@@ -5516,9 +5588,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=true;
-                           document.getElementById('content-wrapper').classList.add('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.add('cursor-pen');
                            document.addEventListener('mousedown',handleDocumentMousedown);
                            document.addEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.addEventListener('touchstart',handeContentTouchstart);
+                           contentWrapper.addEventListener('touchmove',handeContentTouchmove);
+                           contentWrapper.addEventListener('touchend',handeContentTouchend);
+                           contentWrapper.addEventListener('touchcancel',handeContentTouchcancel);
                            (0,_utils.disableUserSelect)();
                        }/**
             * Disable the pen behavior
@@ -5527,9 +5604,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                return;
                            }
                            _enabled=false;
-                           document.getElementById('content-wrapper').classList.remove('cursor-pen');
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.classList.remove('cursor-pen');
                            document.removeEventListener('mousedown',handleDocumentMousedown);
                            document.removeEventListener('keyup',handleDocumentKeyup);
+                           contentWrapper.removeEventListener('touchstart',handeContentTouchstart);
+                           contentWrapper.removeEventListener('touchmove',handeContentTouchmove);
+                           contentWrapper.removeEventListener('touchend',handeContentTouchend);
+                           contentWrapper.removeEventListener('touchcancel',handeContentTouchcancel);
                            (0,_utils.enableUserSelect)();
                        }
     /***/},
@@ -5865,6 +5947,76 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
             }
 
+
+            function handeContentTouchstart(e) {
+                document.documentElement.style.overflow = 'hidden';
+                document.getElementById('content-wrapper').style.overflow = 'hidden';
+                document.body.style.overflow = 'hidden';
+
+                var svg=void 0;
+                if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY))){
+                    return;
+                }
+                var rect=svg.getBoundingClientRect();
+                originY=e.touches[0].clientY;
+                originX=e.touches[0].clientX;
+                overlay=document.createElement('div');
+                overlay.style.position='absolute';
+                overlay.style.top=originY-rect.top+'px';
+                overlay.style.left=originX-rect.left+'px';
+                overlay.style.border='3px solid '+_utils.BORDER_COLOR;
+                overlay.style.borderRadius='3px';
+                svg.parentNode.appendChild(overlay);
+                (0,_utils.disableUserSelect)();
+            }
+
+            function handeContentTouchmove(e) {
+                var svg=overlay.parentNode.querySelector('svg.annotationLayer');
+                var rect=svg.getBoundingClientRect();
+                if(originX+(e.touches[0].clientX-originX)<rect.right){
+                    overlay.style.width=e.touches[0].clientX-originX+'px';
+                }
+                if(originY+(e.touches[0].clientY-originY)<rect.bottom){
+                    overlay.style.height=e.touches[0].clientY-originY+'px';
+                }
+            }
+
+            function handeContentTouchend(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                document.body.style.overflow = 'auto';
+
+                if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
+                    disableRect();
+                    if(_type==='area'&&overlay){
+                        if(isOverlayTooSmall(overlay)){
+                            overlay.parentNode.removeChild(overlay);
+                            overlay=null;
+                            enableRect(_type);
+                            return;
+                        }
+                        var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
+                        var rect=_svg.getBoundingClientRect();
+                        renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
+                        
+                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
+                        
+                        renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
+                        
+                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    }else{
+                        enableRect(_type);
+                        //Do nothing!
+                    }
+                }
+            }
+
+            function handeContentTouchcancel(e) {
+                document.documentElement.style.overflow = 'auto';
+                document.getElementById('content-wrapper').style.overflow = 'auto';
+                document.body.style.overflow = 'auto';
+            }
             
             function handleToolbarClick(e){
                 //delete Overlay
@@ -5988,7 +6140,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 var documentId=_getMetadata.documentId;
                 var pageNumber=_getMetadata.pageNumber;
                 var content=textarea.value.trim();
-                if(content.length > 1){
+                if(textarea.value.trim().length > 1){
                     
                     (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                     
@@ -6048,21 +6200,28 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             /**
             * Enable rect behavior
             */function enableRect(type){
-               _type=type;
-               if(_enabled){return;}
-               
-               if(_type === 'area'){
-                   document.getElementById('content-wrapper').classList.add('cursor-area');
-               }else if(_type === 'highlight'){
-                   document.getElementById('content-wrapper').classList.add('cursor-highlight');
-               }else if(_type === 'strikeout'){
-                   document.getElementById('content-wrapper').classList.add('cursor-strikeout');
-               }
-               
-               _enabled=true;
-               document.addEventListener('mouseup',handleDocumentMouseup);
-               document.addEventListener('mousedown',handleDocumentMousedown);
-               document.addEventListener('keyup',handleDocumentKeyup);
+                _type=type;
+                if(_enabled){return;}
+                
+                if(_type === 'area'){
+                    document.getElementById('content-wrapper').classList.add('cursor-area');
+                }else if(_type === 'highlight'){
+                    document.getElementById('content-wrapper').classList.add('cursor-highlight');
+                }else if(_type === 'strikeout'){
+                    document.getElementById('content-wrapper').classList.add('cursor-strikeout');
+                }
+                
+                _enabled=true;
+                document.addEventListener('mouseup',handleDocumentMouseup);
+                document.addEventListener('mousedown',handleDocumentMousedown);
+                document.addEventListener('keyup',handleDocumentKeyup);
+
+                var contentWrapper = document.getElementById('content-wrapper');
+                contentWrapper.addEventListener('touchstart',handeContentTouchstart);
+                contentWrapper.addEventListener('touchmove',handeContentTouchmove);
+                contentWrapper.addEventListener('touchend',handeContentTouchend);
+                contentWrapper.addEventListener('touchcancel',handeContentTouchcancel);
+                (0,_utils.disableUserSelect)();
            }/**
             * Disable rect behavior
             */function disableRect(){
@@ -6075,7 +6234,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                             }else if(_type === 'strikeout'){
                                 document.getElementById('content-wrapper').classList.remove('cursor-strikeout');
                             }
-                           document.removeEventListener('mouseup',handleDocumentMouseup);document.removeEventListener('mousedown',handleDocumentMousedown);document.removeEventListener('keyup',handleDocumentKeyup);}
+                           document.removeEventListener('mouseup',handleDocumentMouseup);
+                           document.removeEventListener('mousedown',handleDocumentMousedown);
+                           document.removeEventListener('keyup',handleDocumentKeyup);
+
+                           var contentWrapper = document.getElementById('content-wrapper');
+                           contentWrapper.removeEventListener('touchstart',handeContentTouchstart);
+                           contentWrapper.removeEventListener('touchmove',handeContentTouchmove);
+                           contentWrapper.removeEventListener('touchend',handeContentTouchend);
+                           contentWrapper.removeEventListener('touchcancel',handeContentTouchcancel);
+                           (0,_utils.disableUserSelect)();
+                        }
     /***/},
     /* 33 */
     /***/function(module,exports,__webpack_require__){
