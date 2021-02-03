@@ -66,8 +66,8 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $data = (object)$data;
         $oldid = $data->id;
         $data->course = $this->get_courseid();
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
+        $data->timecreated = time();
+        $data->timemodified = time();
 
         $newitemid = $DB->insert_record('pdfannotator', $data); // Insert the pdfannotator record.
 
@@ -83,9 +83,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
 
         $data->pdfannotatorid = $this->get_new_parentid('pdfannotator');
         $data->userid = $this->get_mappingid('user', $data->userid);
-
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
 
         $newitemid = $DB->insert_record('pdfannotator_annotations', $data);
         $this->set_mapping('pdfannotator_annotation', $oldid, $newitemid);
@@ -115,9 +112,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
 
         $data->annotationid = $this->get_new_parentid('pdfannotator_annotation');
         $data->userid = $this->get_mappingid('user', $data->userid);
-
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
 
         $data->pdfannotatorid = $this->get_mappingid('pdfannotator', $data->pdfannotatorid);
 
@@ -149,7 +143,7 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $data->commentid = $this->get_new_parentid('pdfannotator_comment');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
+    //    $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->pdfannotatorid = $this->get_mappingid('pdfannotator', $data->pdfannotatorid); // Params: 1. Object class as defined in structure, 2. attribute&/column name.
 
         $newitemid = $DB->insert_record('pdfannotator_reports', $data);
