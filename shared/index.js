@@ -5631,6 +5631,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             var _enabled=false;
             var data=void 0;
+            var _svg=void 0;
             //Test
             var textarea = void 0;
             var submitbutton = void 0;
@@ -5638,6 +5639,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var annotationObj;
             var documentId = -1;
             var pageNumber = 1;
+            
             /**
             * Handle document.mouseup event
             *
@@ -5647,7 +5649,27 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
                     return;
                 }
-               let svg = (0,_utils.findSVGAtPoint)(e.clientX,e.clientY);
+                _svg = (0,_utils.findSVGAtPoint)(e.clientX,e.clientY);
+                if(!_svg){
+                    return;
+                }
+                var _getMetadata=(0,_utils.getMetadata)(_svg);
+                documentId=_getMetadata.documentId;
+                pageNumber=_getMetadata.pageNumber;
+                deleteUndefinedPin();
+                [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
+                renderPin();
+            }
+            /**
+            * Handle content.touchend event
+            *
+            * @param {Event} The DOM event to be handled
+            */function handelContentTouchend(e){
+                //if the click is on the Commentlist nothing should happen.
+                if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
+                    return;
+                }
+               let svg = (0,_utils.findSVGAtPoint)(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
                 if(!svg){
                     return;
                 }
@@ -5655,8 +5677,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 documentId=_getMetadata.documentId;
                 pageNumber=_getMetadata.pageNumber;
                 deleteUndefinedPin();
-                [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
-                renderPin();
+                var coordinates = {x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY};
+                renderPinTouchscreen(coordinates);
+                [textarea,data] = (0,_commentWrapper.openCommentTouchscreen)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
             }
             
             /**
@@ -5674,7 +5697,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             }
             
             function handleSubmitClick(e){
-                savePoint(); 
+                savePoint(_svg);
                 return false;
             }
             function handleCancelClick(e){
@@ -5693,8 +5716,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             *
             * @param {Event} e The DOM event to handle
             */function handleInputKeyup(e){if(e.keyCode===27){disablePoint();closeInput();}else if(e.keyCode===13){/*disablePoint();*/savePoint();}}
-           
-           function renderPin(){
+
+            function renderPin(){
                 var clientX=(0,_utils.roundDigits)(data.x,4);
                 var clientY=(0,_utils.roundDigits)(data.y,4);
                 var content=textarea.value.trim();
@@ -5704,6 +5727,19 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
                 var rect=svg.getBoundingClientRect();
                 var annotation = initializeAnnotation(rect,svg);
+                annotationObj = annotation;
+                annotation.color = true;
+                (0,_appendChild2.default)(svg,annotation);
+            }
+            function renderPinTouchscreen(coordinates){
+                var clientX=(0,_utils.roundDigits)(coordinates.x,4);
+                var clientY=(0,_utils.roundDigits)(coordinates.y,4);
+                var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
+                if(!svg){
+                    return{v:void 0};
+                }
+                var rect=svg.getBoundingClientRect();
+                var annotation = initializeAnnotationTouchscreen(rect,svg,coordinates);
                 annotationObj = annotation;
                 annotation.color = true;
                 (0,_appendChild2.default)(svg,annotation);
@@ -5720,22 +5756,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
             }
             
-            
             function initializeAnnotation(rect,svg){
                 var clientX=(0,_utils.roundDigits)(data.x,4);
                 var clientY=(0,_utils.roundDigits)(data.y,4);
                 return Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
             }
+            function initializeAnnotationTouchscreen(rect,svg,coordinates){
+                var clientX=(0,_utils.roundDigits)(coordinates.x,4);
+                var clientY=(0,_utils.roundDigits)(coordinates.y,4);
+                return Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
+            }
             /**
             * Save a new point annotation from input
-            */function savePoint(){
+            */function savePoint(svg = null){
                 if(textarea.value.trim().length>1){
                     disablePoint();
+                    var page = pageNumber;
+                    if (!svg) {
+                        var elements=document.querySelectorAll('svg[data-pdf-annotate-container="true"]');
+                        var svg=elements[page-1];
+                    }
                     var _ret=function(){
                         var clientX=(0,_utils.roundDigits)(data.x,4);
                         var clientY=(0,_utils.roundDigits)(data.y,4);
                         var content=textarea.value.trim();
-                        var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
                         if(!svg){
                             return{v:void 0};
                         }
@@ -5743,7 +5787,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         
                         var _getMetadata=(0,_utils.getMetadata)(svg);
                         var documentId=_getMetadata.documentId;
-                        var pageNumber=_getMetadata.pageNumber;
+                        var pageNumber=page;
                         var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
                         var commentVisibility = "public";
                         if(document.querySelector('#anonymousCheckbox').checked){
@@ -5796,20 +5840,22 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             function closeInput(){data.removeEventListener('blur',handleInputBlur);data.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(data);data=null;}/**
             * Enable point annotation behavior
             */function enablePoint(){
-                           if(_enabled){
+                            if(_enabled){
                                return;
-                           }
-                           _enabled=true;
-                           document.getElementById('content-wrapper').classList.add('cursor-point');
-                           document.addEventListener('mouseup',handleDocumentMouseup);
+                            }
+                            _enabled=true;
+                            document.getElementById('content-wrapper').classList.add('cursor-point');
+                            document.addEventListener('mouseup',handleDocumentMouseup);
+                            document.addEventListener('touchend',handelContentTouchend);
                        }
             /**
             * Disable point annotation behavior
             */function disablePoint(){
-               _enabled=false;
-               document.getElementById('content-wrapper').classList.remove('cursor-point');
-               document.removeEventListener('mouseup',handleDocumentMouseup);
-           }
+                _enabled=false;
+                document.getElementById('content-wrapper').classList.remove('cursor-point');
+                document.removeEventListener('mouseup',handleDocumentMouseup);
+                document.removeEventListener('touchend',handelContentTouchend);
+            }
     /***/},
     /* 32 */
     /***/function(module,exports,__webpack_require__){
@@ -6511,6 +6557,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             exports.openComment = openComment;
             exports.closeComment = closeComment;
             exports.showCommentsAfterCreation = showCommentsAfterCreation;
+            exports.openCommentTouchscreen = openCommentTouchscreen;
             var _PDFJSAnnotate=__webpack_require__(1);
             var _event=__webpack_require__(4);
             var _PDFJSAnnotate2=_interopRequireDefault(_PDFJSAnnotate);
@@ -6611,6 +6658,51 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     data = new Object();
                     data.x = e.clientX;
                     data.y = e.clientY;
+                }else{
+                    data = document.createElement('div');
+                    data.setAttribute('id','pdf-annotate-point-input');
+                    data.style.border='3px solid '+_utils.BORDER_COLOR;
+                    data.style.borderRadius='3px';
+                    data.style.display = 'none';
+                    data.style.position='absolute';
+                    data.style.top=e.clientY+'px';
+                    data.style.left=e.clientX+'px';
+                }
+                
+                form.addEventListener('blur',submitBlur);
+                textarea.focus();
+                return [textarea,data];
+            }
+
+            function openCommentTouchscreen(e,cancelClick,submitClick,toolbarClick,submitBlur,_type){ 
+                //save e for later 
+                _e = e;
+                
+                var button1 = document.getElementById('allQuestions'); // to be found in index template
+                button1.style.display = 'inline';
+                var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                button2.style.display = 'inline';
+                
+                //title 
+                $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
+                //add Eventlistener to Toolbar. Every Click in Toolbar should cancel the Annotation-Comment-Creation
+                document.querySelector('.toolbar').addEventListener('click',toolbarClick);
+                //Hide shown comments
+                document.querySelector('.comment-list-container').innerHTML = '<p></p>';
+                form = document.querySelector('.comment-list-form');
+                form.setAttribute('style','display:inherit');
+                textarea = document.getElementById('myarea');
+                textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
+                submitbutton = document.getElementById('commentSubmit');
+                submitbutton.value = M.util.get_string('createAnnotation','pdfannotator');
+                resetbutton = document.getElementById('commentCancel');
+                resetbutton.addEventListener('click',cancelClick);
+                form.onsubmit = submitClick;
+                //fixCommentForm();
+                if(_type === 'pin'){
+                    data = new Object();
+                    data.x = e.changedTouches[0].clientX;
+                    data.y = e.changedTouches[0].clientY;
                 }else{
                     data = document.createElement('div');
                     data.setAttribute('id','pdf-annotate-point-input');
