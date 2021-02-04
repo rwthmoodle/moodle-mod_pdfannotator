@@ -5936,15 +5936,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             (0,_utils.disableUserSelect)();
         }
 
+        // Handle document.touchstart event
         function handleDocumentTouchstart(e){
-            document.documentElement.style.overflow = 'hidden';
-            document.getElementById('content-wrapper').style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
-
             var svg=void 0;
             if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY))){
                 return;
             }
+            // Disable scrolling on the page.
+            document.documentElement.style.overflow = 'hidden';
+            document.getElementById('content-wrapper').style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+
             var rect=svg.getBoundingClientRect();
             originY=e.touches[0].clientY;
             originX=e.touches[0].clientX;
@@ -5975,6 +5977,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             }
         }
 
+        // Handle document.touchmove event
         function handleDocumentTouchmove(e){
             var svg=overlay.parentNode.querySelector('svg.annotationLayer');
             var rect=svg.getBoundingClientRect();
@@ -6028,8 +6031,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 }
             }
         }
-
+        // Handle document.touchend event
         function handleDocumentTouchend(e){
+            // Enable the scrolling again 
             document.documentElement.style.overflow = 'auto';
             document.getElementById('content-wrapper').style.overflow = 'auto';
             document.body.style.overflow = 'auto';
@@ -6088,7 +6092,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         }
         
         function handleCancelClick(e){
-            // When using on mobile devices the documentscrolling will be prevented, here we have to allow it again
+            // When using on mobile devices scrolling will be prevented, here we have to allow it again.
             document.documentElement.style.overflow = 'auto';
             document.getElementById('content-wrapper').style.overflow = 'auto';
             document.body.style.overflow = 'auto';
