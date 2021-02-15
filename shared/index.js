@@ -5938,6 +5938,15 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 
         // Handle document.touchstart event
         function handleDocumentTouchstart(e){
+            if(_type =='highlight' || _type == 'strikeout'){
+                // Dont show the contextmenu for highlighting and strikeout.
+                document.getElementById('content-wrapper').addEventListener('contextmenu', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    return false;
+                });
+            }
             var svg=void 0;
             if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY))){
                 return;
@@ -5958,6 +5967,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             overlay.style.borderRadius='3px';
             svg.parentNode.appendChild(overlay);
             document.addEventListener('touchmove',handleDocumentTouchmove);
+            
             (0,_utils.disableUserSelect)();
         }
 
@@ -6021,7 +6031,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
-                    
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
@@ -6055,9 +6064,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
-                    
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
-                    
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else{
                     enableRect(_type);
