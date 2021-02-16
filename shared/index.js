@@ -5997,7 +5997,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         *
         * @param {Event} e The DOM event to handle
         */function handleDocumentMousemove(e){
-            // var rect=_svg.getBoundingClientRect();
             if(originX+(e.clientX-originX)<rect.right){
                 overlay.style.width=e.clientX-originX+'px';
             }
@@ -6008,7 +6007,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 
         // Handle document.touchmove event
         function handleDocumentTouchmove(e){
-            // var rect=_svg.getBoundingClientRect();
             if(originX+(e.touches[0].clientX-originX)<rect.right){
                 overlay.style.width=e.touches[0].clientX-originX+'px';
             }
@@ -6043,7 +6041,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         enableRect(_type);
                         return;
                     }
-                    // var rect=_svg.getBoundingClientRect();
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
@@ -6076,7 +6073,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         return;
                     }
                     var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                    // var rect=_svg.getBoundingClientRect();
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
@@ -6107,7 +6103,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             if(_type!=='area'&&(rects=rectsSelection)){
                 saveRect(_type,[].concat(_toConsumableArray(rects)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null,e);
             }else if(_type==='area'&&overlay){
-                // var rect=_svg.getBoundingClientRect();
                 saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e);
             }
             return false;
