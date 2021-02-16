@@ -5632,6 +5632,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var _enabled=false;
             var data=void 0;
             var _svg=void 0;
+            var _rect=void 0;
+            var dragging=false;
             //Test
             var textarea = void 0;
             var submitbutton = void 0;
@@ -5660,16 +5662,29 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
                 renderPin();
             }
+            
+            // Reset dragging to false.
+            function handleContentTouchstart(e){
+                dragging = false;
+            }
+            // Set dragging to true, so we stop the handleContentTouchend function from running.
+            function handleContentTouchmove(e){
+                dragging = true;
+            }
             /**
             * Handle content.touchend event
             *
             * @param {Event} The DOM event to be handled
-            */function handelContentTouchend(e){
+            */function handleContentTouchend(e){
+                // If the mobile user was scrolling return from this function.
+                if (dragging) {
+                    return;
+                }
                 //if the click is on the Commentlist nothing should happen.
                 if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
                     return;
                 }
-               let svg = (0,_utils.findSVGAtPoint)(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+                let svg = (0,_utils.findSVGAtPoint)(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
                 if(!svg){
                     return;
                 }
@@ -5725,8 +5740,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(!svg){
                     return{v:void 0};
                 }
-                var rect=svg.getBoundingClientRect();
-                var annotation = initializeAnnotation(rect,svg);
+                _rect=svg.getBoundingClientRect();
+                var annotation = initializeAnnotation(_rect,svg);
                 annotationObj = annotation;
                 annotation.color = true;
                 (0,_appendChild2.default)(svg,annotation);
@@ -5738,8 +5753,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(!svg){
                     return{v:void 0};
                 }
-                var rect=svg.getBoundingClientRect();
-                var annotation = initializeAnnotationTouchscreen(rect,svg,coordinates);
+                _rect=svg.getBoundingClientRect();
+                var annotation = initializeAnnotationTouchscreen(_rect,svg,coordinates);
                 annotationObj = annotation;
                 annotation.color = true;
                 (0,_appendChild2.default)(svg,annotation);
@@ -5788,7 +5803,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         var _getMetadata=(0,_utils.getMetadata)(svg);
                         var documentId=_getMetadata.documentId;
                         var pageNumber=page;
-                        var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
+                        var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(_rect.left,4)),y:clientY-((0,_utils.roundDigits)(_rect.top,4))}));
                         var commentVisibility = "public";
                         if(document.querySelector('#anonymousCheckbox').checked){
                             commentVisibility = "anonymous";
@@ -5819,7 +5834,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                     notification.addNotification({
                                         message: M.util.get_string('error:addAnnotation','pdfannotator'),
                                         type: "error"
-                                    });
+                                    }); 
                                 });
                     }();
                     if((typeof _ret==='undefined'?'undefined':_typeof(_ret))==="object"){
@@ -5840,21 +5855,25 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             function closeInput(){data.removeEventListener('blur',handleInputBlur);data.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(data);data=null;}/**
             * Enable point annotation behavior
             */function enablePoint(){
-                            if(_enabled){
-                               return;
-                            }
-                            _enabled=true;
-                            document.getElementById('content-wrapper').classList.add('cursor-point');
-                            document.addEventListener('mouseup',handleDocumentMouseup);
-                            document.addEventListener('touchend',handelContentTouchend);
-                       }
+                if(_enabled){
+                    return;
+                }
+                _enabled=true;
+                document.getElementById('content-wrapper').classList.add('cursor-point');
+                document.addEventListener('mouseup',handleDocumentMouseup);
+                document.addEventListener('touchstart', handleContentTouchstart);
+                document.addEventListener('touchmove', handleContentTouchmove);
+                document.addEventListener('touchend',handleContentTouchend);
+            }
             /**
             * Disable point annotation behavior
             */function disablePoint(){
                 _enabled=false;
                 document.getElementById('content-wrapper').classList.remove('cursor-point');
                 document.removeEventListener('mouseup',handleDocumentMouseup);
-                document.removeEventListener('touchend',handelContentTouchend);
+                document.removeEventListener('touchstart', handleContentTouchstart);
+                document.removeEventListener('touchmove', handleContentTouchmove);
+                document.removeEventListener('touchend',handleContentTouchend);
             }
     /***/},
  /* 32 */
