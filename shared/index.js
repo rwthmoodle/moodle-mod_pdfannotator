@@ -5909,6 +5909,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var data=void 0;
             var rectsSelection = void 0;
             var rectObj;
+            var _svg=void 0;
+            var rect=void 0;
             /**
             * Get the current window selection as rects
             *
@@ -5938,11 +5940,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         *
         * @param {Event} e The DOM event to handle
         */function handleDocumentMousedown(e){
-            var svg=void 0;
-            if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))){
+            if(!(_svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))|| _type!=='area'){
                 return;
             }
-            var rect=svg.getBoundingClientRect();
+            rect=_svg.getBoundingClientRect();
             originY=e.clientY;
             originX=e.clientX;
             overlay=document.createElement('div');
@@ -5951,7 +5952,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             overlay.style.left=originX-rect.left+'px';
             overlay.style.border='3px solid '+_utils.BORDER_COLOR;
             overlay.style.borderRadius='3px';
-            svg.parentNode.appendChild(overlay);
+            _svg.parentNode.appendChild(overlay);
             document.addEventListener('mousemove',handleDocumentMousemove);
             (0,_utils.disableUserSelect)();
         }
@@ -5967,8 +5968,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     return false;
                 });
             }
-            var svg=void 0;
-            if(_type!=='area'||!(svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY))){
+            
+            if(!(_svg=(0,_utils.findSVGAtPoint)(e.touches[0].clientX,e.touches[0].clientY)) || _type!=='area'){
                 return;
             }
             // Disable scrolling on the page.
@@ -5976,7 +5977,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             document.getElementById('content-wrapper').style.overflow = 'hidden';
             document.body.style.overflow = 'hidden';
 
-            var rect=svg.getBoundingClientRect();
+            rect=_svg.getBoundingClientRect();
             originY=e.touches[0].clientY;
             originX=e.touches[0].clientX;
             overlay=document.createElement('div');
@@ -5985,7 +5986,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             overlay.style.left=originX-rect.left+'px';
             overlay.style.border='3px solid '+_utils.BORDER_COLOR;
             overlay.style.borderRadius='3px';
-            svg.parentNode.appendChild(overlay);
+            _svg.parentNode.appendChild(overlay);
             document.addEventListener('touchmove',handleDocumentTouchmove);
             
             (0,_utils.disableUserSelect)();
@@ -5997,8 +5998,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         *
         * @param {Event} e The DOM event to handle
         */function handleDocumentMousemove(e){
-            var svg=overlay.parentNode.querySelector('svg.annotationLayer');
-            var rect=svg.getBoundingClientRect();
+            // var rect=_svg.getBoundingClientRect();
             if(originX+(e.clientX-originX)<rect.right){
                 overlay.style.width=e.clientX-originX+'px';
             }
@@ -6009,8 +6009,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 
         // Handle document.touchmove event
         function handleDocumentTouchmove(e){
-            var svg=overlay.parentNode.querySelector('svg.annotationLayer');
-            var rect=svg.getBoundingClientRect();
+            // var rect=_svg.getBoundingClientRect();
             if(originX+(e.touches[0].clientX-originX)<rect.right){
                 overlay.style.width=e.touches[0].clientX-originX+'px';
             }
@@ -6045,8 +6044,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         enableRect(_type);
                         return;
                     }
-                    var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                    var rect=_svg.getBoundingClientRect();
+                    // var rect=_svg.getBoundingClientRect();
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
@@ -6079,7 +6077,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         return;
                     }
                     var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                    var rect=_svg.getBoundingClientRect();
+                    // var rect=_svg.getBoundingClientRect();
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
@@ -6108,11 +6106,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         function handleSubmitClick(e){
             var rects=void 0;
             if(_type!=='area'&&(rects=rectsSelection)){
-                var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
                 saveRect(_type,[].concat(_toConsumableArray(rects)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null,e);
             }else if(_type==='area'&&overlay){
-                var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
-                var rect=_svg.getBoundingClientRect();
+                // var rect=_svg.getBoundingClientRect();
                 saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e);
             }
             return false;
@@ -6155,13 +6151,13 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         }
         
         function renderRect(type,rects,color){
-            var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
-            var _getMetadata=(0,_utils.getMetadata)(svg);
+            rect=_svg.getBoundingClientRect();
+            var _getMetadata=(0,_utils.getMetadata)(_svg);
             documentId=_getMetadata.documentId;
             pageNumber=_getMetadata.pageNumber;
-            var annotation = initializeAnnotation(type,rects,'rgb(255,237,0)',svg);
-            rectObj = [svg,annotation];
-            (0,_appendChild2.default)(svg,annotation);
+            var annotation = initializeAnnotation(type,rects,'rgb(255,237,0)',_svg);
+            rectObj = [_svg,annotation];
+            (0,_appendChild2.default)(_svg,annotation);
         }
         /**
          * This function deletes all annotations which data-pdf-annotate-id is undefined. An annotation is undefined, if it is only temporarily displayed.
@@ -6180,7 +6176,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var node=void 0;
             var annotation=void 0;
             if(!svg){return;}
-            var boundingRect=svg.getBoundingClientRect();
             if(!color){
                 if(type==='highlight'){
                     color='rgb(142,186,229)';
@@ -6188,17 +6183,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     color='rgb(0,84,159)';
                 }
             }// Initialize the annotation
-            annotation={type:type,color:color,rectangles:[].concat(_toConsumableArray(rects)).map(function(r){var offset=0;if(type==='strikeout'){offset=r.height/2;}return(0,_utils.scaleDown)(svg,{y:r.top+offset-boundingRect.top,x:r.left-boundingRect.left,width:r.width,height:r.height});}).filter(function(r){return r.width>0&&r.height>0&&r.x>-1&&r.y>-1;})};// Short circuit if no rectangles exist
+            annotation={type:type,color:color,rectangles:[].concat(_toConsumableArray(rects)).map(function(r){var offset=0;if(type==='strikeout'){offset=r.height/2;}return(0,_utils.scaleDown)(svg,{y:r.top+offset-rect.top,x:r.left-rect.left,width:r.width,height:r.height});}).filter(function(r){return r.width>0&&r.height>0&&r.x>-1&&r.y>-1;})};// Short circuit if no rectangles exist
             if(annotation.rectangles.length===0){
                 return;
             }// Special treatment for area as it only supports a single rect
             if(type==='area'){
-                var rect=annotation.rectangles[0];
+                var _rect=annotation.rectangles[0];
                 delete annotation.rectangles;
-                annotation.x=(0,_utils.roundDigits)(rect.x,4);
-                annotation.y=(0,_utils.roundDigits)(rect.y,4);
-                annotation.width=(0,_utils.roundDigits)(rect.width,4);
-                annotation.height=(0,_utils.roundDigits)(rect.height,4);
+                annotation.x=(0,_utils.roundDigits)(_rect.x,4);
+                annotation.y=(0,_utils.roundDigits)(_rect.y,4);
+                annotation.width=(0,_utils.roundDigits)(_rect.width,4);
+                annotation.height=(0,_utils.roundDigits)(_rect.height,4);
             }else{
                 annotation.rectangles = annotation.rectangles.map(function(elem, index, array){
                     return {x:(0,_utils.roundDigits)(elem.x,4),y:(0,_utils.roundDigits)(elem.y,4),width:(0,_utils.roundDigits)(elem.width,4),height:(0,_utils.roundDigits)(elem.height,4)};
@@ -6215,9 +6210,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         * @param {Array} rects The rects to use for annotation
         * @param {String} color The color of the rects
         */function saveRect(type,rects,color,e){
-            var svg=(0,_utils.findSVGAtPoint)(rects[0].left,rects[0].top);
-            var annotation = initializeAnnotation(type,rects,color,svg);
-            var _getMetadata=(0,_utils.getMetadata)(svg);
+            var annotation = initializeAnnotation(type,rects,color,_svg);
+            var _getMetadata=(0,_utils.getMetadata)(_svg);
             var documentId=_getMetadata.documentId;
             var pageNumber=_getMetadata.pageNumber;
             var content=textarea.value.trim();
@@ -6248,7 +6242,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                                 //get Old rectangles because of scrolling
                                 annotation.rectangles = rectObj[1].rectangles;
 
-                                (0,_appendChild2.default)(svg,annotation); 
+                                (0,_appendChild2.default)(_svg,annotation); 
                                 document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
                                 //simulate an click on cursor
                                 document.querySelector('button.cursor').click();
