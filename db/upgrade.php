@@ -575,5 +575,29 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019070100, 'pdfannotator');
     }
 
+    if ($oldversion < 2021022201) {
+
+        // Define field useprivatecomments to be added to pdfannotator.
+        $table = new xmldb_table('pdfannotator');
+        $field = new xmldb_field('useprivatecomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'use_studentdrawing');
+
+        // Conditionally launch add field useprivatecomments.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+         // Define field useprotectedcomments to be added to pdfannotator.
+         $table = new xmldb_table('pdfannotator');
+         $field = new xmldb_field('useprotectedcomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'useprivatecomments');
+
+         // Conditionally launch add field useprotectedcomments.
+        if (!$dbman->field_exists($table, $field)) {
+             $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2021022201, 'pdfannotator');
+    }
+
     return true;
 }

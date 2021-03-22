@@ -522,12 +522,12 @@ body {
     float: right;
 }
 
-.path-mod-pdfannotator #anonymousLabel {
+.path-mod-pdfannotator #anonymousLabel, .path-mod-pdfannotator #privateLabel, .path-mod-pdfannotator #protectedLabel {
     margin-left: 5px;
     margin-bottom: 0;
 }
 
-.path-mod-pdfannotator #anonymousDiv {
+.path-mod-pdfannotator #anonymousDiv, .path-mod-pdfannotator #privateDiv, .path-mod-pdfannotator #protectedDiv {
     margin: 5px 0px;
 }
 
@@ -877,4 +877,3 @@ header, section, footer, aside, nav, main, article, figure {
     width: 100%;
     position: fixed;
 }
-

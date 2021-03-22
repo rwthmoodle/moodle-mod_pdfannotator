@@ -64,6 +64,11 @@ if ($action === 'read') {
 
     foreach ($records as $record) {
 
+        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $record->id, 'isquestion' => 1));
+        if ($comment && !pdfannotator_can_see_comment($comment, $context)) {
+            continue;
+        }
+
         $entry = json_decode($record->data); // StdClass Object containing data that is specific to the respective annotation type.
         // Add general annotation data.
         $entry->type = pdfannotator_get_annotationtype_name($record->annotationtypeid);
@@ -376,7 +381,8 @@ if ($action === 'getComments') {
     $annotationid = required_param('annotationId', PARAM_INT);
 
     // Create an array of all comment objects on the specified page and annotation.
-    $comments = pdfannotator_comment::read($documentid, $annotationid);
+
+    $comments = pdfannotator_comment::read($documentid, $annotationid, $context);
 
     require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
@@ -439,8 +445,8 @@ if ($action === 'editComment') {
     $editanypost = has_capability('mod/pdfannotator:editanypost', $context);
 
     $commentid = required_param('commentId', PARAM_INT);
-    $content = required_param('content', PARAM_RAW);    
-        
+    $content = required_param('content', PARAM_RAW);
+ 
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }
@@ -599,7 +605,7 @@ if ($action === 'getCommentsToPrint') {
     global $DB;
 
     // The model retrieves and selects data.
-    $conversations = pdfannotator_instance::get_conversations($documentid);
+    $conversations = pdfannotator_instance::get_conversations($documentid, $context);
 
     if ($conversations === -1) { // Sth. went wrong with the database query.
         echo json_encode(['status' => 'error']);

@@ -54,7 +54,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
         // 2. Define each element separately.
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
-            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing', 'timecreated', 'timemodified'));
+            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing', 'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified'));
 
             $annotations = new backup_nested_element('annotations');
             $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid', 'data', 'timecreated', 'timemodified', 'modifiedby'));
@@ -95,7 +95,10 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // ... if ($userinfo) {?
 
             // Add all annotations specific to this annotator instance.
-            $annotation->set_source_table('pdfannotator_annotations', array('pdfannotatorid' => backup::VAR_PARENTID));
+            $annotation->set_source_sql('SELECT a.* FROM {pdfannotator_annotations} a '
+                                        . 'JOIN {pdfannotator_comments} c ON a.id = c.annotationid '
+                                        . 'WHERE a.pdfannotatorid = ? AND c.isquestion = "1" AND (c.visibility = "public" OR c.visibility = "anonymous") ',
+                                        array('pdfannotatorid' => backup::VAR_PARENTID));
 
                 // Add any subscriptions to this annotation.
                 $subscription->set_source_table('pdfannotator_subscriptions', array('annotationid' => backup::VAR_PARENTID));

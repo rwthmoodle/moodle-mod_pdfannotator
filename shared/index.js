@@ -1890,13 +1890,33 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 	    if (supportsComments(target)) {
                 //showLoader
                 UI.showLoader();
-                $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
 	      (function () {
 	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
 	        var annotationId = target.getAttribute('data-pdf-annotate-id');
 
 	        _2.default.getStoreAdapter().getComments(documentId, annotationId).then(function (comments) {
                   UI.hideLoader();
+                  var title;
+                  if(comments.comments[0].visibility == "protected") {
+                    title = M.util.get_string('protected_comments','pdfannotator');
+                    $("#protectedDiv").hide();                    
+                    $("#anonymousDiv").hide();
+                    $("#privateDiv").hide();
+                    $("#myarea").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
+                  } else if (comments.comments[0].visibility == "private") {
+                    title = M.util.get_string('private_comments','pdfannotator');
+                    $("#privateDiv").hide();
+                    $("#protectedDiv").hide();                    
+                    $("#anonymousDiv").hide();
+                    $("#myarea").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
+                  } else {
+                    title = M.util.get_string('public_comments','pdfannotator');
+                    $("#privateDiv").hide();
+                    $("#protectedDiv").hide();
+                    $("#anonymousDiv").show();
+                  }
+                  
+                  $('#comment-wrapper h4')[0].innerHTML = title;
 	          commentList.innerHTML = '';
 	          commentForm.style.display = 'inherit';
                   
@@ -1906,10 +1926,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                   button2.style.display = 'inline';
                   commentForm.onsubmit = function (e) {
                       document.querySelector('#commentSubmit').disabled = true;
-                      var commentVisibility= "public";
-                      if(document.querySelector('#anonymousCheckbox').checked){
-                          commentVisibility = "anonymous";
-                      }
+                      var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       if(commentText.value.trim().length < 2){
                           //should be more than one character, otherwise it should not be saved.
@@ -5496,7 +5513,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             *
             * @param {Number} x The x coordinate of the point
             * @param {Number} y The y coordinate of the point
-            */function savePoint(x,y){
+            */
+            function savePoint(x,y){
                 var svg=(0,_utils.findSVGAtPoint)(x,y);
                 if(!svg){return;}
                 var rect=svg.getBoundingClientRect();
@@ -5783,7 +5801,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             }
             /**
             * Save a new point annotation from input
-            */function savePoint(svg = null){
+            */
+            function savePoint(svg = null){
                 if(textarea.value.trim().length>1){
                     disablePoint();
                     var page = pageNumber;
@@ -5804,10 +5823,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         var documentId=_getMetadata.documentId;
                         var pageNumber=page;
                         var annotation=Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(_rect.left,4)),y:clientY-((0,_utils.roundDigits)(_rect.top,4))}));
-                        var commentVisibility = "public";
-                        if(document.querySelector('#anonymousCheckbox').checked){
-                            commentVisibility = "anonymous";
-                        }
+                        var commentVisibility= read_visibility_of_checkbox();
                         var isquestion = 1; //The Point was created so the comment is a question
                         _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,annotation)
                                 .then(function(annotation){
@@ -6204,7 +6220,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         * @param {String} type The type of rect (area, highlight, strikeout)
         * @param {Array} rects The rects to use for annotation
         * @param {String} color The color of the rects
-        */function saveRect(type,rects,color,e){
+        */
+        function saveRect(type,rects,color,e){
             var annotation = initializeAnnotation(type,rects,color,_svg);
             var _getMetadata=(0,_utils.getMetadata)(_svg);
             var documentId=_getMetadata.documentId;
@@ -6225,10 +6242,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     .addAnnotation(documentId,pageNumber,annotation)
                     .then(function(annotation){
                         
-                        var commentVisibility = "public";
-                        if(document.querySelector('#anonymousCheckbox').checked){
-                            commentVisibility = "anonymous";
-                        }
+                        var commentVisibility= read_visibility_of_checkbox();
                         var isquestion = 1; //The annotation was created, so this comment has to be a question;
                         _PDFJSAnnotate2.default.getStoreAdapter().addComment(documentId,annotation.uuid,content,commentVisibility,isquestion)
                             .then(function(msg){
@@ -6652,7 +6666,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 button1.style.display = 'inline';
                 var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                 button2.style.display = 'inline';
-                
+
                 //title 
                 $('#comment-wrapper h4')[0].innerHTML = M.util.get_string('comments','pdfannotator');
                 //add Eventlistener to Toolbar. Every Click in Toolbar should cancel the Annotation-Comment-Creation
@@ -6660,7 +6674,12 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 //Hide shown comments
                 document.querySelector('.comment-list-container').innerHTML = '<p></p>';
                 form = document.querySelector('.comment-list-form');
-                form.setAttribute('style','display:inherit');
+                $(document).ready(function(){
+                    form.setAttribute('style','display:inherit');
+                    $('#anonymousDiv').show();
+                    $('#privateDiv').show();
+                    $('#protectedDiv').show();
+                });
                 textarea = document.getElementById('myarea');
                 textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
                 submitbutton = document.getElementById('commentSubmit');
@@ -6706,6 +6725,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 document.querySelector('.comment-list-container').innerHTML = '<p></p>';
                 form = document.querySelector('.comment-list-form');
                 form.setAttribute('style','display:inherit');
+                $('#anonymousCheckbox').show();
+                $('#privateCheckbox').show();
+                $('#protectedCheckbox').show();
                 textarea = document.getElementById('myarea');
                 textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
                 submitbutton = document.getElementById('commentSubmit');
@@ -7406,4 +7428,26 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
 /***/ }
 /******/ ]);
 }); //require JQuery closed
+}
+
+/**
+ * 
+ */
+function read_visibility_of_checkbox(){
+    var commentVisibility= "public";
+        if (document.querySelector('#anonymousCheckbox').checked) {
+            commentVisibility = "anonymous";
+            document.querySelector('#anonymousCheckbox').checked = false;
+        } else if (document.querySelector('#privateCheckbox') != null) {
+            if (document.querySelector('#privateCheckbox').checked) {
+              commentVisibility = "private";
+              document.querySelector('#privateCheckbox').checked = false;
+            }
+        } else if (document.querySelector('#protectedCheckbox') != null) {
+            if (document.querySelector('#protectedCheckbox').checked) {
+              commentVisibility = "protected";
+              document.querySelector('#protectedCheckbox').checked = false;
+            } 
+        }                              
+    return commentVisibility;    
 }
