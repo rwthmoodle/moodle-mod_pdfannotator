@@ -575,7 +575,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019070100, 'pdfannotator');
     }
 
-    if ($oldversion < 2021022201) {
+    if ($oldversion < 2021032201) {
 
         // Define field useprivatecomments to be added to pdfannotator.
         $table = new xmldb_table('pdfannotator');
@@ -596,7 +596,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         }
 
         // Pdfannotator savepoint reached.
-        upgrade_mod_savepoint(true, 2021022201, 'pdfannotator');
+        upgrade_mod_savepoint(true, 2021032201, 'pdfannotator');
     }
 
     return true;
