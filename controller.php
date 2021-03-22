@@ -446,7 +446,7 @@ if ($action === 'statistic') {
     $strings = $stringman->load_component_strings('pdfannotator', 'en'); // Method gets the strings of the language files.
     $PAGE->requires->strings_for_js(array_keys($strings), 'pdfannotator'); // Method to use the language-strings in javascript.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/statistic.js?ver=0001"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/statistic.js?ver=0004"));
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $capabilities = new stdClass();
     $capabilities->viewquestions = has_capability('mod/pdfannotator:viewquestions', $context);

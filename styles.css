@@ -522,6 +522,15 @@ body {
     float: right;
 }
 
+.path-mod-pdfannotator #anonymousLabel, .path-mod-pdfannotator #privateLabel, .path-mod-pdfannotator #protectedLabel {
+    margin-left: 5px;
+    margin-bottom: 0;
+}
+
+.path-mod-pdfannotator #anonymousDiv, .path-mod-pdfannotator #privateDiv, .path-mod-pdfannotator #protectedDiv {
+    margin: 5px 0px;
+}
+
 .path-mod-pdfannotator .helperLayer {
     width: 100%;
     height: 100%;

@@ -123,12 +123,12 @@ class pdfannotator_instance {
         return $this->name;
     }
 
-    public static function get_conversations($pdfannotatorid) {
+    public static function get_conversations($pdfannotatorid, $context) {
 
         global $DB;
 
         $sql = "SELECT q.id, q.content AS answeredquestion, q.timemodified, q.userid, q.visibility,"
-                . " a.id AS annoid, a.page, a.annotationtypeid "
+                . " a.id AS annoid, a.page, a.annotationtypeid, q.isquestion "
                 . "FROM {pdfannotator_annotations} a "
                 . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id "
                 . "WHERE q.isquestion = 1 AND a.pdfannotatorid = ? AND NOT q.isdeleted = 1 "
@@ -140,7 +140,13 @@ class pdfannotator_instance {
             return -1;
         }
 
+        $res = [];
+
         foreach ($questions as $question) {
+
+            if (!pdfannotator_can_see_comment($question, $context)) {
+                continue;
+            }
 
             $question->answeredquestion = html_entity_decode($question->answeredquestion);
             $question->timemodified = pdfannotator_get_user_datetime($question->timemodified);
@@ -175,8 +181,8 @@ class pdfannotator_instance {
             unset($question->annoid);
 
             $question->answers = $answers;
-
+            $res[] = $question;
         }
-        return $questions;
+        return $res;
     }
 }

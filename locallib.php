@@ -58,8 +58,8 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf_viewer.js"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00012i"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00002"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00014"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00003"));
 
     // Pass parameters from PHP to JavaScript.
 
@@ -89,6 +89,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // The renderer renders the original index.php / takes the template and renders it.
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     echo $myrenderer->render_index(new index($pdfannotator, $capabilities, $file));
+    $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
 
@@ -135,7 +136,7 @@ function pdfannotator_get_annotationtype_name($typeid) {
 function pdfannotator_handle_latex($context, string $subject) {
     global $CFG;
     require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
-    $latexapi = get_config('mod_pdfannotator','latexapi');
+    $latexapi = get_config('mod_pdfannotator', 'latexapi');
 
     // Look for these formulae: $$ ... $$, \( ... \) and \[ ... \]
     // !!! keep indentation!
@@ -188,7 +189,7 @@ SIGN;
         $match[0] = $string;
 
         $result[] = trim(substr($subject, $textstart, $formulaoffset - $textstart));
-        if($latexapi == LATEX_TO_PNG_GOOGLE_API) {
+        if ($latexapi == LATEX_TO_PNG_GOOGLE_API) {
             $result[] = pdfannotator_process_latex_google($match[0]);
         } else {
             $result[] = pdfannotator_process_latex_moodle($context, $match[0]);
@@ -210,7 +211,7 @@ function pdfannotator_process_latex_moodle($context, $string) {
     $tex = new latex();
     $md5 = md5($string);
     $image = $tex->render($string, $md5 . 'png');
-    if($image == false) {
+    if ($image == false) {
         return false;
     }
     $imagedata = file_get_contents($image);
@@ -228,7 +229,7 @@ function pdfannotator_process_latex_moodle($context, $string) {
  * @return type
  */
 function pdfannotator_process_latex_google(string $string) {
-    
+
     $length = strlen($string);
     $im = null;
     if ($length <= 200) { // Google API constraint XXX find better alternative if possible.
@@ -720,9 +721,9 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     $cminfo = pdfannotator_instance::get_cm_info($courseid);
     list($insql, $inparams) = $DB->get_in_or_equal(array_keys($cminfo));
 
-    $sql = "SELECT a.id as annoid, a.page, a.pdfannotatorid, p.name AS pdfannotatorname, p.usevotes, cm.id AS cmid, "
+    $sql = "SELECT a.id as annoid, a.page, a.pdfannotatorid, p.name AS pdfannotatorname, p.usevotes, cm.id AS cmid, c.isquestion, "
             . "c.id as commentid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, "
-            . "SUM(vote) AS votes, COUNT(answ.id)-1 AS answercount, MAX(answ.timecreated) AS lastanswered "
+            . "SUM(vote) AS votes, MAX(answ.timecreated) AS lastanswered "
             . "FROM {pdfannotator_annotations} a "
             . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
             . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
@@ -744,7 +745,12 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     $labelhidden = "<br><span class='tag tag-info'>" . get_string('hiddenfromstudents') . "</span>"; // XXX use moodle method if exists.
     $labelunavailable = "<br><span class='tag tag-info'>" . get_string('restricted') . "</span>";
 
+    $res = [];
     foreach ($questions as $key => $question) {
+
+        if (!pdfannotator_can_see_comment($question, $context)) {
+            continue;
+        }
 
         if (empty($question->votes)) {
             $question->votes = 0;
@@ -752,16 +758,12 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
         if ($question->usevotes == 0) {
             $question->votes = '-';
         }
-        if (empty($question->answercount)) {
-            $question->answercount = 0;
-        }
-        if ($question->lastanswered != $question->timecreated) {
-            $conditions = array('annotationid' => $question->annoid, 'timecreated' => $question->lastanswered, 'isquestion' => 0);
-            $r = $DB->get_record('pdfannotator_comments', $conditions, 'userid, visibility', IGNORE_MISSING);
-            if (!empty($r)) {
-                $question->lastuser = $r->userid;
-                $question->lastuservisibility = $r->visibility;
-            }
+        $question->answercount = pdfannotator_count_answers($question->annoid, $context);
+
+        $lastanswer = pdfannotator_get_last_answer($question->annoid, $context);
+        if ($lastanswer) {
+            $question->lastuser = $lastanswer->userid;
+            $question->lastuservisibility = $lastanswer->visibility;
         } else {
             $question->lastanswered = false;
         }
@@ -794,8 +796,11 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
         $question->content = format_text($question->content);
         $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $question->cmid,
             'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();
+
+        $res[] = $question;
+
     }
-    return $questions;
+    return $res;
 }
 
 /**
@@ -895,8 +900,9 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
     $labelunavailable = "<br><span class='tag tag-info'>" . get_string('restricted') . "</span>";
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
-        $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS answeredby, c.visibility, "
-                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+        $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
+                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+                . "q.visibility AS questionvisibility, "
                 . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
                 . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
                 . "FROM {pdfannotator_annotations} a "
@@ -908,8 +914,9 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
                 . "WHERE p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
                 . "ORDER BY annoid ASC";
     } else { // Or: get answers to those questions the user subscribed to.
-        $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS answeredby, c.visibility, "
-                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+        $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
+                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+                . "q.visibility AS questionvisibility, "
                 . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
                 . "p.name AS pdfannotatorname, cm.id AS cmid "
                 . "FROM {pdfannotator_subscriptions} s "
@@ -926,7 +933,11 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     $entries = $DB->get_records_sql($sql, $params);
 
+    $res = [];
     foreach ($entries as $key => $entry) {
+        if (!pdfannotator_can_see_comment($entry, $context)) {
+            continue;
+        }
         $entry->link = (new moodle_url('/mod/pdfannotator/view.php',
                     array('id' => $entry->cmid, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->answerid)))->out();
         $entry->questionlink = (new moodle_url('/mod/pdfannotator/view.php',
@@ -975,9 +986,11 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
         $entry->answeredquestion = format_text($entry->answeredquestion);
         $entry->answer = format_text($entry->answer);
+
+        $res[] = $entry;
     }
 
-    return $entries;
+    return $res;
 }
 
 /**
@@ -1542,7 +1555,7 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
     }
     $time = pdfannotator_get_user_datetime_shortformat($question->timecreated);
     if (!empty($question->lastanswered)) { // ! ($question->lastanswered != $question->timecreated) {
-        if ($question->lastuservisibility != 'public') {
+        if ($question->lastuservisibility == 'anonymous') {
             $lastresponder = get_string('anonymous', 'pdfannotator');
         } else {
             $lastresponder = "<a href=" . $CFG->wwwroot . "/user/view.php?id=$question->lastuser&course=$thiscourse>" . pdfannotator_get_username($question->lastuser) . "</a>";
@@ -1599,7 +1612,7 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
     if ($answer->visibility != 'public') {
         $answeredby = get_string('anonymous', 'pdfannotator');
     } else {
-        $answeredby = "<a href=" . $CFG->wwwroot . "/user/view.php?id=$answer->answeredby&course=$thiscourse>" . pdfannotator_get_username($answer->answeredby) . "</a>";
+        $answeredby = "<a href=" . $CFG->wwwroot . "/user/view.php?id=$answer->userid&course=$thiscourse>" . pdfannotator_get_username($answer->userid) . "</a>";
     }
     $answertime = pdfannotator_get_user_datetime_shortformat($answer->timemodified);
 
@@ -1743,4 +1756,66 @@ function pdfannotator_is_mobile_device() {
 function pdfannotator_is_phone() {
     $param = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_DEFAULT); // XXX How to filter, here?
     return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $param);
+}
+
+
+function pdfannotator_get_last_answer($annotationid, $context) {
+    global $DB;
+    $params = array('isquestion' => 0, 'annotationid' => $annotationid);
+    $answers = $DB->get_records('pdfannotator_comments', $params, 'timecreated DESC' );
+
+    foreach ($answers as $answer) {
+        if (!pdfannotator_can_see_comment($answer, $context)) {
+            continue;
+        } else {
+            return $answer;
+        }
+    }
+    return null;
+}
+
+function pdfannotator_can_see_comment($comment, $context) {
+    global $USER, $DB;
+    if (is_array($comment)) {
+        $comment = (object)$comment;
+    }
+
+    // If the comment is an answer, it is always saved as public. So, we check the visibility of the corresponding question.
+    if (!$comment->isquestion) {
+        $question = $DB->get_record('pdfannotator_comments', array('annotationid' => $comment->annotationid, 'isquestion' => '1'));
+        $question = (object)$question;
+    } else {
+        $question = $comment;
+    }
+
+    // Private Comments are only displayed for the author.
+    if ($question->visibility == "private" && $USER->id != $question->userid) {
+        return false;
+    }
+
+    // Protected Comments are only displayed for the author and for the managers.
+    if ($question->visibility == "protected" && $USER->id != $question->userid && !has_capability('mod/pdfannotator:viewprotectedcomments', $context)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Count how many answers has a question with $annotationid
+ * return only answers that the user can see
+ */
+function pdfannotator_count_answers($annotationid, $context) {
+    global $DB;
+    $params = array('isquestion' => 0, 'annotationid' => $annotationid);
+    $answers = $DB->get_records('pdfannotator_comments', $params);
+    $count = 0;
+
+    foreach ($answers as $answer) {
+
+        if (!pdfannotator_can_see_comment($answer, $context)) {
+            continue;
+        }
+        $count++;
+    }
+    return $count;
 }
