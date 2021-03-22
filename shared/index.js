@@ -5459,7 +5459,9 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var _penSize=void 0;
             var _penColor=void 0;
             var path=void 0;
-            var lines=void 0;/**
+            var lines=void 0;
+            var _svg=void 0;/**
+            
             * Handle document.mousedown event
             */function handleDocumentMousedown(){
                 path=null;
@@ -5524,35 +5526,28 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 if(path){svg.removeChild(path);}
                 path=(0,_appendChild2.default)(svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
             }
-            function handeContentTouchstart(e) {
-                document.documentElement.style.overflow = 'hidden';
-                document.getElementById('content-wrapper').style.overflow = 'hidden';
-                document.getElementById('body-wrapper').style.overflow = 'hidden';
-                document.body.classList.add("lock-screen");
+            function handleContentTouchstart(e) {
                 path=null;
                 lines=[];
-                savePoint(e.touches[0].pageX,e.touches[0].pageY);
+                _svg = (0, _utils.findSVGAtPoint)(e.touches[0].clientX, e.touches[0].clientY);
+                saveTouchPoint(e.touches[0].clientX,e.touches[0].clientY);
             }
-            function handeContentTouchmove(e) {
-                savePoint(e.touches[0].pageX,e.touches[0].pageY);
+            function handleContentTouchmove(e) {
+                e.preventDefault();
+                saveTouchPoint(e.touches[0].clientX,e.touches[0].clientY);
             }
-            function handeContentTouchend(e) {
-                document.documentElement.style.overflow = 'auto';
-                document.getElementById('content-wrapper').style.overflow = 'auto';
-                document.getElementById('body-wrapper').style.overflow = 'auto';
-                document.body.classList.remove("lock-screen");
-                var svg=void 0;
-                if (lines.length > 1 && (svg = (0,findSVGAtTouchPoint(lines[lines.length-1][0],lines[lines.length-1][1])))){
-                    var _getMetadata=(0,_utils.getMetadata)(svg);
+            function handleContentTouchend(e) {
+                if (lines.length > 1){
+                    var _getMetadata=(0,_utils.getMetadata)(_svg);
                     var documentId=_getMetadata.documentId;
                     var pageNumber=_getMetadata.pageNumber;
                     _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,{type:'drawing',width:_penSize,color:_penColor,lines:lines})
                             .then(function(annotation){
-                                if(path){svg.removeChild(path);}
-                                (0,_appendChild2.default)(svg,annotation);
+                                if(path){_svg.removeChild(path);}
+                                (0,_appendChild2.default)(_svg,annotation);
                             }, function (err){
                                 // Remove path
-                                if(path){svg.removeChild(path);}
+                                if(path){_svg.removeChild(path);}
                                 notification.addNotification({
                                     message: M.util.get_string('error:addAnnotation','pdfannotator'),
                                     type: "error"
@@ -5560,40 +5555,25 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                             });
                 }
             }
-            function handeContentTouchcancel(e) {
-                document.documentElement.style.overflow = 'auto';
-                document.getElementById('content-wrapper').style.overflow = 'auto';
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove("lock-screen");
+            function handleContentTouchcancel(e) {
                 lines=null;
                 path.parentNode.removeChild(path);
             }
-            /**
-             * Determine if a point intersects a rect
-             *
-             * @param {Number} x The x coordinate of the point
-             * @param {Number} y The y coordinate of the point
-             * @param {Object} rect The points of a rect (likely from getBoundingClientRect)
-             * @return {Boolean} True if a collision occurs, otherwise false
-             */function pointIntersectsRect(x,y,rect){return y>=rect.top&&y<=rect.bottom;}/**
-
-            /* Find an SVGElement container at a given touchpoint
+            
+            /* Save a touchpoint to the line being drawn.
             *
             * @param {Number} x The x coordinate of the point
             * @param {Number} y The y coordinate of the point
-            * @return {SVGElement} The container SVG or null if one can't be found.
-            */function findSVGAtTouchPoint(x,y){
-                var elements=document.querySelectorAll('svg[data-pdf-annotate-container="true"]');
-                    for(var i=0,l=elements.length;i<l;i++){ 
-                        var el=elements[i];
-                        var rect=el.getBoundingClientRect();
-                        if(rect.top > 0 && rect.bottom > 0){
-                            return el;
-                        }
-                    }
-                return null;
+            */function saveTouchPoint(x,y){
+                if(!_svg){return;}
+                var rect=_svg.getBoundingClientRect();
+                var point=(0,_utils.scaleDown)(_svg,{x:(0,_utils.roundDigits)(x-rect.left,4),y:(0,_utils.roundDigits)(y-rect.top,4)});
+                lines.push([point.x,point.y]);
+                if(lines.length<=1){return;}
+                if(path){_svg.removeChild(path);}
+                path=(0,_appendChild2.default)(_svg,{type:'drawing',color:_penColor,width:_penSize,lines:lines});
             }
-            
+
             /**
             * Set the attributes of the pen.
             *
@@ -5610,10 +5590,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                            contentWrapper.classList.add('cursor-pen');
                            document.addEventListener('mousedown',handleDocumentMousedown);
                            document.addEventListener('keyup',handleDocumentKeyup);
-                           contentWrapper.addEventListener('touchstart',handeContentTouchstart);
-                           contentWrapper.addEventListener('touchmove',handeContentTouchmove);
-                           contentWrapper.addEventListener('touchend',handeContentTouchend);
-                           contentWrapper.addEventListener('touchcancel',handeContentTouchcancel);
+                           contentWrapper.addEventListener('touchstart',handleContentTouchstart);
+                           contentWrapper.addEventListener('touchmove',handleContentTouchmove);
+                           contentWrapper.addEventListener('touchend',handleContentTouchend);
+                           contentWrapper.addEventListener('touchcancel',handleContentTouchcancel);
                            (0,_utils.disableUserSelect)();
                        }/**
             * Disable the pen behavior
@@ -5626,10 +5606,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                            contentWrapper.classList.remove('cursor-pen');
                            document.removeEventListener('mousedown',handleDocumentMousedown);
                            document.removeEventListener('keyup',handleDocumentKeyup);
-                           contentWrapper.removeEventListener('touchstart',handeContentTouchstart);
-                           contentWrapper.removeEventListener('touchmove',handeContentTouchmove);
-                           contentWrapper.removeEventListener('touchend',handeContentTouchend);
-                           contentWrapper.removeEventListener('touchcancel',handeContentTouchcancel);
+                           contentWrapper.removeEventListener('touchstart',handleContentTouchstart);
+                           contentWrapper.removeEventListener('touchmove',handleContentTouchmove);
+                           contentWrapper.removeEventListener('touchend',handleContentTouchend);
+                           contentWrapper.removeEventListener('touchcancel',handleContentTouchcancel);
                            (0,_utils.enableUserSelect)();
                        }
     /***/},
@@ -5991,7 +5971,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             // Disable scrolling on the page.
             document.documentElement.style.overflow = 'hidden';
             document.getElementById('content-wrapper').style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
 
             rect=_svg.getBoundingClientRect();
             originY=e.touches[0].clientY;
@@ -6076,7 +6055,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             // Enable the scrolling again 
             document.documentElement.style.overflow = 'auto';
             document.getElementById('content-wrapper').style.overflow = 'auto';
-            document.body.style.overflow = 'auto';
 
             //if the cursor is clicked nothing should happen!
             if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
@@ -6092,10 +6070,10 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     var _svg=overlay.parentNode.querySelector('svg.annotationLayer');
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
-                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelTouch,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
-                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelTouch,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else{
                     enableRect(_type);
                     //Do nothing!
@@ -6126,11 +6104,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
         }
         
         function handleCancelClick(e){
-            // When using on mobile devices scrolling will be prevented, here we have to allow it again.
-            document.documentElement.style.overflow = 'auto';
-            document.getElementById('content-wrapper').style.overflow = 'auto';
-            document.body.style.overflow = 'auto';
-
             //delete Overlay
             if(_type==='area'&&overlay){
                 overlay.parentNode.removeChild(overlay);
@@ -6142,6 +6115,30 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             //register EventListeners to allow new Annotations
             enableRect(_type);
             (0,_utils.enableUserSelect)();
+        }
+
+        function handleCancelTouch(e){
+            // When using on mobile devices scrolling will be prevented, here we have to allow it again.
+            document.documentElement.style.overflow = 'auto';
+            document.getElementById('content-wrapper').style.overflow = 'auto';
+
+            //delete Overlay
+            if(_type==='area'&&overlay){
+                overlay.parentNode.removeChild(overlay);
+                overlay=null;
+            }
+            //Hide the form for Comments
+            (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            deleteUndefinedRect();
+            
+            // Because of a scrolling issue we have to disable the area annotation after canceling the annotation.
+            if (_type ==='area') {
+                disableRect();
+                document.querySelector('button.cursor').click();
+            } else {
+                enableRect(_type);
+                (0,_utils.enableUserSelect)();
+            }
         }
         
         function handleSubmitBlur(){
