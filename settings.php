@@ -40,6 +40,14 @@ if ($ADMIN->fulltree) {
             get_string('global_setting_use_studentdrawing', 'pdfannotator'),
             get_string('global_setting_use_studentdrawing_desc', 'pdfannotator'), 0));
 
+    $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/use_private_comments',
+            get_string('global_setting_use_private_comments', 'pdfannotator'),
+            get_string('global_setting_use_private_comments_desc', 'pdfannotator'), 0));
+
+    $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/use_protected_comments',
+            get_string('global_setting_use_protected_comments', 'pdfannotator'),
+            get_string('global_setting_use_protected_comments_desc', 'pdfannotator'), 0));
+
     //Define what API to use for converting latex formulas into png.
     $options = array();
     $options[LATEX_TO_PNG_MOODLE] = get_string("global_setting_latexusemoodle", "pdfannotator");

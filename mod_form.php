@@ -96,6 +96,16 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->setDefault('useprintcomments', $config->useprintcomments);
         $mform->addHelpButton('useprintcomments', 'setting_useprint_comments', 'pdfannotator');
 
+        $mform->addElement('advcheckbox', 'useprivatecomments', get_string('setting_use_private_comments', 'pdfannotator'), get_string('use_private_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('useprivatecomments', PARAM_BOOL);
+        $mform->setDefault('useprivatecomments', $config->use_private_comments);
+        $mform->addHelpButton('useprivatecomments', 'setting_use_private_comments', 'pdfannotator');
+
+        $mform->addElement('advcheckbox', 'useprotectedcomments', get_string('setting_use_protected_comments', 'pdfannotator'), get_string('use_protected_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->setType('useprotectedcomments', PARAM_BOOL);
+        $mform->setDefault('useprotectedcomments', $config->use_protected_comments);
+        $mform->addHelpButton('useprotectedcomments', 'setting_use_protected_comments', 'pdfannotator');
+
         // Add legacy files flag only if used.
         if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
             $options = array(RESOURCELIB_LEGACYFILES_DONE => get_string('legacyfilesdone', 'pdfannotator'),

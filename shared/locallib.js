@@ -83,8 +83,6 @@ function addDropdownNavigation(Y, __capabilities, __cmid) {
 
 }
 
-
-
 function renderMathJax() {
     var counter = 0;
     let mathjax = function () {
@@ -176,5 +174,54 @@ function makeFullScreen() {
         img.parentNode.title = M.util.get_string('fullscreen', 'pdfannotator');
         img.src = M.util.image_url('fullscreen', 'pdfannotator');
         document.querySelector('#body-wrapper').style.height = oldHeight;
+    }
+}
+
+/**
+ * Check just one checkbox under the comment form
+ * 
+ */
+function checkOnlyOneCheckbox( Y ) {
+    var radios = document.getElementsByClassName('pdfannotator-radio');
+    var anonymousCheckbox = document.getElementById('anonymousCheckbox');
+    var privateCheckbox = document.getElementById('privateCheckbox');
+    var protectedCheckbox = document.getElementById('protectedCheckbox');
+    if(anonymousCheckbox) {
+        anonymousCheckbox.addEventListener('click', function(){
+            if(anonymousCheckbox.checked) {
+                if(privateCheckbox){
+                    privateCheckbox.checked = false;
+                }
+                if(protectedCheckbox) {
+                    protectedCheckbox.checked = false;
+                }
+            }
+        });
+    }
+
+    if(privateCheckbox) {
+        privateCheckbox.addEventListener('click', function(){
+            if(privateCheckbox.checked) {
+                if(anonymousCheckbox){
+                    anonymousCheckbox.checked = false;
+                }
+                if(protectedCheckbox) {
+                    protectedCheckbox.checked = false;
+                }
+            }
+        });
+    }
+
+    if(protectedCheckbox) {
+        protectedCheckbox.addEventListener('click', function(){
+            if(protectedCheckbox.checked) {
+                if(anonymousCheckbox){
+                    anonymousCheckbox.checked = false;
+                }
+                if(privateCheckbox) {
+                    privateCheckbox.checked = false;
+                }
+            }
+        });
     }
 }

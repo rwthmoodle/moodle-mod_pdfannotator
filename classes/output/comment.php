@@ -66,6 +66,9 @@ class comment implements \renderable, \templatable {
             $owner = ($comment->userid == $USER->id);
             $comment->owner = ($comment->userid == $USER->id);
 
+            $comment->private = ($comment->visibility == "private");
+            $comment->protected = ($comment->visibility == "protected");
+
             $this->addcssclasses($comment, $owner);
 
             $this->setvotes($comment);
