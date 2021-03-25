@@ -94,8 +94,8 @@ class pdfannotator_comment {
                         $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newanswer', $messagetext, $anonymous);
                     }
                 }
-            } else {
-                self::insert_subscription($annotationid);
+            } else if ($visibility != 'private') {
+                self::insert_subscription($annotationid, $context);
 
                 // Notify all users, that there is a new question.
                 $recipients = get_enrolled_users($context, 'mod/pdfannotator:recievenewquestionnotifications');
@@ -111,6 +111,9 @@ class pdfannotator_comment {
                 $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
+                    if (!pdfannotator_can_see_comment($datarecord, $context) ){
+                        continue;
+                    }
                     if ($recipient->id == $USER->id) {
                         continue;
                     }
@@ -160,6 +163,7 @@ class pdfannotator_comment {
             $comment->visibility = $data->visibility;
             $comment->isquestion = $data->isquestion;
             $comment->annotationid = $annotationid;
+            $comment->annotation = $annotationid;
             if ( !pdfannotator_can_see_comment($comment, $context)) {
                 continue;
             }
@@ -460,17 +464,23 @@ class pdfannotator_comment {
      * @param type $annotationid
      * @return boolean
      */
-    public static function insert_subscription($annotationid) {
+    public static function insert_subscription($annotationid, $context) {
         global $DB, $USER;
 
         // Check if subscription already exists.
         if ($DB->record_exists('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id))) {
             return false;
         }
+        
+        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $annotationid, 'isquestion' => '1'));
+        if (!pdfannotator_can_see_comment($comment, $context)) {
+            return false;
+        }
 
         $datarecord = new stdClass();
         $datarecord->annotationid = $annotationid;
         $datarecord->userid = $USER->id;
+
 
         $subscriptionid = $DB->insert_record('pdfannotator_subscriptions', $datarecord, $returnid = true);
         return $subscriptionid;

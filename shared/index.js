@@ -7455,12 +7455,16 @@ function read_visibility_of_checkbox(){
         if (document.querySelector('#anonymousCheckbox').checked) {
             commentVisibility = "anonymous";
             document.querySelector('#anonymousCheckbox').checked = false;
-        } else if (document.querySelector('#privateCheckbox') != null) {
+        } 
+        
+        if (document.querySelector('#privateCheckbox') != null) {
             if (document.querySelector('#privateCheckbox').checked) {
               commentVisibility = "private";
               document.querySelector('#privateCheckbox').checked = false;
             }
-        } else if (document.querySelector('#protectedCheckbox') != null) {
+        } 
+        
+        if (document.querySelector('#protectedCheckbox') != null) {
             if (document.querySelector('#protectedCheckbox').checked) {
               commentVisibility = "protected";
               document.querySelector('#protectedCheckbox').checked = false;
