@@ -194,7 +194,7 @@ if ($action === 'subscribeQuestion') {
 
     $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
 
-    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid);
+    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid, $context);
 
     if (!empty($subscriptionid)) {
         $info = get_string('successfullySubscribed', 'pdfannotator');

@@ -593,7 +593,7 @@ function pdfannotator_render_action_menu($menu) {
     return $OUTPUT->render($menu);
 }
 
-function pdfannotator_subscribe_all($annotatorid) {
+function pdfannotator_subscribe_all($annotatorid, $context) {
     global $DB;
     $sql = "SELECT id FROM {pdfannotator_annotations} "
             . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
@@ -601,7 +601,7 @@ function pdfannotator_subscribe_all($annotatorid) {
     $params = [$annotatorid, 'drawing', 'textbox'];
     $ids = $DB->get_fieldset_sql($sql, $params);
     foreach ($ids as $annotationid) {
-        pdfannotator_comment::insert_subscription($annotationid);
+        pdfannotator_comment::insert_subscription($annotationid, $context);
     }
 }
 
