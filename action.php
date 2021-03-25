@@ -401,8 +401,12 @@ if ($action === 'getCommentContent') {
 
     $content = $DB->get_field('pdfannotator_comments', 'content', ['id' => $commentid]);
 
-
-    echo json_encode($content);
+    $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
+    if (pdfannotator_can_see_comment($comment, $context)) {
+        echo json_encode($comment->content);
+    } else {
+        echo json_encode("false");
+    }
 }
 
 /* * ****************************************** Hide a comment for participants ****************************************** */
@@ -483,7 +487,7 @@ if ($action === 'subscribeQuestion') {
 
     $annotatorid = $DB->get_field('pdfannotator_annotations', 'pdfannotatorid', ['id' => $annotationid], $strictness = MUST_EXIST);
 
-    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid);
+    $subscriptionid = pdfannotator_comment::insert_subscription($annotationid, $context);
 
     if ($departure == 1) {
         $thisannotator = $pdfannotator->id;

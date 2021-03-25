@@ -6336,15 +6336,17 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var input=void 0;
             var pos = void 0;
             var _textSize=void 0;
-            var _textColor=void 0;/**
+            var _textColor=void 0;
+            var svg=void 0;
+            var rect=void 0;/**
             * Handle document.mouseup event
             *
             *
             * @param {Event} e The DOM event to handle
             */function handleDocumentMouseup(e){ // betrifft textbox
-                if(input||!(0,_utils.findSVGAtPoint)(e.clientX,e.clientY)){
+                if(input||!(svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))){
                     return;
-                }
+                } 
                 let scrollTop = window.pageYOffset;
                 input=document.createElement('input');
                 input.setAttribute('id','pdf-annotate-text-input');
@@ -6359,10 +6361,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 input.addEventListener('keyup',handleInputKeyup);
                 document.body.appendChild(input);
                 input.focus();
+                rect=svg.getBoundingClientRect();
                 pos = {x: e.clientX, y: e.clientY };
-            }/**
+            }
+            /**
             * Handle input.blur event
-            */function handleInputBlur(){saveText();}/**
+            */function handleInputBlur(){
+                saveText();
+            }/**
             * Handle input.keyup event
             *
             * @param {Event} e The DOM event to handle
@@ -6374,14 +6380,14 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                         var clientX=parseInt(pos.x,10);
                         //text size additional to y to render the text right under the mouse click
                         var clientY=parseInt(pos.y,10);
-                        var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
+                        //var svg=(0,_utils.findSVGAtPoint)(clientX,clientY);
                         if(!svg){
                             return{v:void 0};
                         }
                         var _getMetadata=(0,_utils.getMetadata)(svg);
                         var documentId=_getMetadata.documentId;
                         var pageNumber=_getMetadata.pageNumber;
-                        var rect=svg.getBoundingClientRect();
+                        
                         var annotation=Object.assign({type:'textbox',size:_textSize,color:_textColor,content:input.value.trim()},(0,_utils.scaleDown)(svg,{x:(0,_utils.roundDigits)(clientX-rect.left,4),y:(0,_utils.roundDigits)(clientY-rect.top,4),width:(0,_utils.roundDigits)(input.offsetWidth,4),height:(0,_utils.roundDigits)(input.offsetHeight,4)}));
                         _PDFJSAnnotate2.default.getStoreAdapter().addAnnotation(documentId,pageNumber,annotation)
                                 .then(function(annotation){
@@ -6408,9 +6414,22 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             * @param {String} textColor The color of the text
             */function setText(){var textSize=arguments.length<=0||arguments[0]===undefined?12:arguments[0];var textColor=arguments.length<=1||arguments[1]===undefined?'000000':arguments[1];_textSize=parseInt(textSize,10);_textColor=textColor;}/**
             * Enable text behavior
-            */function enableText(){if(_enabled){return;}_enabled=true;document.getElementById('content-wrapper').classList.add('cursor-text');document.addEventListener('mouseup',handleDocumentMouseup);}/**
+            */function enableText(){
+                if(_enabled){
+                    return;
+                }
+                _enabled=true;
+                document.getElementById('content-wrapper').classList.add('cursor-text');
+                document.addEventListener('mouseup',handleDocumentMouseup);
+            }/**
             * Disable text behavior
-            */function disableText(){if(!_enabled){return;}_enabled=false;document.getElementById('content-wrapper').classList.remove('cursor-text');document.removeEventListener('mouseup',handleDocumentMouseup);}
+            */function disableText(){
+                if(!_enabled){return;
+                }
+                _enabled=false;
+                document.getElementById('content-wrapper').classList.remove('cursor-text');
+                document.removeEventListener('mouseup',handleDocumentMouseup);
+            }
     /***/},
     /* 34 */
     /***/function(module,exports,__webpack_require__){
@@ -7435,12 +7454,16 @@ function read_visibility_of_checkbox(){
         if (document.querySelector('#anonymousCheckbox').checked) {
             commentVisibility = "anonymous";
             document.querySelector('#anonymousCheckbox').checked = false;
-        } else if (document.querySelector('#privateCheckbox') != null) {
+        } 
+        
+        if (document.querySelector('#privateCheckbox') != null) {
             if (document.querySelector('#privateCheckbox').checked) {
               commentVisibility = "private";
               document.querySelector('#privateCheckbox').checked = false;
             }
-        } else if (document.querySelector('#protectedCheckbox') != null) {
+        } 
+        
+        if (document.querySelector('#protectedCheckbox') != null) {
             if (document.querySelector('#protectedCheckbox').checked) {
               commentVisibility = "protected";
               document.querySelector('#protectedCheckbox').checked = false;

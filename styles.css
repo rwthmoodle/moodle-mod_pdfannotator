@@ -869,15 +869,9 @@ header, section, footer, aside, nav, main, article, figure {
 
 .path-mod-pdfannotator .pdfannotator-statistic #chart-container {
     min-height: 500px;
-<<<<<<< HEAD
 }
 
-.lock-screen {
-    height: 100%;
-    overflow: hidden;
-    width: 100%;
-    position: fixed;
+.toolbaritem .pdfannotator_text {
+    display: inline-block;
+    visibility: visible;
 }
-=======
-}
->>>>>>> a8b44325fbf010170cb3961ec73a2f5780fd439c
