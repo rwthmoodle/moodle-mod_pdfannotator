@@ -192,7 +192,6 @@ class pdfannotator_comment {
             }
 
             if ($data->isdeleted) {
-                $comment->visibility = 'deleted';
                 $comment->content = get_string('deletedComment', 'pdfannotator');
             } else {
                 $comment->content = $data->content;

@@ -77,6 +77,9 @@ class index implements renderable, templatable { // Class should be placed elsew
         if ($data->useprotectedcomments) {
             $data->protectedhelpicon = $OUTPUT->help_icon('protected_comments', 'mod_pdfannotator');
         }
+        if ($data->useprivatecomments) {
+            $data->privatehelpicon = $OUTPUT->help_icon('private_comments', 'mod_pdfannotator');
+        }
         $data->printlink = $this->printurl;
         $data->pixprintdoc = $OUTPUT->image_url('download', 'mod_pdfannotator');
         $data->pixprintcomments = $OUTPUT->image_url('print_comments', 'mod_pdfannotator');
