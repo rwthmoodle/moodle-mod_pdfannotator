@@ -194,11 +194,11 @@ class pdfannotator_statistics {
             $myprivate[] = $countmyprivateanswers + $countmyprivatequestions;
 
             $myquestions[] = $countmyquestions - $countmyprotectedquestions - $countmyprivatequestions;
-            $otherquestions[] = $countquestions - $myquestions[$index] - $countprotectedanswers - $countprivatequestions;     
+            $otherquestions[] = $countquestions - $myquestions[$index] - $countprotectedquestions - $countprivatequestions;     
 
             $myanswers[] = $countmyanswers - $countmyprotectedanswers - $countmyprivateanswers;
-            $otheranswers[] = $countanswers - $myanswers[$index] - $countprotectedanswers - $countprivateanswers;            
-
+            $otheranswers[] = $countanswers - $myanswers[$index] - $countprotectedanswers - $countprivateanswers;
+            
             $names[] = $pdfannotator->get_name();
 
         }
@@ -207,7 +207,7 @@ class pdfannotator_statistics {
     }
 
     /**
-     * Returns the number of questions/answers in one PDF-Annotator by one/all users
+     * Returns the number of all questions/answers in one PDF-Annotator by one/all users
      * @global type $DB
      * @param type $annotatorid
      * @param type $isquestion '1' for questions, '0' for answers

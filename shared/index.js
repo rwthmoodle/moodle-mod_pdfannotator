@@ -1913,6 +1913,7 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     $("#privateDiv").hide();
                     $("#protectedDiv").hide();
                     $("#anonymousDiv").show();
+                    $("#myarea").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
                   }
                   
                   $('#comment-wrapper h4')[0].innerHTML = title;
