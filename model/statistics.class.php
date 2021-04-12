@@ -136,11 +136,11 @@ class pdfannotator_statistics {
     public function get_tabledata() {
         $ret = [];
 
-        $ret[] = array('row' => array(get_string('questions', 'pdfannotator'), $this->get_comments_annotator('1'), $this->get_comments_course('1')));
+        $ret[] = array('row' => array(get_string('all_questions', 'pdfannotator'), $this->get_comments_annotator('1'), $this->get_comments_course('1')));
         $ret[] = array('row' => array(get_string('myquestions', 'pdfannotator'), $this->get_comments_annotator('1', true), $this->get_comments_course('1', true)));
         $ret[] = array('row' => array(get_string('average_questions', 'pdfannotator').'<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="'.get_string('average_help', 'pdfannotator').'" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="'.get_string('entity_helptitle', 'pdfannotator').' '.get_string('average', 'pdfannotator').'"></li></a>'
                     , round($this->get_comments_average_annotator('1'), 2), round($this->get_comments_average_course('1'), 2)));
-        $ret[] = array('row' => array(get_string('answers', 'pdfannotator'), $this->get_comments_annotator('0'), $this->get_comments_course('0')));
+        $ret[] = array('row' => array(get_string('all_answers', 'pdfannotator'), $this->get_comments_annotator('0'), $this->get_comments_course('0')));
         $ret[] = array('row' => array(get_string('myanswers', 'pdfannotator'), $this->get_comments_annotator('0', true), $this->get_comments_course('0', true)));
         $ret[] = array('row' => array(get_string('average_answers', 'pdfannotator').'<a class="btn btn-link p-a-0" role="button" data-container="body" data-toggle="popover" data-placement="right" data-content="'.get_string('average_help', 'pdfannotator').'" data-html="true" tabindex="0" data-trigger="focus"><li class="icon fa fa-question-circle text-info fa-fw" aria-hidden="true" title="'.get_string('entity_helptitle', 'pdfannotator').' '.get_string('average', 'pdfannotator').'"></li></a>'
                     , round($this->get_comments_average_annotator('0'), 2), round($this->get_comments_average_course('0'), 2)));
@@ -194,11 +194,11 @@ class pdfannotator_statistics {
             $myprivate[] = $countmyprivateanswers + $countmyprivatequestions;
 
             $myquestions[] = $countmyquestions - $countmyprotectedquestions - $countmyprivatequestions;
-            $otherquestions[] = $countquestions - $myquestions[$index] - $countprotectedanswers - $countprivatequestions;     
+            $otherquestions[] = $countquestions - $myquestions[$index] - $countprotectedquestions - $countprivatequestions;     
 
             $myanswers[] = $countmyanswers - $countmyprotectedanswers - $countmyprivateanswers;
-            $otheranswers[] = $countanswers - $myanswers[$index] - $countprotectedanswers - $countprivateanswers;            
-
+            $otheranswers[] = $countanswers - $myanswers[$index] - $countprotectedanswers - $countprivateanswers;
+            
             $names[] = $pdfannotator->get_name();
 
         }
@@ -207,7 +207,7 @@ class pdfannotator_statistics {
     }
 
     /**
-     * Returns the number of questions/answers in one PDF-Annotator by one/all users
+     * Returns the number of all questions/answers in one PDF-Annotator by one/all users
      * @global type $DB
      * @param type $annotatorid
      * @param type $isquestion '1' for questions, '0' for answers

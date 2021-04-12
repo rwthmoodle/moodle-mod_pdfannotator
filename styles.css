@@ -527,8 +527,13 @@ body {
     margin-bottom: 0;
 }
 
-.path-mod-pdfannotator #anonymousDiv, .path-mod-pdfannotator #privateDiv, .path-mod-pdfannotator #protectedDiv {
+.path-mod-pdfannotator #comment-list-form > div {
     margin: 5px 0px;
+    display: block;
+}
+
+.path-mod-pdfannotator #comment-list-form > div > * {
+    vertical-align: middle;
 }
 
 .path-mod-pdfannotator .helperLayer {

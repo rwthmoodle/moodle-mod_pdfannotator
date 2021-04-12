@@ -137,12 +137,14 @@
                     </div>
                     {{# useprivatecomments }}
                     <div id="privateDiv" class="row-fluid row">
-                        <input type="checkbox" name="visibility" value="private" id="privateCheckbox" class="pdfannotator-radio" style="width:auto;"><label id="privateLabel" for="privateCheckbox">{{# str }} sendPrivate, pdfannotator {{/ str }}</label>
+                        <input type="checkbox" name="visibility" value="private" id="privateCheckbox" class="pdfannotator-radio" style="width:auto;">
+                        <label id="privateLabel" for="privateCheckbox">{{# str }} sendPrivate, pdfannotator {{/ str }}</label> {{{privatehelpicon}}}
                     </div>
                     {{/ useprivatecomments }}
                     {{# useprotectedcomments }}
                     <div id="protectedDiv" class="row-fluid row">
-                        <input type="checkbox" name="visibility" value="protected" id="protectedCheckbox" class="pdfannotator-radio" style="width:auto;"><label id="protectedLabel" for="protectedCheckbox">{{# str }} sendProtected, pdfannotator {{/ str }} {{{protectedhelpicon}}} </label>
+                        <input type="checkbox" name="visibility" value="protected" id="protectedCheckbox" class="pdfannotator-radio" style="width:auto;">
+                        <label id="protectedLabel" for="protectedCheckbox">{{# str }} sendProtected, pdfannotator {{/ str }} </label> {{{protectedhelpicon}}}
                     </div>
                     {{/ useprotectedcomments }}
                                        
