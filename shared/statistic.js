@@ -24,14 +24,14 @@ function setCharts(Y, names, otherquestions, myquestions, otheranswers, myanswer
             data: {
                 labels: names,
                 datasets: [{
-                        label: M.util.get_string('myquestions', 'pdfannotator'),
+                        label: M.util.get_string('mypublicquestions', 'pdfannotator'),
                         stack: 'questions',
                         data: myquestions,
                         backgroundColor: 'rgb(0,84,159)',
                         borderColor: borderCol,
                         borderWidth: 1,
                     }, {
-                        label: M.util.get_string('questions', 'pdfannotator') + ' ' + M.util.get_string('by_other_users', 'pdfannotator'),
+                        label: M.util.get_string('publicquestions', 'pdfannotator') + ' ' + M.util.get_string('by_other_users', 'pdfannotator'),
                         stack: 'questions',
                         data: otherquestions,
                         backgroundColor: 'rgb(142,186,229)',
@@ -53,7 +53,7 @@ function setCharts(Y, names, otherquestions, myquestions, otheranswers, myanswer
                         borderWidth: 1,
                     },
                     {
-                        label: M.util.get_string('myanswers', 'pdfannotator'),
+                        label: M.util.get_string('mypublicanswers', 'pdfannotator'),
                         stack: 'answers',
                         data: myanswers,
                         backgroundColor: 'rgb(87, 171, 39)',
@@ -63,7 +63,7 @@ function setCharts(Y, names, otherquestions, myquestions, otheranswers, myanswer
                         borderWidth: 1,
                     }, 
                     {
-                        label: M.util.get_string('answers', 'pdfannotator') + ' ' + M.util.get_string('by_other_users', 'pdfannotator'),
+                        label: M.util.get_string('publicanswers', 'pdfannotator') + ' ' + M.util.get_string('by_other_users', 'pdfannotator'),
                         stack: 'answers',
                         data: otheranswers,
                         backgroundColor: 'rgb(184, 214, 152)',
