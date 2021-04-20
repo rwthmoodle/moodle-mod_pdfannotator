@@ -1548,7 +1548,7 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
 function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $urlparams, $showdropdown) {
 
     global $CFG, $PAGE;
-    if ($question->visibility != 'public') {
+    if ($question->visibility == 'anonymous') {
         $author = get_string('anonymous', 'pdfannotator');
     } else {
         $author = "<a href=" . $CFG->wwwroot . "/user/view.php?id=$question->userid&course=$thiscourse>" . pdfannotator_get_username($question->userid) . "</a>";
@@ -1609,7 +1609,7 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
     $answerid = 'answer_' . $answer->answerid;
     $answerlink = "<a id=$answerid data-question=$answer->questionid href=$answer->link class='more'>$answer->answer</a>";
 
-    if ($answer->visibility != 'public') {
+    if ($answer->visibility == 'anonymous') {
         $answeredby = get_string('anonymous', 'pdfannotator');
     } else {
         $answeredby = "<a href=" . $CFG->wwwroot . "/user/view.php?id=$answer->userid&course=$thiscourse>" . pdfannotator_get_username($answer->userid) . "</a>";
