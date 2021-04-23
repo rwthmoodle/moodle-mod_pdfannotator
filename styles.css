@@ -416,6 +416,7 @@ body {
 
 .path-mod-pdfannotator .chat-message-container {
     flex-grow: 1;
+    word-break: break-word;
 }
 
 .path-mod-pdfannotator .chat-message.owner:not(.questioncomment) {
