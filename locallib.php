@@ -19,6 +19,12 @@
  * @authors   Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_pdfannotator\output\answermenu;
+use mod_pdfannotator\output\questionmenu;
+use mod_pdfannotator\output\reportmenu;
+use mod_pdfannotator\output\index;
+
 defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/filelib.php");
@@ -35,7 +41,6 @@ require_once("$CFG->dirroot/mod/pdfannotator/lib.php");
  */
 function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 1, $annoid = null, $commid = null) {
     global $CFG, $PAGE, $OUTPUT, $USER;
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/index.php');
 
     // The revision attribute's existance is demanded by moodle for versioning and could be saved in the pdfannotator table in the future.
     // Note, however, that we forbid file replacement in order to prevent a change of meaning in other people's comments.
@@ -1575,7 +1580,6 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
     $data = array($content, $author . '<br>' . $time, $question->votes, $question->answercount, $lastanswered, $pdfannotatorname);
 
     if ($showdropdown) {
-        require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/questionmenu.php');
         $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
         $dropdown = $myrenderer->render_dropdownmenu(new questionmenu($question->commentid, $urlparams));
         $data[] = $dropdown;
@@ -1627,7 +1631,6 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
         $classname = 'dimmed_text';
     }
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/answermenu.php');
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $dropdown = $myrenderer->render_dropdownmenu(new answermenu($answer->annoid, $issubscribed, $cmid, $currentpage, $itemsperpage, $answerfilter));
 
@@ -1684,7 +1687,6 @@ function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, 
     }
 
     // Create action dropdown menu.
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/reportmenu.php');
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $dropdown = $myrenderer->render_dropdownmenu(new reportmenu($report, $cmid, $currentpage, $itemsperpage, $reportfilter));
 

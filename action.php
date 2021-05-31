@@ -30,6 +30,10 @@
  * @authors   Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_pdfannotator\output\comment;
+use mod_pdfannotator\output\printview;
+
 require_once('../../config.php');
 require_once('model/annotation.class.php');
 require_once('model/comment.class.php');
@@ -325,7 +329,6 @@ if ($action === 'addComment') {
 
     require_capability('mod/pdfannotator:create', $context);
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     // Get the annotation to be commented.
     $annotationid = required_param('annotationId', PARAM_INT);
     $PAGE->set_context($context);
@@ -359,7 +362,6 @@ if ($action === 'addComment') {
 
 if ($action === 'getInformation') { // This concerns only textbox and drawing.
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
     $annotationid = required_param('annotationId', PARAM_INT);
 
     $comment = pdfannotator_annotation::get_information($annotationid);
@@ -384,7 +386,8 @@ if ($action === 'getComments') {
 
     $comments = pdfannotator_comment::read($documentid, $annotationid, $context);
 
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
+ //   require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
+    
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $templatable = new comment($comments, $cm, $context);
 
@@ -603,8 +606,6 @@ if ($action === 'getCommentsToPrint') {
         echo json_encode(['status' => 'error']);
         return;
     }
-
-    require_once($CFG->dirroot.'/mod/pdfannotator/classes/output/printview.php');
 
     global $DB;
 

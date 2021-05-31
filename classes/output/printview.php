@@ -25,6 +25,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
+namespace mod_pdfannotator\output;
+
 defined('MOODLE_INTERNAL') || die();
 
 class printview implements \renderable, \templatable {
