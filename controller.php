@@ -20,6 +20,9 @@
  * @authors   Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use mod_pdfannotator\output\statistics;
+
 defined('MOODLE_INTERNAL') || die();
 
 $action = optional_param('action', 'view', PARAM_ALPHA); // The default action is 'view'.
@@ -435,7 +438,6 @@ if ($action === 'statistic') {
     require_capability('mod/pdfannotator:viewstatistics', $context);
 
     require_once($CFG->dirroot . '/mod/pdfannotator/model/statistics.class.php');
-    require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/statistics.php');
 
     echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
     $PAGE->set_title("statisticview");

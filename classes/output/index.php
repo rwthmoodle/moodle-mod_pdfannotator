@@ -28,9 +28,14 @@
  *
  * @author degroot
  */
+
+namespace mod_pdfannotator\output;
+
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
-class index implements renderable, templatable { // Class should be placed elsewhere.
+class index implements \renderable, \templatable { // Class should be placed elsewhere.
 
     private $usestudenttextbox;
     private $usestudentdrawing;
@@ -61,7 +66,7 @@ class index implements renderable, templatable { // Class should be placed elsew
 
     }
 
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(\renderer_base $output) {
         global $OUTPUT, $PAGE;
         $url = $PAGE->url;
         $data = new stdClass();
