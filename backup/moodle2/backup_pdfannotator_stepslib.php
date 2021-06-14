@@ -97,7 +97,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
             // Add all annotations specific to this annotator instance.
             $annotation->set_source_sql('SELECT a.* FROM {pdfannotator_annotations} a '
                                         . 'JOIN {pdfannotator_comments} c ON a.id = c.annotationid '
-                                        . 'WHERE a.pdfannotatorid = ? AND c.isquestion = "1" AND (c.visibility = "public" OR c.visibility = "anonymous") ',
+                                        . "WHERE a.pdfannotatorid = ? AND c.isquestion = 1 AND (c.visibility = 'public' OR c.visibility = 'anonymous') ",
                                         array('pdfannotatorid' => backup::VAR_PARENTID));
 
                 // Add any subscriptions to this annotation.
