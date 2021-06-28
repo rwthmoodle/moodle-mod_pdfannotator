@@ -1728,8 +1728,8 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
             var button = $('#hideButton'+comment.uuid);
 
             button.click(function(e) {
-                var icon = button.children(":first");
-                var menutext = button.children(":last");
+                var icon = button.children().first();
+                var menutext = button.children().last();
                 if(comment.ishidden){
                     _2.default.getStoreAdapter().redisplayComment(RENDER_OPTIONS.documentId, comment.uuid);
                     menutext.html(M.util.get_string('markhidden', 'pdfannotator'));
