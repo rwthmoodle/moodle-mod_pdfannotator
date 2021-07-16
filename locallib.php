@@ -516,7 +516,7 @@ function pdfannotator_get_datetime_of_last_modification($annotatorid) {
     $timemodified = $timemodified->timemodified;
 
     // 2. When was the last time an annotation or a comment was added in the specified annotator?
-    $sql = "SELECT max(a.timecreated) as 'last_annotation', max(c.timemodified) as 'last_comment' "
+    $sql = "SELECT max(a.timecreated) AS last_annotation, max(c.timemodified) AS last_comment "
             . "FROM {pdfannotator_annotations} a LEFT OUTER JOIN {pdfannotator_comments} c ON a.id = c.annotationid "
             . "WHERE a.pdfannotatorid = ?";
     $newposts = $DB->get_records_sql($sql, array($annotatorid));
