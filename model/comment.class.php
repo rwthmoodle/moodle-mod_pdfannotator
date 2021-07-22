@@ -146,7 +146,7 @@ class pdfannotator_comment {
         $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid, SUM(vote) AS votes "
                 . "FROM {pdfannotator_comments} c LEFT JOIN {pdfannotator_votes} v"
                 . " ON c.id=v.commentid WHERE annotationid = ?"
-                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved"
+                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid"
                 . " ORDER BY c.timecreated";
         $a = array();
         $a[] = $annotationid;
