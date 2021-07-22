@@ -66,8 +66,8 @@ class pdfannotator_statistics {
      */
     public function get_comments_course($isquestion, $user = false) {
         global $DB;
-        $sql = 'SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON '
-                . 'a.course = ? AND a.id = c.pdfannotatorid WHERE c.isquestion = ? AND c.isdeleted = ?';
+        $sql = "SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON "
+                . "a.course = ? AND a.id = c.pdfannotatorid WHERE c.isquestion = ? AND c.isdeleted = ?";
         if ($user) {
             $sql .= " AND c.userid = ?";
         }
@@ -238,10 +238,10 @@ class pdfannotator_statistics {
             $count = $DB->count_records('pdfannotator_comments', $params);
         } else {
             // Count answers to private questions if they were saved as public in the database.
-            $sql = 'SELECT COUNT(*) FROM {pdfannotator_comments} answers '
-                    . 'JOIN {pdfannotator_comments} questions '
-                    . 'ON answers.annotationid = questions.annotationid '
-                    . 'WHERE questions.visibility = "private" AND answers.visibility = "public" AND questions.pdfannotatorid = ? AND answers.isdeleted = ? ';
+            $sql = "SELECT COUNT(*) FROM {pdfannotator_comments} answers "
+                    . "JOIN {pdfannotator_comments} questions "
+                    . "ON answers.annotationid = questions.annotationid "
+                    . "WHERE questions.visibility = 'private' AND answers.visibility = 'public' AND questions.pdfannotatorid = ? AND answers.isdeleted = ? ";
             $params = [$annotatorid, "0"];
             if ($userid) {
                 $sql .= ' AND answers.userid = ? AND questions.userid = ?';
@@ -262,10 +262,10 @@ class pdfannotator_statistics {
             $count = $DB->count_records('pdfannotator_comments', $params);
         } else {
             // Count answers to private questions if they were saved as public in the database.
-            $sql = 'SELECT COUNT(*) FROM {pdfannotator_comments} answers '
-                    . 'JOIN {pdfannotator_comments} questions '
-                    . 'ON answers.annotationid = questions.annotationid '
-                    . 'WHERE questions.visibility = "protected" AND answers.visibility = "public" AND questions.pdfannotatorid = ? AND answers.isdeleted = ? ';
+            $sql = "SELECT COUNT(*) FROM {pdfannotator_comments} answers "
+                    . "JOIN {pdfannotator_comments} questions "
+                    . "ON answers.annotationid = questions.annotationid "
+                    . "WHERE questions.visibility = 'protected' AND answers.visibility = 'public' AND questions.pdfannotatorid = ? AND answers.isdeleted = ? ";
             $params = [$annotatorid, "0"];
             if ($userid) {
                 $sql .= ' AND answers.userid = ? AND questions.userid = ?';
@@ -279,15 +279,15 @@ class pdfannotator_statistics {
 
     public function count_private_comments_in_course() {
         global $DB;
-        $sql = 'SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON '
-                . 'a.course = ? AND a.id = c.pdfannotatorid WHERE c.visibility = ? AND c.isdeleted = ?';
+        $sql = "SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON "
+                . "a.course = ? AND a.id = c.pdfannotatorid WHERE c.visibility = ? AND c.isdeleted = ?";
         return $DB->count_records_sql($sql, array($this->courseid, "private", '0'));
     }
 
     public function count_protected_comments_in_course() {
         global $DB;
-        $sql = 'SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON '
-                . 'a.course = ? AND a.id = c.pdfannotatorid WHERE c.visibility = ? AND c.isdeleted = ?';
+        $sql = "SELECT COUNT(*) FROM {pdfannotator_comments} c JOIN {pdfannotator} a ON "
+                . "a.course = ? AND a.id = c.pdfannotatorid WHERE c.visibility = ? AND c.isdeleted = ?";
         return $DB->count_records_sql($sql, array($this->courseid, "protected", '0'));
     }
 

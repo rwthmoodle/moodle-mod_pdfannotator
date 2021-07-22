@@ -516,7 +516,7 @@ function pdfannotator_get_datetime_of_last_modification($annotatorid) {
     $timemodified = $timemodified->timemodified;
 
     // 2. When was the last time an annotation or a comment was added in the specified annotator?
-    $sql = "SELECT max(a.timecreated) as 'last_annotation', max(c.timemodified) as 'last_comment' "
+    $sql = "SELECT max(a.timecreated) AS last_annotation, max(c.timemodified) AS last_comment "
             . "FROM {pdfannotator_annotations} a LEFT OUTER JOIN {pdfannotator_comments} c ON a.id = c.annotationid "
             . "WHERE a.pdfannotatorid = ?";
     $newposts = $DB->get_records_sql($sql, array($annotatorid));
@@ -742,7 +742,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     if ($questionfilter == 1) {
         $sql = $sql . ' AND NOT c.solved = 0 ';
     }
-    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden";
+    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
     $params = array_merge([$courseid], $inparams);
     $questions = $DB->get_records_sql($sql, $params);
 
