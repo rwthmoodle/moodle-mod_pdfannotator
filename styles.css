@@ -462,7 +462,7 @@ body {
 }
 
 .path-mod-pdfannotator .chat-message .time,
-.path-mod-pdfannotator .chat-message .edited {
+.path-mod-pdfannotator .chat-message .edited { 
     float: right;
     font-size: 11px;
     color: #777;
@@ -471,7 +471,7 @@ body {
     font-weight: 700;
 }
 
-.path-mod-pdfannotator .chat-message button, .path-mod-pdfannotator #comment-nav button {
+.path-mod-pdfannotator .chat-message button:not(.dropdown-item), .path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
     background-color: transparent;
 }
