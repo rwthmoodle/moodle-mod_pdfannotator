@@ -310,10 +310,10 @@ function pdfannotator_format_notification_message_text($course, $cm, $context, $
     global $CFG;
     $formatparams = array('context' => $context->get_course_context());
     $posttext = format_string($course->shortname, true, $formatparams) .
-            ' -> ' .
-            $modulename .
-            ' -> ' .
-            format_string($pdfannotatorname, true, $formatparams) . "\n";
+        ' -> ' .
+        $modulename .
+        ' -> ' .
+        format_string($pdfannotatorname, true, $formatparams) . "\n";
     $posttext .= '---------------------------------------------------------------------' . "\n";
     $posttext .= "\n";
     $posttext .= get_string($messagetype . 'text', 'pdfannotator', $paramsforlanguagestring) . "\n---------------------------------------------------------------------\n";
@@ -335,15 +335,15 @@ function pdfannotator_format_notification_message_html($course, $cm, $context, $
     global $CFG, $USER;
     $formatparams = array('context' => $context->get_course_context());
     $posthtml = '<p><font face="sans-serif">' .
-            '<a href="' . $CFG->wwwroot . '/course/view.php?id=' . $course->id . '">' .
-            format_string($course->shortname, true, $formatparams) .
-            '</a> ->' .
-            '<a href="' . $CFG->wwwroot . '/mod/pdfannotator/index.php?id=' . $course->id . '">' .
-            $modulename .
-            '</a> ->' .
-            '<a href="' . $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '">' .
-            format_string($pdfannotatorname, true, $formatparams) .
-            '</a></font></p>';
+        '<a href="' . $CFG->wwwroot . '/course/view.php?id=' . $course->id . '">' .
+        format_string($course->shortname, true, $formatparams) .
+        '</a> ->' .
+        '<a href="' . $CFG->wwwroot . '/mod/pdfannotator/index.php?id=' . $course->id . '">' .
+        $modulename .
+        '</a> ->' .
+        '<a href="' . $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '">' .
+        format_string($pdfannotatorname, true, $formatparams) .
+        '</a></font></p>';
     $posthtml .= '<hr /><font face="sans-serif">';
     $report->urltoreport = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
     $posthtml .= '<p>' . get_string($messagetype . 'html', 'pdfannotator', $report) . '</p>';
@@ -489,9 +489,9 @@ function pdfannotator_get_number_of_new_activities($annotatorid) {
     $parameters[] = strtotime("-1 day");
 
     $sql = "SELECT c.id FROM {pdfannotator_annotations} a JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
-            . "WHERE a.pdfannotatorid = ? AND c.timemodified >= ?";
+        . "WHERE a.pdfannotatorid = ? AND c.timemodified >= ?";
     $sql2 = "SELECT a.id FROM {pdfannotator_annotations} a JOIN {pdfannotator_annotationtypes} t ON a.annotationtypeid = t.id "
-            . "WHERE a.pdfannotatorid = ? AND a.timecreated >= ? AND t.name IN('drawing','textbox')";
+        . "WHERE a.pdfannotatorid = ? AND a.timecreated >= ? AND t.name IN('drawing','textbox')";
 
     return ( count($DB->get_records_sql($sql, $parameters)) + count($DB->get_records_sql($sql2, $parameters)) );
 }
@@ -517,8 +517,8 @@ function pdfannotator_get_datetime_of_last_modification($annotatorid) {
 
     // 2. When was the last time an annotation or a comment was added in the specified annotator?
     $sql = "SELECT max(a.timecreated) AS last_annotation, max(c.timemodified) AS last_comment "
-            . "FROM {pdfannotator_annotations} a LEFT OUTER JOIN {pdfannotator_comments} c ON a.id = c.annotationid "
-            . "WHERE a.pdfannotatorid = ?";
+        . "FROM {pdfannotator_annotations} a LEFT OUTER JOIN {pdfannotator_comments} c ON a.id = c.annotationid "
+        . "WHERE a.pdfannotatorid = ?";
     $newposts = $DB->get_records_sql($sql, array($annotatorid));
 
     if (!empty($newposts)) {
@@ -584,7 +584,7 @@ function pdfannotator_render_listitem_actions(array $actions = null) {
     foreach ($actions as $key => $action) {
         $hasitems = true;
         $menu->add(new action_menu_link(
-                $action['url'], $action['icon'], $action['string'], in_array($key, []), ['data-action' => $key, 'class' => 'action-' . $key]
+            $action['url'], $action['icon'], $action['string'], in_array($key, []), ['data-action' => $key, 'class' => 'action-' . $key]
         ));
     }
     if (!$hasitems) {
@@ -601,8 +601,8 @@ function pdfannotator_render_action_menu($menu) {
 function pdfannotator_subscribe_all($annotatorid, $context) {
     global $DB;
     $sql = "SELECT id FROM {pdfannotator_annotations} "
-            . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
-            . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
+        . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
+        . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
     $params = [$annotatorid, 'drawing', 'textbox'];
     $ids = $DB->get_fieldset_sql($sql, $params);
     foreach ($ids as $annotationid) {
@@ -613,7 +613,7 @@ function pdfannotator_subscribe_all($annotatorid, $context) {
 function pdfannotator_unsubscribe_all($annotatorid) {
     global $DB, $USER;
     $sql = "SELECT a.id FROM {pdfannotator_annotations} a JOIN {pdfannotator_subscriptions} s "
-            . "ON s.annotationid = a.id AND s.userid = ? WHERE pdfannotatorid = ?";
+        . "ON s.annotationid = a.id AND s.userid = ? WHERE pdfannotatorid = ?";
     $ids = $DB->get_fieldset_sql($sql, [$USER->id, $annotatorid]);
     foreach ($ids as $annotationid) {
         pdfannotator_comment::delete_subscription($annotationid);
@@ -630,11 +630,11 @@ function pdfannotator_unsubscribe_all($annotatorid) {
 function pdfannotator_subscribed($annotatorid) {
     global $DB, $USER;
     $sql = "SELECT COUNT(*) FROM {pdfannotator_annotations} a JOIN {pdfannotator_subscriptions} s "
-            . "ON s.annotationid = a.id AND s.userid = ? WHERE a.pdfannotatorid = ?";
+        . "ON s.annotationid = a.id AND s.userid = ? WHERE a.pdfannotatorid = ?";
     $subscriptions = $DB->count_records_sql($sql, [$USER->id, $annotatorid]);
     $sql = "SELECT COUNT(*) FROM {pdfannotator_annotations} "
-            . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
-            . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
+        . "WHERE pdfannotatorid = ? AND annotationtypeid NOT IN "
+        . "(SELECT id FROM {pdfannotator_annotationtypes} WHERE name = ? OR name = ?)";
     $params = [$annotatorid, 'drawing', 'textbox'];
     $annotations = $DB->count_records_sql($sql, $params);
 
@@ -687,7 +687,7 @@ function pdfannotator_prepare_overviewpage($cmid, $myrenderer, $taburl, $action,
     $PAGE->set_title("overview");
 
     // 1.1 Display tab navigation.
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action['tab'], $pdfannotator->name, $context);
+    echo $myrenderer->pdfannotator_render_tabs($taburl, $pdfannotator->name, $context, $action['tab']);
 
     // 1.2 Give javascript (see below) access to the language string repository.
     $stringman = get_string_manager();
@@ -727,15 +727,15 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     list($insql, $inparams) = $DB->get_in_or_equal(array_keys($cminfo));
 
     $sql = "SELECT a.id as annoid, a.page, a.pdfannotatorid, p.name AS pdfannotatorname, p.usevotes, cm.id AS cmid, c.isquestion, "
-            . "c.id as commentid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, "
-            . "SUM(vote) AS votes, MAX(answ.timecreated) AS lastanswered "
-            . "FROM {pdfannotator_annotations} a "
-            . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "LEFT JOIN {pdfannotator_votes} v ON c.id=v.commentid "
-            . "LEFT JOIN {pdfannotator_comments} answ ON answ.annotationid = a.id "
-            . "WHERE c.isquestion = 1 AND p.course = ? AND cm.id $insql";
+        . "c.id as commentid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, "
+        . "SUM(vote) AS votes, MAX(answ.timecreated) AS lastanswered "
+        . "FROM {pdfannotator_annotations} a "
+        . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id "
+        . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+        . "JOIN {course_modules} cm ON p.id = cm.instance "
+        . "LEFT JOIN {pdfannotator_votes} v ON c.id=v.commentid "
+        . "LEFT JOIN {pdfannotator_comments} answ ON answ.annotationid = a.id "
+        . "WHERE c.isquestion = 1 AND p.course = ? AND cm.id $insql";
     if ($questionfilter == 0) {
         $sql = $sql . ' AND c.solved = 0 ';
     }
@@ -829,15 +829,15 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
     $labelunavailable = "<br><span class='tag tag-info'>" . get_string('restricted') . "</span>";
 
     $sql = "SELECT c.id as commid, c.annotationid, c.content, c.timemodified, c.ishidden, a.id AS annoid, "
-            . "a.page, a.pdfannotatorid, p.name AS pdfannotatorname, p.usevotes, cm.id AS cmid, "
-            . "SUM(v.vote) AS votes "
-            . "FROM {pdfannotator_comments} c "
-            . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "LEFT JOIN {pdfannotator_votes} v ON c.id = v.commentid "
-            . "WHERE c.userid = ? AND p.course = ? AND cm.id $insql "
-            . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, c.annotationid, c.content, c.timemodified, c.ishidden, a.page, a.pdfannotatorid";
+        . "a.page, a.pdfannotatorid, p.name AS pdfannotatorname, p.usevotes, cm.id AS cmid, "
+        . "SUM(v.vote) AS votes "
+        . "FROM {pdfannotator_comments} c "
+        . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
+        . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+        . "JOIN {course_modules} cm ON p.id = cm.instance "
+        . "LEFT JOIN {pdfannotator_votes} v ON c.id = v.commentid "
+        . "WHERE c.userid = ? AND p.course = ? AND cm.id $insql "
+        . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, c.annotationid, c.content, c.timemodified, c.ishidden, a.page, a.pdfannotatorid";
 
     $params = array_merge([$USER->id, $courseid], $inparams);
 
@@ -906,32 +906,32 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
-                . "q.visibility AS questionvisibility, "
-                . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
-                . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
-                . "FROM {pdfannotator_annotations} a "
-                . "LEFT JOIN {pdfannotator_subscriptions} s ON a.id = s.annotationid AND s.userid = ? "
-                . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
-                . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
-                . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-                . "JOIN {course_modules} cm ON p.id = cm.instance "
-                . "WHERE p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
-                . "ORDER BY annoid ASC";
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "q.visibility AS questionvisibility, "
+            . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
+            . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
+            . "FROM {pdfannotator_annotations} a "
+            . "LEFT JOIN {pdfannotator_subscriptions} s ON a.id = s.annotationid AND s.userid = ? "
+            . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
+            . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
+            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+            . "JOIN {course_modules} cm ON p.id = cm.instance "
+            . "WHERE p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
+            . "ORDER BY annoid ASC";
     } else { // Or: get answers to those questions the user subscribed to.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-                . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
-                . "q.visibility AS questionvisibility, "
-                . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
-                . "p.name AS pdfannotatorname, cm.id AS cmid "
-                . "FROM {pdfannotator_subscriptions} s "
-                . "JOIN {pdfannotator_annotations} a ON a.id = s.annotationid "
-                . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
-                . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
-                . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-                . "JOIN {course_modules} cm ON p.id = cm.instance "
-                . "WHERE s.userid = ? AND p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
-                . "ORDER BY annoid ASC";
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "q.visibility AS questionvisibility, "
+            . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
+            . "p.name AS pdfannotatorname, cm.id AS cmid "
+            . "FROM {pdfannotator_subscriptions} s "
+            . "JOIN {pdfannotator_annotations} a ON a.id = s.annotationid "
+            . "JOIN {pdfannotator_comments} q ON q.annotationid = a.id " // Question comment.
+            . "JOIN {pdfannotator_comments} c ON c.annotationid = a.id " // Answer comment.
+            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+            . "JOIN {course_modules} cm ON p.id = cm.instance "
+            . "WHERE s.userid = ? AND p.course = ? AND q.isquestion = 1 AND NOT c.isquestion = 1 AND NOT c.isdeleted = 1 AND cm.id $insql "
+            . "ORDER BY annoid ASC";
     }
 
     $params = array_merge([$USER->id, $courseid], $inparams);
@@ -944,9 +944,9 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             continue;
         }
         $entry->link = (new moodle_url('/mod/pdfannotator/view.php',
-                    array('id' => $entry->cmid, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->answerid)))->out();
+            array('id' => $entry->cmid, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->answerid)))->out();
         $entry->questionlink = (new moodle_url('/mod/pdfannotator/view.php',
-                    array('id' => $entry->cmid, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->questionid)))->out();
+            array('id' => $entry->cmid, 'page' => $entry->page, 'annoid' => $entry->annoid, 'commid' => $entry->questionid)))->out();
 
         if ($entry->questiondeleted == 1) {
             $entry->answeredquestion = get_string('deletedComment', 'pdfannotator');
@@ -984,7 +984,7 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             $entry->displayhidden = true;
         }
         if ($cminfo[$entry->cmid]['availableinfo']) {  // Annotator is restricted.
-             $entry->answeredquestion = $entry->answeredquestion . $labelunavailable . " ". $cminfo[$entry->cmid]['availableinfo'];;
+            $entry->answeredquestion = $entry->answeredquestion . $labelunavailable . " ". $cminfo[$entry->cmid]['availableinfo'];;
             $entry->answer = $entry->answer . $labelunavailable . " ". $cminfo[$entry->cmid]['availableinfo'];
             $entry->displayhidden = true;
         }
@@ -1016,14 +1016,14 @@ function pdfannotator_get_reports($courseid, $reportfilter = 0) {
 
     // Retrieve reports from db as an array of stdClass objects, representing a report record each.
     $sql = "SELECT r.id as reportid, r.commentid, r.message as report, r.userid AS reportinguser, r.timecreated, r.seen, "
-            . "a.page, c.id AS commentid, c.annotationid, c.userid AS commentauthor, c.content AS reportedcomment, c.timecreated AS commenttime, c.visibility, "
-            . "p.id AS annotatorid, p.name AS pdfannotatorname, cm.id AS cmid, cm.visible AS cmvisible "
-            . "FROM {pdfannotator_reports} r "
-            . "JOIN {pdfannotator_comments} c ON r.commentid = c.id "
-            . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "WHERE cm.id $insql AND r.courseid = ?"; // Be careful with order of parameters!
+        . "a.page, c.id AS commentid, c.annotationid, c.userid AS commentauthor, c.content AS reportedcomment, c.timecreated AS commenttime, c.visibility, "
+        . "p.id AS annotatorid, p.name AS pdfannotatorname, cm.id AS cmid, cm.visible AS cmvisible "
+        . "FROM {pdfannotator_reports} r "
+        . "JOIN {pdfannotator_comments} c ON r.commentid = c.id "
+        . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
+        . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+        . "JOIN {course_modules} cm ON p.id = cm.instance "
+        . "WHERE cm.id $insql AND r.courseid = ?"; // Be careful with order of parameters!
 
     if ($reportfilter != 2) {
         $sql = $sql . ' AND r.seen = ?';
@@ -1035,8 +1035,8 @@ function pdfannotator_get_reports($courseid, $reportfilter = 0) {
     $reports = $DB->get_records_sql($sql, $params);
 
     foreach ($reports as $report) {
-            $report->link = (new moodle_url('/mod/pdfannotator/view.php',
-                        array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
+        $report->link = (new moodle_url('/mod/pdfannotator/view.php',
+            array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
         $report->reportedcomment = format_text($report->reportedcomment);
         $report->report = format_text($report->report);
     }
