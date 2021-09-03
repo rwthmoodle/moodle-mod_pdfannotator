@@ -52,11 +52,11 @@ if ($action === 'forwardquestion') {
     // Make sure user is allowed to see cm with the question. (Might happen if user changes commentid in url).
     list($insql, $inparams) = $DB->get_in_or_equal(array_keys($cminfo));
     $sql = "SELECT c.*, a.page, cm.id AS cmid "
-            . "FROM {pdfannotator_comments} c "
-            . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
-            . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
-            . "JOIN {course_modules} cm ON p.id = cm.instance "
-            . "WHERE c.isdeleted = 0 AND c.id = ? AND cm.id $insql";
+        . "FROM {pdfannotator_comments} c "
+        . "JOIN {pdfannotator_annotations} a ON c.annotationid = a.id "
+        . "JOIN {pdfannotator} p ON a.pdfannotatorid = p.id "
+        . "JOIN {course_modules} cm ON p.id = cm.instance "
+        . "WHERE c.isdeleted = 0 AND c.id = ? AND cm.id $insql";
     $params = array_merge([$commentid], $inparams);
     $comments = $DB->get_records_sql($sql, $params);
     $error = false;
@@ -426,7 +426,7 @@ if ($action === 'overviewreports') {
 
 if ($action === 'view') { // Default.
     $PAGE->set_title("annotatorview");
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
+    echo $myrenderer->pdfannotator_render_tabs($taburl, $pdfannotator->name, $context, $action);
 
     pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page, $annoid, $commid);
 }
@@ -439,7 +439,7 @@ if ($action === 'statistic') {
 
     require_once($CFG->dirroot . '/mod/pdfannotator/model/statistics.class.php');
 
-    echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
+    echo $myrenderer->pdfannotator_render_tabs($taburl, $pdfannotator->name, $context, $action);
     $PAGE->set_title("statisticview");
     echo $OUTPUT->heading(get_string('activities', 'pdfannotator'));
 
@@ -488,7 +488,7 @@ if ($action === 'report') {
     /*     * ******************* Form processing and displaying is done here ************************ */
     if ($mform->is_cancelled()) {
         $action = 'view';
-        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
+        echo $myrenderer->pdfannotator_render_tabs($taburl, $pdfannotator->name, $context, $action);
         pdfannotator_display_embed($pdfannotator, $cm, $course, $file);
     } else if ($report = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
         require_sesskey();
@@ -501,7 +501,7 @@ if ($action === 'report') {
         $report->url = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&action=overviewreports';
         $messagetext = new stdClass();
         $modulename = format_string($cm->name, true);
-        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded');      
+        $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $report, 'reportadded');
         $messagetext->url = $report->url;
         try {
             foreach ($recipients as $recipient) {
@@ -531,7 +531,7 @@ if ($action === 'report') {
         }
 
         $action = 'view';
-        echo $myrenderer->pdfannotator_render_tabs($taburl, $action, $pdfannotator->name, $context);
+        echo $myrenderer->pdfannotator_render_tabs($taburl, $pdfannotator->name, $context, $action);
         pdfannotator_display_embed($pdfannotator, $cm, $course, $file);
     } else { // This branch is executed if the form is submitted but the data doesn't validate and the form should be redisplayed
         // or on the first display of the form.
