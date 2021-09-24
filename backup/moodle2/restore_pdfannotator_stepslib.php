@@ -43,18 +43,19 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
 
         $paths = array();
 
-        $userinfo = $this->get_setting_value('userinfo'); // Is 0 //TODO is not used.
+        $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('pdfannotator', '/activity/pdfannotator');
 
-        $paths[] = new restore_path_element('pdfannotator_annotation', '/activity/pdfannotator/annotations/annotation');
+        if($userinfo) {
+            $paths[] = new restore_path_element('pdfannotator_annotation', '/activity/pdfannotator/annotations/annotation');
 
-        $paths[] = new restore_path_element('pdfannotator_subscription', '/activity/pdfannotator/annotations/annotation/subscriptions/subscription');
-        $paths[] = new restore_path_element('pdfannotator_comment', '/activity/pdfannotator/annotations/annotation/comments/comment');
+            $paths[] = new restore_path_element('pdfannotator_subscription', '/activity/pdfannotator/annotations/annotation/subscriptions/subscription');
+            $paths[] = new restore_path_element('pdfannotator_comment', '/activity/pdfannotator/annotations/annotation/comments/comment');
 
-        $paths[] = new restore_path_element('pdfannotator_vote', '/activity/pdfannotator/annotations/annotation/comments/comment/votes/vote');
-        $paths[] = new restore_path_element('pdfannotator_report', '/activity/pdfannotator/annotations/annotation/comments/comment/reports/report');
-
+            $paths[] = new restore_path_element('pdfannotator_vote', '/activity/pdfannotator/annotations/annotation/comments/comment/votes/vote');
+            $paths[] = new restore_path_element('pdfannotator_report', '/activity/pdfannotator/annotations/annotation/comments/comment/reports/report');
+        }
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
