@@ -368,7 +368,7 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
     array_shift($args); // Ignore revision - designed to prevent caching problems only.
 
     $fs = get_file_storage();
-    $relativepath = implode('/', $args);
+    $relativepath = urldecode(implode('/', $args));
     $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/0/$relativepath", '/');
     do {
         if (!$file = $fs->get_file_by_hash(sha1($fullpath))) {

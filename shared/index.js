@@ -719,8 +719,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                     
                     function openDocumentCallback() {
                         var url = document.getElementById('myprinturl').innerHTML;
-                        url = url.replace(/%/g, "%25");
-                        url = url.replace(/#/g, "%23");
                         location.href = url;
                     }
                 }
