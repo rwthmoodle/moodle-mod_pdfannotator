@@ -60,7 +60,7 @@ class index implements \renderable, \templatable { // Class should be placed els
         $component = $file->get_component();
         $filearea = $file->get_filearea();
         $itemid = $file->get_itemid();
-        $filename = $file->get_filename();
+        $filename = urlencode($file->get_filename());
 
         $this->printurl = "$CFG->wwwroot/pluginfile.php/$contextid/$component/$filearea/$itemid/$filename?forcedownload=1";
 
