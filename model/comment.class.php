@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Rabea de Groot, Anna Heynkes and Friederike Schwager
+ * @author   Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -32,8 +32,6 @@ class pdfannotator_comment {
     /**
      * This method inserts a new record into mdl_pdfannotator_comments and returns its id
      *
-     * @global type $DB
-     * @global type $USER
      * @param type $documentid specifies the pdf
      * @param type $annotationid specifies the annotation (usually a highlight) to be commented
      * @param type $content the text or comment itself
@@ -135,7 +133,6 @@ class pdfannotator_comment {
     /**
      * This method returns an array of all comment objects belonging to the specified annotation.
      *
-     * @global type $DB
      * @param type $documentid
      * @param type $highlightid
      * @param $context
@@ -245,8 +242,6 @@ class pdfannotator_comment {
     /**
      * Function serves to hide a comment from participants' view while keeping it visibile for managers/teachers/etc.
      *
-     * @global type $DB
-     * @global type $USER
      * @return type
      */
     public static function hide_comment($commentid, $cmid) {
@@ -431,8 +426,6 @@ class pdfannotator_comment {
 
     /**
      * Inserts a vote into the db.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return boolean
      */
@@ -463,8 +456,6 @@ class pdfannotator_comment {
 
     /**
      * Inserts a subscription into the DB.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return boolean
      */
@@ -492,8 +483,6 @@ class pdfannotator_comment {
 
     /**
      * Deletes a subscription.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return string
      */
@@ -509,8 +498,6 @@ class pdfannotator_comment {
 
     /**
      * Marks a comment as solved. A question will be closed (or opened) and a answer will be marked as correct.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return boolean
      */
@@ -546,8 +533,6 @@ class pdfannotator_comment {
 
     /**
      * Returns if the user already voted a comment.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return type
      */
@@ -558,7 +543,6 @@ class pdfannotator_comment {
 
     /**
      * Returns the number of votes a comment got.
-     * @global type $DB
      * @param type $commentid
      * @return type
      */
@@ -569,8 +553,6 @@ class pdfannotator_comment {
 
     /**
      * Returns if the user is subscribed to a question.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return type
      */
@@ -581,7 +563,6 @@ class pdfannotator_comment {
 
     /**
      * Returns all subscribed users to a question.
-     * @global type $DB
      * @param type $annotationid
      * @return arry of userids as strings
      */
@@ -641,7 +622,6 @@ class pdfannotator_comment {
 
     /**
      * Get all questions in an annotator where a comment contains the pattern
-     * @global type $DB
      * @param type $documentid
      * @param type $pattern
      */
