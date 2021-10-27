@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Ahmad Obeid, Rabea de Groot, Anna Heynkes
+ * @author   Ahmad Obeid, Rabea de Groot, Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
@@ -218,7 +218,7 @@ function pdfannotator_delete_instance($id) {
  * "extra" information that may be needed when printing
  * this activity in a course listing.
  *
- * See {@link get_array_of_activities()} in course/lib.php
+ * See {@see get_array_of_activities()} in course/lib.php
  *
  * @param stdClass $coursemodule
  * @return cached_cm_info info
@@ -557,10 +557,15 @@ function mod_pdfannotator_core_calendar_provide_event_action(calendar_event $eve
  * Returns all annotations comments since a given time in specified annotator.
  *
  * @todo Document this functions args
- * @global object
- * @global object
- * @global object
- * @global object
+ * @param $activities
+ * @param $index
+ * @param $timestart
+ * @param $courseid
+ * @param $cmid
+ * @param int $userid
+ * @param int $groupid
+ * @throws dml_exception
+ * @throws moodle_exception
  */
 function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
     global $CFG, $COURSE, $USER, $DB;

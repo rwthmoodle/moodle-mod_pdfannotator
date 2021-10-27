@@ -22,7 +22,7 @@
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Rabea de Groot, Anna Heynkes and Friederike Schwager
+ * @author   Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -33,8 +33,6 @@ class pdfannotator_annotation {
     /**
      * This method creates a new record in the database table named mdl_pdfannotator_annotations and returns its id
      *
-     * @global type $DB
-     * @global type $USER
      * @param type $documentid specifies the pdf file to which this annotation belongs
      * @param type $pageid specifies the page within that pdf file
      * @param type $type child class (highlight, strikeout, area, textbox, drawing, comment or point)
@@ -59,7 +57,6 @@ class pdfannotator_annotation {
      * Method updates data attribute (consisting of width, color and lines)
      * in mdl_pdfannotator_drawings after a drawing was shifted in position
      *
-     * @global type $DB
      * @param type $annotationid
      * @param type $newdata
      * @return type int 1 for success
@@ -94,7 +91,6 @@ class pdfannotator_annotation {
      * if the user is allowed to do so.
      * Teachers are allowed to delete any comment, students may only delete their own comments.
      *
-     * @global type $DB
      * @param type $annotationId
      * @param type $cmid
      * @param type $deleteanyway Delete annotation in any case. F.e. if right to be forgotten was invoked or
@@ -182,7 +178,6 @@ class pdfannotator_annotation {
      * It returns true if the annotation was made by the user who is trying to shift it and no other person has answered
      * or if that user is an admin.
      *
-     * @global type $USER
      * @param type $annotationId
      * @return boolean
      */
@@ -245,7 +240,6 @@ class pdfannotator_annotation {
     /**
      * Method takes an annotation's id and returns the user id of its author
      *
-     * @global type $DB
      * @param type $itemid
      * @return type
      */
@@ -258,7 +252,6 @@ class pdfannotator_annotation {
     /**
      * Method takes an annotation's id and returns the page it was made on
      *
-     * @global type $DB
      * @param type $annotationId
      * @return type
      */
@@ -270,7 +263,6 @@ class pdfannotator_annotation {
     /**
      * Method takes an annotation's id and returns the content of the underlying question comment
      *
-     * @global type $DB
      * @param type $annotationId
      * @return type
      */

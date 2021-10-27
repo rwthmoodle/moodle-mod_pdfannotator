@@ -41,7 +41,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the number of questions/answers in one PDF-Annotator by one/all users
-     * @global type $DB
      * @param type $isquestion  '1' for questions, '0' for answers
      * @param type $user   false by default for comments by all users. True for comments by the user
      * @return type
@@ -59,7 +58,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the number of questions/answers in all PDF-Annotators in one course by one/all users
-     * @global type $DB
      * @param type $isquestion  '1' for questions, '0' for answers
      * @param type $user false by default for comments by all users. userid for comments by a specific user
      * @return type
@@ -77,7 +75,6 @@ class pdfannotator_statistics {
     /**
      * Returns the average number of questions/answers a user wrote in this pdf-annotator.
      * Only users that wrote at least one comment are included.
-     * @global type $DB
      * @param type $isquestion '1' for questions, '0' for answers
      * @return type
      */
@@ -94,7 +91,6 @@ class pdfannotator_statistics {
     /**
      * Returns the average number of questions/answers a user wrote in this course.
      * Only users that wrote at least one comment are included.
-     * @global type $DB
      * @param type $isquestion '1' for questions, '0' for answers
      * @return type
      */
@@ -111,7 +107,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the number of reported comments in this annotator.
-     * @global type $DB
      * @return type
      */
     public function get_reports_annotator() {
@@ -121,7 +116,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the number of reported comments in this course.
-     * @global type $DB
      * @return type
      */
     public function get_reports_course() {
@@ -175,7 +169,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the data for the chart in the statistics-tab.
-     * @global type $DB
      * @param type $pdfannotators
      * @return type
      */
@@ -228,7 +221,6 @@ class pdfannotator_statistics {
 
     /**
      * Returns the number of all questions/answers in one PDF-Annotator by one/all users
-     * @global type $DB
      * @param type $annotatorid
      * @param type $isquestion '1' for questions, '0' for answers
      * @param type $userid false by default for comments by all users. Userid for comments by a specific user
