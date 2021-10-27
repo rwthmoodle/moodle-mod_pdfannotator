@@ -151,7 +151,8 @@ if ($action === 'create') {
             $data['height'] = $annotation['height'];
             break;
         case 'drawing':
-            $studentdrawingsallowed = $DB->get_field('pdfannotator', 'use_studentdrawing', ['id' => $documentid], $strictness = MUST_EXIST);
+            $studentdrawingsallowed = $DB->get_field('pdfannotator', 'use_studentdrawing', ['id' => $documentid],
+                $strictness = MUST_EXIST);
             $alwaysdrawingallowed = has_capability('mod/pdfannotator:usedrawing', $context);
             if ($studentdrawingsallowed != 1 && !$alwaysdrawingallowed) {
                 echo json_encode(['status' => 'error', 'reason' => get_string('studentdrawingforbidden', 'pdfannotator')]);
@@ -174,7 +175,8 @@ if ($action === 'create') {
             $data['rectangles'] = $annotation['rectangles'];
             break;
         case 'textbox':
-            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', array('id' => $documentid), $strictness = MUST_EXIST);
+            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', array('id' => $documentid),
+                $strictness = MUST_EXIST);
             $alwaystextboxallowed = has_capability('mod/pdfannotator:usetextbox', $context);
             if ($studenttextboxesallowed != 1 && !$alwaystextboxallowed) {
                 echo json_encode(['status' => 'error', 'reason' => get_string('studenttextboxforbidden', 'pdfannotator')]);
@@ -497,7 +499,8 @@ if ($action === 'subscribeQuestion') {
         $thiscourse = $pdfannotator->course;
         $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
-        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage, 'answerfilter' => 0);
+        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage,
+            'answerfilter' => 0);
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         redirect($url->out());
         return;
@@ -537,13 +540,14 @@ if ($action === 'unsubscribeQuestion') {
     }
 
     if ($subscriptionid) {
-        echo json_encode(['status' => 'success', 'annotationid' => $annotationid, 'subscriptionid' => $subscriptionid, 'annotatorid' => $annotatorid]);
+        echo json_encode(['status' => 'success', 'annotationid' => $annotationid, 'subscriptionid' => $subscriptionid,
+            'annotatorid' => $annotatorid]);
     } else {
         echo json_encode(['status' => 'error']);
     }
 }
 
-/* * ****************************************** Mark a question as closed or an answer as correct ****************************************** */
+/* * ****************************************** Mark a question as closed or an answer as correct ******************************* */
 
 if ($action === 'markSolved') {
     global $DB;

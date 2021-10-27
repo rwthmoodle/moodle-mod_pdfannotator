@@ -35,7 +35,8 @@ function pdfannotator_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
 
-        default: return null;
+        default:
+            return null;
     }
 }
 /**
@@ -230,7 +231,8 @@ function pdfannotator_get_coursemodule_info($coursemodule) {
 
     $context = context_module::instance($coursemodule->id);
 
-    if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $coursemodule->instance), 'id, name, course, timemodified, timecreated, intro, introformat')) {
+    if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $coursemodule->instance), 'id, name, course,
+        timemodified, timecreated, intro, introformat')) {
         return null;
     }
 
