@@ -30,7 +30,8 @@ if ($ADMIN->fulltree) {
             get_string('global_setting_useprint', 'pdfannotator'), get_string('global_setting_useprint_desc', 'pdfannotator'), 0));
 
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/useprintcomments',
-            get_string('global_setting_useprint_comments', 'pdfannotator'), get_string('global_setting_useprint_comments_desc', 'pdfannotator'), 0));
+            get_string('global_setting_useprint_comments', 'pdfannotator'),
+        get_string('global_setting_useprint_comments_desc', 'pdfannotator'), 0));
 
     $settings->add(new admin_setting_configcheckbox('mod_pdfannotator/use_studenttextbox',
             get_string('global_setting_use_studenttextbox', 'pdfannotator'),
@@ -48,10 +49,11 @@ if ($ADMIN->fulltree) {
             get_string('global_setting_use_protected_comments', 'pdfannotator'),
             get_string('global_setting_use_protected_comments_desc', 'pdfannotator'), 0));
 
-    //Define what API to use for converting latex formulas into png.
+    // Define what API to use for converting latex formulas into png.
     $options = array();
     $options[LATEX_TO_PNG_MOODLE] = get_string("global_setting_latexusemoodle", "pdfannotator");
     $options[LATEX_TO_PNG_GOOGLE_API] = get_string("global_setting_latexusegoogle", "pdfannotator");
-    $settings->add(new admin_setting_configselect('mod_pdfannotator/latexapi', get_string('global_setting_latexapisetting', 'pdfannotator'),
+    $settings->add(new admin_setting_configselect('mod_pdfannotator/latexapi', get_string('global_setting_latexapisetting',
+        'pdfannotator'),
         get_string('global_setting_latexapisetting_desc', 'pdfannotator'), LATEX_TO_PNG_MOODLE, $options));
 }

@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Version information for mod/pdfannotator
  *
@@ -25,7 +24,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_pdfannotator';
-$plugin->version   = 2021092400;
-$plugin->release  = 'PDF Annotator v1.4 release 7';
+$plugin->version   = 2021090100;
+$plugin->release  = 'PDF Annotator v1.4 release 9';
 $plugin->requires  = 2021051700;
 $plugin->maturity  = MATURITY_STABLE;

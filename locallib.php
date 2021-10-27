@@ -221,7 +221,8 @@ function pdfannotator_process_latex_moodle($context, $string) {
     }
     $imagedata = file_get_contents($image);
     $result['image'] = IMAGE_PREFIX . base64_encode($imagedata);
-    //imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only thing needed here
+    // Imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only
+    // thing needed here.
     $imageinfo = getimagesize($image);
     $result['imageheight'] = $imageinfo[1];
     return $result;
@@ -742,7 +743,8 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     if ($questionfilter == 1) {
         $sql = $sql . ' AND NOT c.solved = 0 ';
     }
-    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
+    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility,"
+        . "c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
     $params = array_merge([$courseid], $inparams);
     $questions = $DB->get_records_sql($sql, $params);
 
@@ -906,7 +908,8 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid,"
+            . "q.userid AS questionuserid, c.isquestion, c.annotationid, "
             . "q.visibility AS questionvisibility, "
             . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
             . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
@@ -920,7 +923,8 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             . "ORDER BY annoid ASC";
     } else { // Or: get answers to those questions the user subscribed to.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+            . "q.userid AS questionuserid, c.isquestion, c.annotationid, "
             . "q.visibility AS questionvisibility, "
             . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
             . "p.name AS pdfannotatorname, cm.id AS cmid "
