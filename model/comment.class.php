@@ -50,7 +50,7 @@ class pdfannotator_comment {
         $datarecord->annotationid = $annotationid;
         $datarecord->userid = $USER->id;
         $datarecord->content = $content;
-        $datarecord->timecreated = time(); // Moodle method: DateTime::getTimestamp();
+        $datarecord->timecreated = time(); // Moodle method: DateTime::getTimestamp();.
         $datarecord->timemodified = $datarecord->timecreated;
         $datarecord->visibility = $visibility;
         $datarecord->isquestion = $isquestion;
@@ -85,12 +85,14 @@ class pdfannotator_comment {
 
                 $messagetext = new stdClass();
                 $module = get_string('modulename', 'pdfannotator');
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename, $comment, 'newanswer');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename,
+                    $comment, 'newanswer');
                 $messagetext->url = $comment->urltoanswer;
                 $recipients = self::get_subscribed_users($annotationid);
                 foreach ($recipients as $recipient) {
                     if ($recipient != $USER->id) {
-                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $modulename, $comment, 'newanswer', $recipient);
+                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module,
+                            $modulename, $comment, 'newanswer', $recipient);
                         $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newanswer', $messagetext, $anonymous);
                     }
                 }
@@ -105,7 +107,8 @@ class pdfannotator_comment {
                 $question->content = $content;
 
                 $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST);
-                $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
+                $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page .
+                    '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
                 $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
@@ -153,7 +156,8 @@ class pdfannotator_comment {
         $comments = $DB->get_records_sql($sql, $a); // Records taken from table 'comments' as an array of objects.
         $usevotes = pdfannotator_instance::use_votes($documentid);
 
-        $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid], $fields = 'timecreated, timemodified, modifiedby', $strictness = MUST_EXIST);
+        $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid],
+            $fields = 'timecreated, timemodified, modifiedby', $strictness = MUST_EXIST);
 
         $result = array();
         foreach ($comments as $data) {
@@ -285,7 +289,7 @@ class pdfannotator_comment {
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
-                                $hideannotation = 1; // $annotationid;
+                                $hideannotation = 1; // ... $annotationid;
                         }
                     }
                 } else {
@@ -298,7 +302,8 @@ class pdfannotator_comment {
         $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
 
         if ($success == 1) {
-            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell];
+            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered,
+                'followups' => $tobedeletedaswell];
         } else {
             return ['status' => 'error'];
         }

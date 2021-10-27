@@ -188,7 +188,8 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define field use_studentdrawing to be added to pdfannotator.
         $table = new xmldb_table('pdfannotator');
-        $field = new xmldb_field('use_studentdrawing', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'use_studenttextbox');
+        $field = new xmldb_field('use_studentdrawing', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0',
+            'use_studenttextbox');
 
         // Conditionally launch add field use_studentdrawing.
         if (!$dbman->field_exists($table, $field)) {
@@ -342,7 +343,8 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key annotationtypeid (foreign) to be added to pdfannotator_annotations.
         $table = new xmldb_table('pdfannotator_annotations');
-        $key = new xmldb_key('annotationtypeid', XMLDB_KEY_FOREIGN, array('annotationtypeid'), 'pdfannotator_annotationtypes', array('id'));
+        $key = new xmldb_key('annotationtypeid', XMLDB_KEY_FOREIGN, array('annotationtypeid'), 'pdfannotator_annotationtypes',
+            array('id'));
 
         // Launch add key annotationtypeid.
         $dbman->add_key($table, $key);
@@ -579,7 +581,8 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define field useprivatecomments to be added to pdfannotator.
         $table = new xmldb_table('pdfannotator');
-        $field = new xmldb_field('useprivatecomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'use_studentdrawing');
+        $field = new xmldb_field('useprivatecomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0',
+            'use_studentdrawing');
 
         // Conditionally launch add field useprivatecomments.
         if (!$dbman->field_exists($table, $field)) {
@@ -588,7 +591,8 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
          // Define field useprotectedcomments to be added to pdfannotator.
          $table = new xmldb_table('pdfannotator');
-         $field = new xmldb_field('useprotectedcomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'useprivatecomments');
+         $field = new xmldb_field('useprotectedcomments', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0',
+             'useprivatecomments');
 
          // Conditionally launch add field useprotectedcomments.
         if (!$dbman->field_exists($table, $field)) {

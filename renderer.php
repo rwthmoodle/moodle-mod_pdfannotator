@@ -99,7 +99,8 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
      * @param string $nameargs
      * @return tabobject
      */
-    private function pdfannotator_create_tab(moodle_url $baseurl, $action, $namekey = null, $pdfannotatorname = null, $nameargs = null) {
+    private function pdfannotator_create_tab(moodle_url $baseurl, $action, $namekey = null, $pdfannotatorname = null,
+        $nameargs = null) {
         $taburl = new moodle_url($baseurl, array('action' => $action));
         $tabname = get_string($namekey, 'pdfannotator', $nameargs);
         if ($pdfannotatorname) {

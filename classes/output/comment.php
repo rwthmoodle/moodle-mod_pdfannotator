@@ -94,7 +94,8 @@ class comment implements \renderable, \templatable {
             }
 
             if (!empty($comment->modifiedby) && ($comment->modifiedby != $comment->userid) && ($comment->userid != 0)) {
-                $comment->modifiedby = get_string('modifiedby', 'pdfannotator') . ' '. pdfannotator_get_username($comment->modifiedby);
+                $comment->modifiedby = get_string('modifiedby', 'pdfannotator') . ' '.
+                    pdfannotator_get_username($comment->modifiedby);
             } else {
                 $comment->modifiedby = null;
             }
@@ -167,9 +168,11 @@ class comment implements \renderable, \templatable {
     public function addsolvedicon($comment) {
         if ($comment->solved) {
             if ($comment->isquestion) {
-                $comment->solvedicon = ["classes" => "icon fa fa-lock fa-fw solvedquestionicon", "title" => get_string('questionSolved', 'pdfannotator')];
+                $comment->solvedicon = ["classes" => "icon fa fa-lock fa-fw solvedquestionicon",
+                    "title" => get_string('questionSolved', 'pdfannotator')];
             } else if (!$comment->isdeleted) {
-                $comment->solvedicon = ["classes" => "icon fa fa-check fa-fw correctanswericon", "title" => get_string('answerSolved', 'pdfannotator')];
+                $comment->solvedicon = ["classes" => "icon fa fa-check fa-fw correctanswericon",
+                    "title" => get_string('answerSolved', 'pdfannotator')];
             }
         }
     }
@@ -218,8 +221,9 @@ class comment implements \renderable, \templatable {
      */
     private function addeditbutton($comment, $editanypost) {
         if (!$comment->isdeleted && !isset($comment->type) && ($comment->owner || $editanypost)) {
-            $comment->buttons[] = ["classes" => "comment-edit-a", "attributes" => ["name" => "id", "value" => "editButton" . $comment->uuid],
-                "moodleicon" => ["key" => "i/edit", "component" => "core", "title" => get_string('edit', 'pdfannotator')],
+            $comment->buttons[] = ["classes" => "comment-edit-a", "attributes" => ["name" => "id",
+                "value" => "editButton" . $comment->uuid], "moodleicon" => ["key" => "i/edit", "component" => "core",
+                "title" => get_string('edit', 'pdfannotator')],
                 "text" => get_string('edit', 'pdfannotator')];
         }
     }
@@ -235,7 +239,8 @@ class comment implements \renderable, \templatable {
                 $comment->dimmed = 'dimmed_text';
                 $comment->displayhidden = 1;
                 $comment->buttons[] = ["attributes" => ["name" => "id", "value" => "hideButton" . $comment->uuid],
-                    "moodleicon" => ["key" => "i/hide", "component" => "core", "title" => get_string('removehidden', 'pdfannotator')],
+                    "moodleicon" => ["key" => "i/hide", "component" => "core",
+                    "title" => get_string('removehidden', 'pdfannotator')],
                     "text" => get_string('removehidden', 'pdfannotator')];
             } else {
                 $comment->visibility = 'anonymous';
@@ -260,12 +265,14 @@ class comment implements \renderable, \templatable {
     private function adddeletebutton($comment, $deleteown, $deleteany) {
         if (!$comment->isdeleted && ($deleteany || ($deleteown && $comment->owner))) {
             $comment->buttons[] = ["classes" => "comment-delete-a", "text" => get_string('delete', 'pdfannotator'),
-                "moodleicon" => ["key" => "delete", "component" => "pdfannotator", "title" => get_string('delete', 'pdfannotator')]];
+                "moodleicon" => ["key" => "delete", "component" => "pdfannotator",
+                    "title" => get_string('delete', 'pdfannotator')]];
         }
     }
 
     private function addsubscribebutton($comment, $subscribe) {
-        if (!isset($comment->type) && $comment->isquestion && $subscribe && $comment->visibility != 'private') { // Only set for textbox and drawing.
+        if (!isset($comment->type) && $comment->isquestion && $subscribe && $comment->visibility != 'private') {
+            // Only set for textbox and drawing.
             if (!empty($comment->issubscribed)) {
                 $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell-slash"],
                     "text" => get_string('unsubscribeQuestion', 'pdfannotator')];
@@ -277,24 +284,29 @@ class comment implements \renderable, \templatable {
     }
 
     private function addforwardbutton($comment, $forwardquestions, $cm) {
-        if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions  && $comment->visibility != 'private') {
+        if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions &&
+            $comment->visibility != 'private') {
             global $CFG;
             $urlparams = ['id' => $cm->id, 'action' => 'forwardquestion', 'commentid' => $comment->uuid, 'sesskey' => sesskey()];
             $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
 
-            $comment->buttons[] = ["classes" => "comment-forward-a", "attributes" => ["name" => "onclick", "value" => "window.location.href = '$url';"],
-                "faicon" => ["class" => "fa-share"], "text" => get_string('forward', 'pdfannotator')];
+            $comment->buttons[] = ["classes" => "comment-forward-a", "attributes" => ["name" => "onclick",
+                "value" => "window.location.href = '$url';"], "faicon" => ["class" => "fa-share"],
+                "text" => get_string('forward', 'pdfannotator')];
         }
     }
 
     private function addmarksolvedbutton($comment, $solve) {
-        if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type) && $this->questionvisibility != 'private') {
+        if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type) &&
+            $this->questionvisibility != 'private') {
             if ($comment->solved) {
                 $comment->buttons[] = ["classes" => "comment-solve-a", "text" => get_string('removeCorrect', 'pdfannotator'),
-                    "moodleicon" => ["key" => "i/completion-manual-n", "component" => "core", "title" => get_string('removeCorrect', 'pdfannotator')]];
+                    "moodleicon" => ["key" => "i/completion-manual-n", "component" => "core",
+                        "title" => get_string('removeCorrect', 'pdfannotator')]];
             } else {
                 $comment->buttons[] = ["classes" => "comment-solve-a", "text" => get_string('markCorrect', 'pdfannotator'),
-                    "moodleicon" => ["key" => "i/completion-manual-enabled", "component" => "core", "title" => get_string('markCorrect', 'pdfannotator')]];
+                    "moodleicon" => ["key" => "i/completion-manual-enabled", "component" => "core",
+                        "title" => get_string('markCorrect', 'pdfannotator')]];
             }
         }
     }

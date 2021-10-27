@@ -68,7 +68,8 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->addElement('filemanager', 'files', get_string('setting_fileupload', 'pdfannotator'), null, $filemanageroptions); // Params: 1. type of the element, 2. (html) elementname, 3. label.
         $mform->addHelpButton('files', 'setting_fileupload', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'usevotes', get_string('setting_usevotes', 'pdfannotator'), get_string('usevotes', 'pdfannotator'), null, array(0, 1));
+        $mform->addElement('advcheckbox', 'usevotes', get_string('setting_usevotes', 'pdfannotator'),
+            get_string('usevotes', 'pdfannotator'), null, array(0, 1));
         $mform->setType('usevotes', PARAM_BOOL);
         $mform->setDefault('usevotes', $config->usevotes);
         $mform->addHelpButton('usevotes', 'setting_usevotes', 'pdfannotator');
