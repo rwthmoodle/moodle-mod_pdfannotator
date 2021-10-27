@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @author   Ahmad Obeid, Rabea de Groot, Anna Heynkes
+ * @author    Ahmad Obeid, Rabea de Groot, Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
@@ -28,12 +28,18 @@ defined('MOODLE_INTERNAL') || die;
  */
 function pdfannotator_supports($feature) {
     switch($feature) {
-        case FEATURE_GROUPS:                  return true;
-        case FEATURE_GROUPINGS:               return true;
-        case FEATURE_MOD_INTRO:               return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
-        case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_SHOW_DESCRIPTION:        return true;
+        case FEATURE_GROUPS:
+            return true;
+        case FEATURE_GROUPINGS:
+            return true;
+        case FEATURE_MOD_INTRO:
+            return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
+            return true;
+        case FEATURE_BACKUP_MOODLE2:
+            return true;
+        case FEATURE_SHOW_DESCRIPTION:
+            return true;
 
         default:
             return null;
@@ -608,7 +614,7 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     $printposts = array();
     $context = context_course::instance($courseid);
     foreach ($posts as $post) {
-        if(!pdfannotator_can_see_comment($post, $context)) {
+        if (!pdfannotator_can_see_comment($post, $context)) {
             continue;
         }
         $printposts[] = $post;
