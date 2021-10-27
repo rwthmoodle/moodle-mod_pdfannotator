@@ -17,6 +17,8 @@
 namespace mod_pdfannotator\output;
 use moodle_url;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Renderable for comments.
  *
@@ -25,8 +27,6 @@ use moodle_url;
  * @author    Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
-
 class comment implements \renderable, \templatable {
 
     private $comments = [];

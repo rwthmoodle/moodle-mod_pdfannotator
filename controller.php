@@ -17,7 +17,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @author   Anna Heynkes, Friederike Schwager
+ * @author    Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

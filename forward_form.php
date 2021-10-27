@@ -72,8 +72,8 @@ class pdfannotator_forward_form extends moodleform {
         $mform->addRule('recipients', get_string('recipientrequired', 'pdfannotator'), 'required', null, 'client');
 
         // Textarea for message to the recipient.
-        $mform->addElement('textarea', 'message', get_string('messageforwardform', 'pdfannotator'), 
-			wrap="virtual" rows="5" cols="109"');
+        $mform->addElement('textarea', 'message', get_string('messageforwardform', 'pdfannotator'),
+            'wrap="virtual" rows="5" cols="109"');
 
         // Add submit and cancel buttons.
         $this->add_action_buttons($cancel = true, get_string('send', 'pdfannotator'));

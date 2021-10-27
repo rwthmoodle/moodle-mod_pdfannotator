@@ -22,7 +22,7 @@
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @author   Rabea de Groot, Anna Heynkes and Friederike Schwager
+ * @author    Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -163,7 +163,8 @@ class pdfannotator_annotation {
         } else if (($author !== $userid) || !$deleteown) {
             $result[] = false;
             $result[] = get_string('onlyDeleteOwnAnnotations', 'pdfannotator');
-        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", [$annotation->id, $userid])) { // Check whether other people have commented this annotation.)
+        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?",
+            [$annotation->id, $userid])) { // Check whether other people have commented this annotation.
             $result[] = false;
             $result[] = get_string('onlyDeleteUncommentedPosts', 'pdfannotator');
         } else {
@@ -191,7 +192,8 @@ class pdfannotator_annotation {
         }
         if (!$editownpost || $USER->id != self::get_author($annotationid)) {
             return false;
-        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?", array($annotationid, $USER->id))) {
+        } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?",
+            array($annotationid, $USER->id))) {
             // Annotation was answered by other users.
             return false;
         }
