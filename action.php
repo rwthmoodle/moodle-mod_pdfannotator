@@ -27,7 +27,7 @@
  *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @author   Rabea de Groot, Anna Heynkes, Friederike Schwager
+ * @author    Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -388,8 +388,6 @@ if ($action === 'getComments') {
 
     $comments = pdfannotator_comment::read($documentid, $annotationid, $context);
 
- //   require_once($CFG->dirroot . '/mod/pdfannotator/classes/output/comment.php');
-    
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     $templatable = new comment($comments, $cm, $context);
 
@@ -455,7 +453,7 @@ if ($action === 'editComment') {
 
     $commentid = required_param('commentId', PARAM_INT);
     $content = required_param('content', PARAM_RAW);
- 
+
     $data = pdfannotator_comment::update($commentid, $content, $editanypost);
     echo json_encode($data);
 }
