@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Ahmad Obeid, Anna Heynkes
+ * @author   Ahmad Obeid, Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require('../../config.php');
