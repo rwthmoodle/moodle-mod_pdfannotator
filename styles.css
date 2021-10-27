@@ -9,12 +9,12 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 0px 0px 3px 5px;
+    padding: 0 0 3px 5px;
     text-shadow: 1px 1px 0 #fff;
     z-index: 50;
-    -webkit-box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
-    -moz-box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
-    box-shadow: inset 0px 1px 1px 0px rgba(255,255,255,1);
+    -webkit-box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+    -moz-box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 1);
 }
 
 .path-mod-pdfannotator .pdfannotator_index .toolbar .spacer {
@@ -30,13 +30,13 @@
 
 .path-mod-pdfannotator .toolbar button {
     background-color: transparent;
-    border: 0px solid transparent;
-    border-radius: 0px;
+    border: 0 solid transparent;
+    border-radius: 0;
     font-size: 15px;
     padding: 3px;
-    margin: 0 0 0px 0px;
+    margin: 0 0 0 0;
     text-align: center;
-    text-shadow: 0px 0px 0 #fff;
+    text-shadow: 0 0 0 #fff;
     position: relative;
     min-width: 27px;
     min-height: 27px;
@@ -48,21 +48,21 @@
 }
 
 .path-mod-pdfannotator .toolbar button.active { /*RWTH-color*/
-    background-image: radial-gradient(ellipse at center,#e6f2ff 40%,#8ebae5 100%);
+    background-image: radial-gradient(ellipse at center, #e6f2ff 40%, #8ebae5 100%);
     background-color: #8ebae5;
     border-color: #bababa;
-    -webkit-box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
-    -moz-box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
-    box-shadow: inset 0 0 1px rgba(0,0,0,0.25);
+    -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.25);
+    box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 .path-mod-pdfannotator .toolbar select {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .path-mod-pdfannotator .toolbar button .icon {
-    color: #999999;
-    margin-right: 0px;
+    color: #999;
+    margin-right: 0;
 }
 
 .path-mod-pdfannotator .color {
@@ -71,7 +71,7 @@
     height: 20px;
     border: 1px solid #000;
     vertical-align: middle;
-    margin: 0 0 0px 0px;
+    margin: 0;
 }
 .path-mod-pdfannotator .color-selected {
     border: 3px solid #666;
@@ -82,7 +82,8 @@
     margin-right: -2px;
 }
 
-.path-mod-pdfannotator .text-color, .path-mod-pdfannotator .pen-color {
+.path-mod-pdfannotator .text-color,
+.path-mod-pdfannotator .pen-color {
     z-index: 100;
     display: inline-block;
 }
@@ -137,31 +138,36 @@
 }
 
 .path-mod-pdfannotator .textLayer .highlight.begin {
-    border-radius: 4px 0px 0px 4px;
+    border-radius: 4px 0 0 4px;
 }
 
 .path-mod-pdfannotator .textLayer .highlight.end {
-    border-radius: 0px 4px 4px 0px;
+    border-radius: 0 4px 4px 0;
 }
 
 .path-mod-pdfannotator .textLayer .highlight.middle {
-    border-radius: 0px;
+    border-radius: 0;
 }
 
 .path-mod-pdfannotator .textLayer .highlight.selected {
     background-color: rgb(0, 100, 0);
 }
 
-.path-mod-pdfannotator .textLayer ::selection { background: rgb(0,0,255); }
-.path-mod-pdfannotator .textLayer ::-moz-selection { background: rgb(0,0,255); }
+.path-mod-pdfannotator .textLayer ::selection {
+    background: rgb(0, 0, 255);
+}
+
+.path-mod-pdfannotator .textLayer ::-moz-selection {
+    background: rgb(0, 0, 255);
+}
 
 .path-mod-pdfannotator .textLayer .endOfContent {
     display: block;
     position: absolute;
-    left: 0px;
+    left: 0;
     top: 100%;
-    right: 0px;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
     z-index: -1;
     cursor: default;
     -webkit-user-select: none;
@@ -170,7 +176,7 @@
 }
 
 .path-mod-pdfannotator .textLayer .endOfContent.active {
-    top: 0px;
+    top: 0;
 }
 
 
@@ -187,14 +193,14 @@
     height: 100%;
 }
 
-.path-mod-pdfannotator .annotationLayer .linkAnnotation > a /* -ms-a */  {
+.path-mod-pdfannotator .annotationLayer .linkAnnotation > a /* -ms-a */ {
     background: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0 repeat;
 }
 
 .path-mod-pdfannotator .annotationLayer .linkAnnotation > a:hover {
     opacity: 0.2;
     background: #ff0;
-    box-shadow: 0px 2px 10px #ff0;
+    box-shadow: 0 2px 10px #ff0;
 }
 
 .path-mod-pdfannotator .annotationLayer .textAnnotation img {
@@ -211,8 +217,8 @@
     position: absolute;
     z-index: 200;
     max-width: 20em;
-    background-color: #FFFF99;
-    box-shadow: 0px 2px 5px #333;
+    background-color: #ff9;
+    box-shadow: 0 2px 5px #333;
     border-radius: 2px;
     padding: 0.6em;
     margin-left: 5px;
@@ -222,7 +228,7 @@
 
 .path-mod-pdfannotator .annotationLayer .popup h1 {
     font-size: 1em;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
     padding-bottom: 0.2em;
 }
 
@@ -256,7 +262,7 @@
 }
 
 .path-mod-pdfannotator .pdfViewer.removePageBorders .page {
-    margin: 0px auto 10px auto;
+    margin: 0 auto 10px auto;
     border: none;
 }
 
@@ -332,7 +338,8 @@ body {
 }
 
 @media only screen and (max-width: 991px) {
-    .path-mod-pdfannotator #content-wrapper, .path-mod-pdfannotator #comment-wrapper {
+    .path-mod-pdfannotator #content-wrapper,
+    .path-mod-pdfannotator #comment-wrapper {
         height: 50%;
     }
 }
@@ -348,7 +355,7 @@ body {
 }
 
 .path-mod-pdfannotator #comment-nav .icon {
-    color: #999999 !important;
+    color: #999 !important;
 }
 
 .path-mod-pdfannotator #searchForm {
@@ -363,7 +370,7 @@ body {
 
 .path-mod-pdfannotator #searchClear {
     margin-left: -25px;
-    padding: 0px;
+    padding: 0;
 }
 
 .path-mod-pdfannotator #comment-wrapper .comment-list {
@@ -410,7 +417,7 @@ body {
 .path-mod-pdfannotator .chat-message {
     border-radius: 4px;
     padding: 4px 10px;
-    margin: 0 0px 10px 0;
+    margin: 0 0 10px 0;
     background-color: #fefefe;
 }
 
@@ -438,7 +445,7 @@ body {
 
 .path-mod-pdfannotator .chat-message.comment-list-item:not(.questions) {
     display: flex;
-    padding-left: 0px !important;
+    padding-left: 0 !important;
 }
 
 .path-mod-pdfannotator .chat-message .wrappervotessolved {
@@ -450,19 +457,19 @@ body {
 }
 
 .path-mod-pdfannotator .chat-message .wrappervotessolved .icon {
-    margin-right: 0px !important;
+    margin-right: 0 !important;
 }
 
 .path-mod-pdfannotator .chat-message:not(.questions) .icon {
-    color: #999999 !important;
+    color: #999 !important;
 }
 
 .path-mod-pdfannotator .chat-message button:disabled .icon {
-    color: rgba(0,0,0,.15) !important;
+    color: rgba(0, 0, 0, .15) !important;
 }
 
 .path-mod-pdfannotator .chat-message .time,
-.path-mod-pdfannotator .chat-message .edited { 
+.path-mod-pdfannotator .chat-message .edited {
     float: right;
     font-size: 11px;
     color: #777;
@@ -471,19 +478,20 @@ body {
     font-weight: 700;
 }
 
-.path-mod-pdfannotator .chat-message button:not(.dropdown-item), .path-mod-pdfannotator #comment-nav button {
+.path-mod-pdfannotator .chat-message button:not(.dropdown-item),
+.path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
     background-color: transparent;
 }
 
 .path-mod-pdfannotator .chat-message.questioncomment {
     margin: 0 0 10px 0;
-    background-color: #C7DDF2;
+    background-color: #c7ddf2;
 }
 
 .path-mod-pdfannotator .chat-message.questions:not(.page) {
     background-color: #c7ddf2;
-    color: rgb(0,84,159);
+    color: rgb(0, 84, 159);
 }
 
 .path-mod-pdfannotator .chat-message.questions.page {
@@ -510,8 +518,8 @@ body {
 }
 
 .path-mod-pdfannotator .questionanswercount {
-    padding: 0px 2px 0px 2px;
-    margin: 0px;
+    padding: 0 2px 0 2px;
+    margin: 0;
     border-radius: 8px;
 }
 
@@ -523,13 +531,15 @@ body {
     float: right;
 }
 
-.path-mod-pdfannotator #anonymousLabel, .path-mod-pdfannotator #privateLabel, .path-mod-pdfannotator #protectedLabel {
+.path-mod-pdfannotator #anonymousLabel,
+.path-mod-pdfannotator #privateLabel,
+.path-mod-pdfannotator #protectedLabel {
     margin-left: 5px;
     margin-bottom: 0;
 }
 
 .path-mod-pdfannotator #comment-list-form > div {
-    margin: 5px 0px;
+    margin: 5px 0;
     display: block;
 }
 
@@ -553,9 +563,9 @@ body {
 }
 
 .path-mod-pdfannotator.fullscreenWrapper #region-main {
-    position: fixed ;
-    top: 0px;
-    left: 0px;
+    position: fixed;
+    top: 0;
+    left: 0;
     max-width: 100%;
     width: 100%;
     max-height: 100%;
@@ -592,7 +602,8 @@ body {
     visibility: hidden;
 }
 
-.path-mod-pdfannotator #myarea, .path-mod-pdfannotator .chat-message textarea {
+.path-mod-pdfannotator #myarea,
+.path-mod-pdfannotator .chat-message textarea {
     width: 100%;
     height: 10em;
 }
@@ -649,7 +660,17 @@ table td, table th { padding: 9px 10px; text-align: left; }
 
         table.flexible { margin-bottom: 0; }
 
-        .pinned { position: absolute; left: 0; top: 0; background: #fff; width: 35%; overflow: hidden; overflow-x: scroll; border-right: 1px solid #ccc; border-left: 1px solid #ccc; }
+        .pinned {
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #fff;
+            width: 35%;
+            overflow: hidden;
+            overflow-x: scroll;
+            border-right: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+        }
         .pinned table { border-right: none; border-left: none; width: 100%; }
         .pinned table th, .pinned table td { white-space: nowrap; }
         .pinned td:last-child { border-bottom: 0; }
@@ -659,7 +680,12 @@ table td, table th { padding: 9px 10px; text-align: left; }
         div.table-wrapper div.scrollable { overflow: scroll; overflow-y: hidden; }
 
         table.flexible td, table.flexible th { position: relative; white-space: nowrap; overflow: hidden; }
-        table.flexible th:first-child, table.flexible td:first-child, table.flexible td:first-child, table.flexible.pinned td { display: none; }
+        table.flexible th:first-child,
+        table.flexible td:first-child,
+        table.flexible td:first-child,
+        table.flexible.pinned td {
+            display: none;
+        }
 
 }*/
 
@@ -670,7 +696,8 @@ table td, table th { padding: 9px 10px; text-align: left; }
 }*/
 
 @media only screen and (min-width: 421px) {
-    .path-mod-pdfannotator h2, .path-mod-pdfannotator .resettable.mdl-right {
+    .path-mod-pdfannotator h2,
+    .path-mod-pdfannotator .resettable.mdl-right {
         display: inline !important;
     }
 }
@@ -691,29 +718,45 @@ table td, table th { padding: 9px 10px; text-align: left; }
 }*/
 
 @media only screen and (max-width: 414px) {
-    #mod-pdfannotator-questions th:nth-child(2), #mod-pdfannotator-questions td:nth-child(2),
-    #mod-pdfannotator-questions th:nth-child(3), #mod-pdfannotator-questions td:nth-child(3),
-    #mod-pdfannotator-questions th:nth-child(4), #mod-pdfannotator-questions td:nth-child(4),
-    #mod-pdfannotator-questions th:nth-child(5), #mod-pdfannotator-questions td:nth-child(5),
-    #mod-pdfannotator-questions th:nth-child(6), #mod-pdfannotator-questions td:nth-child(6),
-    #mod-pdfannotator-answers th:nth-child(2), #mod-pdfannotator-answers td:nth-child(2),
-    #mod-pdfannotator-answers th:nth-child(3), #mod-pdfannotator-answers td:nth-child(3),
-    #mod-pdfannotator-answers th:nth-child(5), #mod-pdfannotator-answers td:nth-child(5),
-    #mod-pdfannotator-answers th:nth-child(6), #mod-pdfannotator-answers td:nth-child(6),
-    #mod-pdfannotator-ownposts th:nth-child(2), #mod-pdfannotator-ownposts td:nth-child(2),
-    #mod-pdfannotator-ownposts th:nth-child(3), #mod-pdfannotator-ownposts td:nth-child(3),
-    #mod-pdfannotator-ownposts th:nth-child(4), #mod-pdfannotator-ownposts td:nth-child(4),
-    #mod-pdfannotator-reports th:nth-child(2), #mod-pdfannotator-reports td:nth-child(2),
-    #mod-pdfannotator-reports th:nth-child(3), #mod-pdfannotator-reports td:nth-child(3),
-    #mod-pdfannotator-reports th:nth-child(4), #mod-pdfannotator-reports td:nth-child(4),
-    #mod-pdfannotator-reports th:nth-child(5), #mod-pdfannotator-reports td:nth-child(5),
+    #mod-pdfannotator-questions th:nth-child(2),
+    #mod-pdfannotator-questions td:nth-child(2),
+    #mod-pdfannotator-questions th:nth-child(3),
+    #mod-pdfannotator-questions td:nth-child(3),
+    #mod-pdfannotator-questions th:nth-child(4),
+    #mod-pdfannotator-questions td:nth-child(4),
+    #mod-pdfannotator-questions th:nth-child(5),
+    #mod-pdfannotator-questions td:nth-child(5),
+    #mod-pdfannotator-questions th:nth-child(6),
+    #mod-pdfannotator-questions td:nth-child(6),
+    #mod-pdfannotator-answers th:nth-child(2),
+    #mod-pdfannotator-answers td:nth-child(2),
+    #mod-pdfannotator-answers th:nth-child(3),
+    #mod-pdfannotator-answers td:nth-child(3),
+    #mod-pdfannotator-answers th:nth-child(5),
+    #mod-pdfannotator-answers td:nth-child(5),
+    #mod-pdfannotator-answers th:nth-child(6),
+    #mod-pdfannotator-answers td:nth-child(6),
+    #mod-pdfannotator-ownposts th:nth-child(2),
+    #mod-pdfannotator-ownposts td:nth-child(2),
+    #mod-pdfannotator-ownposts th:nth-child(3),
+    #mod-pdfannotator-ownposts td:nth-child(3),
+    #mod-pdfannotator-ownposts th:nth-child(4),
+    #mod-pdfannotator-ownposts td:nth-child(4),
+    #mod-pdfannotator-reports th:nth-child(2),
+    #mod-pdfannotator-reports td:nth-child(2),
+    #mod-pdfannotator-reports th:nth-child(3),
+    #mod-pdfannotator-reports td:nth-child(3),
+    #mod-pdfannotator-reports th:nth-child(4),
+    #mod-pdfannotator-reports td:nth-child(4),
+    #mod-pdfannotator-reports th:nth-child(5),
+    #mod-pdfannotator-reports td:nth-child(5),
     .path-mod-pdfannotator .text {
         display: none;
         visibility: hidden;
     }
     .path-mod-pdfannotator #region-main-box {
-        padding-right: 0px;
-        padding-left: 0px;
+        padding-right: 0;
+        padding-left: 0;
         /*overflow: visible;*/
     }
     .path-mod-pdfannotator .text_to_html {
@@ -743,7 +786,7 @@ header, section, footer, aside, nav, main, article, figure {
 
 /* Dropdown Button */
 .path-mod-pdfannotator .dropbtn {
-    background-color: #3498DB;
+    background-color: #3498db;
     color: white;
     padding: 16px;
     font-size: 16px;
@@ -752,13 +795,15 @@ header, section, footer, aside, nav, main, article, figure {
 }
 
 /* For mobile phones: */  /* Only overview tables. Not table in reportform */
-.path-mod-pdfannotator .flexible .header, .path-mod-pdfannotator .flexible .cell {
+.path-mod-pdfannotator .flexible .header,
+.path-mod-pdfannotator .flexible .cell {
     width: 100%;
 }
 
 /* Dropdown button on hover & focus */
-.path-mod-pdfannotator .dropbtn:hover, .path-mod-pdfannotator .dropbtn:focus {
-    background-color: #2980B9;
+.path-mod-pdfannotator .dropbtn:hover,
+.path-mod-pdfannotator .dropbtn:focus {
+    background-color: #2980b9;
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -773,7 +818,7 @@ header, section, footer, aside, nav, main, article, figure {
     position: absolute;
     background-color: #f1f1f1;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
     z-index: 55;
 }
 
@@ -794,7 +839,8 @@ header, section, footer, aside, nav, main, article, figure {
     -webkit-appearance: none;
 }
 
-/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button)
+*/
 .path-mod-pdfannotator .show {
     display: block;
 }
@@ -845,13 +891,21 @@ header, section, footer, aside, nav, main, article, figure {
 }
 
 @-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Add animation to "page content" */
@@ -860,17 +914,29 @@ header, section, footer, aside, nav, main, article, figure {
     -webkit-animation-name: animatebottom;
     -webkit-animation-duration: 1s;
     animation-name: animatebottom;
-    animation-duration: 1s
+    animation-duration: 1s;
 }
 
 @-webkit-keyframes animatebottom {
-    from { bottom:-100px; opacity:0 }
-    to { bottom:0px; opacity:1 }
+    from {
+        bottom: -100px;
+        opacity: 0;
+    }
+    to {
+        bottom: 0;
+        opacity: 1;
+    }
 }
 
 @keyframes animatebottom {
-    from { bottom:-100px; opacity:0 }
-    to { bottom:0; opacity:1 }
+    from {
+        bottom: -100px;
+        opacity: 0;
+    }
+    to {
+        bottom: 0;
+        opacity: 1;
+    }
 }
 
 .path-mod-pdfannotator .pdfannotator-statistic #chart-container {
