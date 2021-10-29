@@ -28,6 +28,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
+<<<<<<< HEAD
+=======
+          - php: 8.1
+            moodle-branch: MOODLE_401_STABLE
+            database: pgsql
+          - php: 8.1
+            moodle-branch: MOODLE_401_STABLE
+            database: mariadb
+
+>>>>>>> 123e1fd (Pdfannotator comment subscription like forum fixes #20.)
           - php: 8.0
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
@@ -35,6 +45,7 @@ jobs:
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
 
+<<<<<<< HEAD
           - php: 8.0
             moodle-branch: MOODLE_400_STABLE
             database: pgsql
@@ -42,6 +53,8 @@ jobs:
             moodle-branch: MOODLE_400_STABLE
             database: mariadb
 
+=======
+>>>>>>> 123e1fd (Pdfannotator comment subscription like forum fixes #20.)
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
