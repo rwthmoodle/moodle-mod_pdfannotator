@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
+ * Privacy class for requesting user data.
+ *
  * @package   mod_pdfannotator
- * @category  backup
+ * @category  privacy
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -309,9 +311,9 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
 
     /**
      *
-     * @global type $DB
-     * @param \mod_pdfannotator\privacy\approved_contextlist $contextlist
-     * @return type
+     * Delete personal data for the user in a list of contexts.
+     *
+     * @param \mod_pdfannotator\privacy\approved_contextlist $contextlist List of contexts to delete data from.
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
 
@@ -372,8 +374,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
     /**
      * Function deletes an annotation and all comments and subscriptions attached to it.
      *
-     * @global \mod_pdfannotator\privacy\type $DB
-     * @param type $annotationid
+     * @param int $annotationid One annotationid (int) to delete
      */
     public static function delete_annotation($annotationid) {
 
@@ -400,6 +401,13 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
         $DB->delete_records('pdfannotator_annotations', array("id" => $annotationid));
     }
 
+    /**
+     * Function empties or deletes a comment.
+     *
+     * @param \mod_pdfannotator\output\comment $comment comment to be emptied or deleted
+     *
+     * @throws \dml_exception
+     */
     public static function empty_or_delete_comment($comment) {
 
         global $DB;

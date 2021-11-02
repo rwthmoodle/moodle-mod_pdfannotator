@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
- * @authors   Rabea de Groot, Anna Heynkes and Friederike Schwager
+ * @author    Rabea de Groot, Anna Heynkes and Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
@@ -32,8 +32,6 @@ class pdfannotator_comment {
     /**
      * This method inserts a new record into mdl_pdfannotator_comments and returns its id
      *
-     * @global type $DB
-     * @global type $USER
      * @param type $documentid specifies the pdf
      * @param type $annotationid specifies the annotation (usually a highlight) to be commented
      * @param type $content the text or comment itself
@@ -50,7 +48,7 @@ class pdfannotator_comment {
         $datarecord->annotationid = $annotationid;
         $datarecord->userid = $USER->id;
         $datarecord->content = $content;
-        $datarecord->timecreated = time(); // Moodle method: DateTime::getTimestamp();
+        $datarecord->timecreated = time(); // Moodle method: DateTime::getTimestamp();.
         $datarecord->timemodified = $datarecord->timecreated;
         $datarecord->visibility = $visibility;
         $datarecord->isquestion = $isquestion;
@@ -85,12 +83,14 @@ class pdfannotator_comment {
 
                 $messagetext = new stdClass();
                 $module = get_string('modulename', 'pdfannotator');
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename, $comment, 'newanswer');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, $module, $modulename,
+                    $comment, 'newanswer');
                 $messagetext->url = $comment->urltoanswer;
                 $recipients = self::get_subscribed_users($annotationid);
                 foreach ($recipients as $recipient) {
                     if ($recipient != $USER->id) {
-                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module, $modulename, $comment, 'newanswer', $recipient);
+                        $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, $module,
+                            $modulename, $comment, 'newanswer', $recipient);
                         $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newanswer', $messagetext, $anonymous);
                     }
                 }
@@ -105,19 +105,23 @@ class pdfannotator_comment {
                 $question->content = $content;
 
                 $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = MUST_EXIST);
-                $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page . '&annoid=' . $annotationid . '&commid=' . $commentuuid;
+                $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page .
+                    '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
                 $messagetext = new stdClass();
-                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
+                $messagetext->text = pdfannotator_format_notification_message_text($course, $cm, $context,
+                    get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion');
                 $messagetext->url = $question->urltoanswer;
                 foreach ($recipients as $recipient) {
-                    if (!pdfannotator_can_see_comment($datarecord, $context) ){
+                    if (!pdfannotator_can_see_comment($datarecord, $context)) {
                         continue;
                     }
                     if ($recipient->id == $USER->id) {
                         continue;
                     }
-                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context, get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion', $recipient->id);
+                    $messagetext->html = pdfannotator_format_notification_message_html($course, $cm, $context,
+                        get_string('modulename', 'pdfannotator'), $modulename, $question, 'newquestion',
+                        $recipient->id);
                     $messageid = pdfannotator_notify_manager($recipient, $course, $cm, 'newquestion', $messagetext, $anonymous);
                 }
 
@@ -132,7 +136,6 @@ class pdfannotator_comment {
     /**
      * This method returns an array of all comment objects belonging to the specified annotation.
      *
-     * @global type $DB
      * @param type $documentid
      * @param type $highlightid
      * @param $context
@@ -143,17 +146,20 @@ class pdfannotator_comment {
         global $DB, $USER;
 
         // Get the ids and text content of all comments attached to this annotation/highlight.
-        $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid, SUM(vote) AS votes "
+        $sql = "SELECT c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, "
+                . "c.timemodified, c.modifiedby, c.solved, c.annotationid, SUM(vote) AS votes "
                 . "FROM {pdfannotator_comments} c LEFT JOIN {pdfannotator_votes} v"
                 . " ON c.id=v.commentid WHERE annotationid = ?"
-                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, c.timemodified, c.modifiedby, c.solved, c.annotationid"
+                . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, "
+                . "c.timemodified, c.modifiedby, c.solved, c.annotationid"
                 . " ORDER BY c.timecreated";
         $a = array();
         $a[] = $annotationid;
         $comments = $DB->get_records_sql($sql, $a); // Records taken from table 'comments' as an array of objects.
         $usevotes = pdfannotator_instance::use_votes($documentid);
 
-        $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid], $fields = 'timecreated, timemodified, modifiedby', $strictness = MUST_EXIST);
+        $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid],
+            $fields = 'timecreated, timemodified, modifiedby', $strictness = MUST_EXIST);
 
         $result = array();
         foreach ($comments as $data) {
@@ -241,8 +247,6 @@ class pdfannotator_comment {
     /**
      * Function serves to hide a comment from participants' view while keeping it visibile for managers/teachers/etc.
      *
-     * @global type $DB
-     * @global type $USER
      * @return type
      */
     public static function hide_comment($commentid, $cmid) {
@@ -285,7 +289,7 @@ class pdfannotator_comment {
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
-                                $hideannotation = 1; // $annotationid;
+                                $hideannotation = 1; // ... $annotationid;
                         }
                     }
                 } else {
@@ -298,7 +302,8 @@ class pdfannotator_comment {
         $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
 
         if ($success == 1) {
-            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell];
+            return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered,
+                'followups' => $tobedeletedaswell];
         } else {
             return ['status' => 'error'];
         }
@@ -426,8 +431,6 @@ class pdfannotator_comment {
 
     /**
      * Inserts a vote into the db.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return boolean
      */
@@ -458,8 +461,6 @@ class pdfannotator_comment {
 
     /**
      * Inserts a subscription into the DB.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return boolean
      */
@@ -470,7 +471,7 @@ class pdfannotator_comment {
         if ($DB->record_exists('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id))) {
             return false;
         }
-        
+
         $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $annotationid, 'isquestion' => '1'));
         if (!pdfannotator_can_see_comment($comment, $context)) {
             return false;
@@ -480,15 +481,12 @@ class pdfannotator_comment {
         $datarecord->annotationid = $annotationid;
         $datarecord->userid = $USER->id;
 
-
         $subscriptionid = $DB->insert_record('pdfannotator_subscriptions', $datarecord, $returnid = true);
         return $subscriptionid;
     }
 
     /**
      * Deletes a subscription.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return string
      */
@@ -504,8 +502,6 @@ class pdfannotator_comment {
 
     /**
      * Marks a comment as solved. A question will be closed (or opened) and a answer will be marked as correct.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return boolean
      */
@@ -541,8 +537,6 @@ class pdfannotator_comment {
 
     /**
      * Returns if the user already voted a comment.
-     * @global type $DB
-     * @global type $USER
      * @param type $commentid
      * @return type
      */
@@ -553,7 +547,6 @@ class pdfannotator_comment {
 
     /**
      * Returns the number of votes a comment got.
-     * @global type $DB
      * @param type $commentid
      * @return type
      */
@@ -564,8 +557,6 @@ class pdfannotator_comment {
 
     /**
      * Returns if the user is subscribed to a question.
-     * @global type $DB
-     * @global type $USER
      * @param type $annotationid
      * @return type
      */
@@ -576,7 +567,6 @@ class pdfannotator_comment {
 
     /**
      * Returns all subscribed users to a question.
-     * @global type $DB
      * @param type $annotationid
      * @return arry of userids as strings
      */
@@ -636,7 +626,6 @@ class pdfannotator_comment {
 
     /**
      * Get all questions in an annotator where a comment contains the pattern
-     * @global type $DB
      * @param type $documentid
      * @param type $pattern
      */
