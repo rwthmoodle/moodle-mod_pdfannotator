@@ -56,7 +56,6 @@ class pdfannotator_instance {
      * This method returns an array containing one pdfannotator_instance object
      * for each annotator in the specified course.
      *
-     * @global type $DB
      * @param type $courseid
      * @param type $beginwith optional parameter that specifies the (current) pdfannotator that should come first in the list
      * @return \pdfannotator_instance: array of pdfannotator_instance objects

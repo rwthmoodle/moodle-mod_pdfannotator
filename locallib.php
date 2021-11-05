@@ -16,7 +16,7 @@
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README)
- * @authors   Rabea de Groot, Anna Heynkes, Friederike Schwager
+ * @author    Rabea de Groot, Anna Heynkes, Friederike Schwager
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -221,7 +221,8 @@ function pdfannotator_process_latex_moodle($context, $string) {
     }
     $imagedata = file_get_contents($image);
     $result['image'] = IMAGE_PREFIX . base64_encode($imagedata);
-    //imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only thing needed here
+    // Imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only
+    // thing needed here.
     $imageinfo = getimagesize($image);
     $result['imageheight'] = $imageinfo[1];
     return $result;
@@ -400,7 +401,7 @@ function pdfannotator_print_header($pdfannotator, $cm, $course) {
 }
 
 /**
- * Gets details of the file to cache in course cache to be displayed using {@link pdfannotator_get_optional_details()}
+ * Gets details of the file to cache in course cache to be displayed using {@see pdfannotator_get_optional_details()}
  *
  * @param object $pdfannotator pdfannotator table row (only property 'displayoptions' is used here)
  * @param object $cm Course-module table row
@@ -478,7 +479,6 @@ function pdfannotator_print_filenotfound($pdfannotator, $cm, $course) {
  * *Drawings and textboxes cannot be commented. In their case (only),
  * therefore, annotations are counted.
  *
- * @global type $DB
  */
 function pdfannotator_get_number_of_new_activities($annotatorid) {
 
@@ -501,7 +501,6 @@ function pdfannotator_get_number_of_new_activities($annotatorid) {
  * The modification can be the creation of the annotator, a change of title or description,
  * a new annotation or a new comment. Reports are not considered.
  *
- * @global type $DB
  * @param int $annotatorid
  * @return datetime $timemodified
  * The timestamp can be transformed into a readable string with this moodle method:
@@ -623,8 +622,6 @@ function pdfannotator_unsubscribe_all($annotatorid) {
 /**
  * Checks wether a user has subscribed to all questions in an annotator.
  * Returns 1 if all questions are subscribed, 0 if no questions are subscribed and -1 if at least one but not all questions are subscribed.
- * @global type $DB
- * @global type $USER
  * @param type $annotatorid
  */
 function pdfannotator_subscribed($annotatorid) {
@@ -713,7 +710,6 @@ function pdfannotator_prepare_overviewpage($cmid, $myrenderer, $taburl, $action,
  * Function serves as subcontroller that tells the annotator model to collect
  * all or all unsolved/solved questions asked in this course.
  *
- * @global type $OUTPUT
  * @param int $openannotator
  * @param int $courseid
  * @param type $questionfilter
@@ -742,7 +738,8 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
     if ($questionfilter == 1) {
         $sql = $sql . ' AND NOT c.solved = 0 ';
     }
-    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
+    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility,"
+        . "c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
     $params = array_merge([$courseid], $inparams);
     $questions = $DB->get_records_sql($sql, $params);
 
@@ -812,8 +809,6 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
  * Function serves as subcontroller that tells the annotator model to collect all
  * questions and answers this user posted in the course.
  *
- * @global type $DB
- * @global type $USER
  * @param int $courseid
  * @return type
  */
@@ -886,8 +881,6 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
  * all answers given to questions that the current user asked or subscribed to
  * in this course.
  *
- * @global type $DB
- * @global type $USER
  * @param int $courseid
  * @param Moodle object? $context
  * @param int $answerfilter
@@ -906,7 +899,8 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid,"
+            . "q.userid AS questionuserid, c.isquestion, c.annotationid, "
             . "q.visibility AS questionvisibility, "
             . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
             . "p.name AS pdfannotatorname, cm.id AS cmid, s.id AS issubscribed "
@@ -920,7 +914,8 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             . "ORDER BY annoid ASC";
     } else { // Or: get answers to those questions the user subscribed to.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, q.userid AS questionuserid, c.isquestion, c.annotationid, "
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
+            . "q.userid AS questionuserid, c.isquestion, c.annotationid, "
             . "q.visibility AS questionvisibility, "
             . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
             . "p.name AS pdfannotatorname, cm.id AS cmid "
@@ -1002,7 +997,6 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
  * Function retrieves reports and their respective reported comments from db.
  * Depending on the reportfilter, only read/unread reports or all reports are retrieved.
  *
- * @global type $DB
  * @param int $courseid
  * @param int $reportfilter: 0 for unread, 1 for read, 2 for all
  * @return array of report objects
@@ -1354,7 +1348,6 @@ function pdfannotator_get_first_key_in_array($array) {
 /**
  * This function renders the table of unsolved questions on the overview page.
  *
- * @global type $CFG
  * @param array $questions
  * @param int $thiscourse
  * @param Moodle url object $url
@@ -1410,8 +1403,6 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
  * Function prints a table view of all answers to questions the current
  * user asked or subscribed to.
  *
- * @global type $CFG
- * @global type $OUTPUT
  * @param int $annotator
  * @param Moodle url object $url
  * @param int $thiscourse
@@ -1455,9 +1446,6 @@ function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $ite
 
 /**
  *
- * @global type $CFG
- * @global type $DB
- * @global type $USER
  * @param type $posts
  * @param type $url
  * @param type $thiscourse
@@ -1501,7 +1489,6 @@ function pdfannotator_print_this_users_posts($posts, $thiscourse, $url, $current
 /**
  * Function prints a table view of all comments that were reported as inappropriate.
  *
- * @global type $CFG
  * @param array of objects $reports
  * @param int $thiscourse
  * @param Moodle url object $url
@@ -1591,7 +1578,6 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
  * This function adds a row of data to the overview table that displays
  * answers to any question the user subscribed to.
  *
- * @global type $CFG
  * @param int $thiscourse
  * @param answerstable $table
  * @param object $answer
@@ -1660,7 +1646,6 @@ function pdfannotator_userspoststable_add_row($table, $post) {
  * This function adds a row of data to the overview table that displays all
  * comments reported in this course.
  *
- * @global type $CFG
  * @param int $thiscourse
  * @param reportstable $table
  * @param object $report

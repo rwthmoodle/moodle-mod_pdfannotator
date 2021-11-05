@@ -54,23 +54,27 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
         // 2. Define each element separately.
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
-            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing', 'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified'));
+            'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing',
+            'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified'));
 
             $annotations = new backup_nested_element('annotations');
-            $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid', 'data', 'timecreated', 'timemodified', 'modifiedby'));
+            $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid',
+                'data', 'timecreated', 'timemodified', 'modifiedby'));
 
                 $subscriptions = new backup_nested_element('subscriptions');
                 $subscription = new backup_nested_element('subscription', array('id'), array('userid'));
 
                 $comments = new backup_nested_element('comments');
-                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility', 'isquestion', 'isdeleted', 'ishidden', 'solved');
+                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility',
+                    'isquestion', 'isdeleted', 'ishidden', 'solved');
                 $comment = new backup_nested_element('comment', array('id'), $c);
 
                     $votes = new backup_nested_element('votes');
                     $vote = new backup_nested_element('vote', array('id'), array('userid', 'annotationid'));
 
                     $reports = new backup_nested_element('reports');
-                    $report = new backup_nested_element('report', array('id'), array('courseid', 'pdfannotatorid', 'message', 'userid', 'timecreated', 'seen'));
+                    $report = new backup_nested_element('report', array('id'), array('courseid', 'pdfannotatorid', 'message',
+                        'userid', 'timecreated', 'seen'));
 
         // 3. Build the tree (mind the right order!)
         $pdfannotator->add_child($annotations);
@@ -96,7 +100,8 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
             // Add all annotations specific to this annotator instance.
             $annotation->set_source_sql('SELECT a.* FROM {pdfannotator_annotations} a '
                                         . 'JOIN {pdfannotator_comments} c ON a.id = c.annotationid '
-                                        . "WHERE a.pdfannotatorid = ? AND c.isquestion = 1 AND (c.visibility = 'public' OR c.visibility = 'anonymous') ",
+                                        . "WHERE a.pdfannotatorid = ? AND c.isquestion = 1 AND "
+                                        . "(c.visibility = 'public' OR c.visibility = 'anonymous') ",
                                         array('pdfannotatorid' => backup::VAR_PARENTID));
 
                 // Add any subscriptions to this annotation.
