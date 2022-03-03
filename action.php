@@ -396,22 +396,6 @@ if ($action === 'getComments') {
     echo json_encode($data);
 }
 
-/* * ********************************* Retrieve content of a specific comment from db ********************************* */
-
-if ($action === 'getCommentContent') {
-    global $DB;
-    $commentid = required_param('commentId', PARAM_INT);
-
-    $content = $DB->get_field('pdfannotator_comments', 'content', ['id' => $commentid]);
-
-    $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
-    if (pdfannotator_can_see_comment($comment, $context)) {
-        echo json_encode($comment->content);
-    } else {
-        echo json_encode("false");
-    }
-}
-
 /* * ****************************************** Hide a comment for participants ****************************************** */
 
 if ($action === 'hideComment') {

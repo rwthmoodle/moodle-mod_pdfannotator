@@ -56,4 +56,22 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('mod_pdfannotator/latexapi', get_string('global_setting_latexapisetting',
         'pdfannotator'),
         get_string('global_setting_latexapisetting_desc', 'pdfannotator'), LATEX_TO_PNG_MOODLE, $options));
+    
+    $name = new lang_string('global_setting_attobuttons', 'pdfannotator');
+    $desc = new lang_string('global_setting_attobuttons_desc', 'pdfannotator');
+    $default = 'collapse = collapse
+style1 = bold, italic, underline
+list = unorderedlist, orderedlist
+insert = link
+other = html
+style2 = strike, subscript, superscript
+font = fontfamily, fontsize
+indent = indent, align
+extra = equation, matrix, chemistry, charmap
+undo = undo
+screen = fullscreen';
+    $setting = new admin_setting_configtextarea('mod_pdfannotator/attobuttons', $name, $desc, $default);
+    $settings->add($setting);
+
+
 }

@@ -52,7 +52,7 @@ $context = context_module::instance($cm->id);
 require_capability('mod/pdfannotator:view', $context);
 
 // Apply filters, e.g. multilang.
-$pdfannotator->name = format_text($pdfannotator->name, FORMAT_MOODLE, ['para' => false]);
+$pdfannotator->name = format_text($pdfannotator->name, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
 
 // Completion and trigger events.
 pdfannotator_view($pdfannotator, $course, $cm, $context);

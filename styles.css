@@ -403,6 +403,11 @@ body {
     bottom: 0;
     padding: 10px;
 }
+.path-mod-pdfannotator #comment-wrapper .editor_atto_content {
+    border-width: 0px 1px 1px 1px;
+    border-style: solid;
+    border-color: #8f959e;
+}
 .path-mod-pdfannotator div.row {
     margin-left: 0;
 }
@@ -460,7 +465,8 @@ body {
     margin-right: 0 !important;
 }
 
-.path-mod-pdfannotator .chat-message:not(.questions) .icon {
+.path-mod-pdfannotator .chat-message:not(.questions) .wrappervotessolved .icon,
+.path-mod-pdfannotator .chat-message:not(.questions) .dropdown .icon {
     color: #999 !important;
 }
 
@@ -478,7 +484,7 @@ body {
     font-weight: 700;
 }
 
-.path-mod-pdfannotator .chat-message button:not(.dropdown-item),
+.path-mod-pdfannotator .chat-message .wrappervotessolved button,
 .path-mod-pdfannotator #comment-nav button {
     border-color: transparent;
     background-color: transparent;
@@ -603,9 +609,10 @@ body {
 }
 
 .path-mod-pdfannotator #myarea,
-.path-mod-pdfannotator .chat-message textarea {
+.path-mod-pdfannotator .chat-message textarea,
+.path-mod-pdfannotator #comment-wrapper .editor_atto_content {
     width: 100%;
-    height: 10em;
+    height: 10em !important;
 }
 
 .path-mod-pdfannotator .cursor-area * {
