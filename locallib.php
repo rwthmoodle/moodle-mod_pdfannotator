@@ -88,18 +88,30 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $capabilities->useprint = has_capability('mod/pdfannotator:printdocument', $context);
     $capabilities->useprintcomments = has_capability('mod/pdfannotator:printcomments', $context);
 
-    $params = [$cm, $documentobject, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid];
+    $params = [$cm, $documentobject, $context->id, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid];
     $PAGE->requires->js_init_call('adjustPdfannotatorNavbar', null, true);
     $PAGE->requires->js_init_call('startIndex', $params, true);
     // The renderer renders the original index.php / takes the template and renders it.
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     echo $myrenderer->render_index(new index($pdfannotator, $capabilities, $file));
+    pdfannotator_init_editor($context, 'myarea');
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
 
     echo $OUTPUT->footer();
     die;
+}
+
+/**
+ * Add editor to given textarea.
+ * @param type $context
+ * @param type $textarea id of the textarea-element
+ */
+function pdfannotator_init_editor($context, $textarea) {
+    $editor = editors_get_preferred_editor(FORMAT_HTML);
+    $attobuttons = get_config('mod_pdfannotator', 'attobuttons');
+    $editor->use_editor($textarea, ['context' => $context, 'autosave' => false, 'atto:toolbar' => $attobuttons]);
 }
 
 function pdfannotator_get_instance_name($id) {
@@ -795,7 +807,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
             $question->displayhidden = true;
         }
 
-        $question->content = format_text($question->content);
+        $question->content = format_text($question->content, $options = ['filter' => true]);
         $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $question->cmid,
             'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();
 
@@ -871,7 +883,7 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
 
         $params = array('id' => $post->cmid, 'page' => $post->page, 'annoid' => $post->annotationid, 'commid' => $post->commid);
         $post->link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
-        $post->content = format_text($post->content);
+        $post->content = format_text($post->content, $options = ['filter' => true]);
     }
     return $posts;
 }
@@ -984,8 +996,8 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             $entry->displayhidden = true;
         }
 
-        $entry->answeredquestion = format_text($entry->answeredquestion);
-        $entry->answer = format_text($entry->answer);
+        $entry->answeredquestion = format_text($entry->answeredquestion, $options = ['filter' => true]);
+        $entry->answer = format_text($entry->answer, $options = ['filter' => true]);
 
         $res[] = $entry;
     }
@@ -1031,8 +1043,8 @@ function pdfannotator_get_reports($courseid, $reportfilter = 0) {
     foreach ($reports as $report) {
         $report->link = (new moodle_url('/mod/pdfannotator/view.php',
             array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
-        $report->reportedcomment = format_text($report->reportedcomment);
-        $report->report = format_text($report->report);
+        $report->reportedcomment = format_text($report->reportedcomment, $options = ['filter' => true]);
+        $report->report = format_text($report->report, $options = ['filter' => true]);
     }
     return $reports;
 }

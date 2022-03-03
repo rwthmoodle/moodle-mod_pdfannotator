@@ -21,6 +21,8 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
+
 /**
  * List of features supported in pdfannotator module
  * @param string $feature FEATURE_xx constant for requested feature
@@ -731,4 +733,16 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
     $output .= html_writer::end_tag('table');
 
     echo $output;
+}
+
+/**
+ * Initialize the editor for editing a comment.
+ * @param type $args
+ * @return string
+ */
+function mod_pdfannotator_output_fragment_edit_comment_form($args) {
+    $context = context_module::instance($args['cmid']);
+    $html = '';
+    pdfannotator_init_editor($context, 'editarea' . $args['commentid']);
+    return $html;
 }

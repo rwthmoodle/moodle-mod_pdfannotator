@@ -39,10 +39,10 @@ function adjustPdfannotatorNavbar(Y) {
 //SOFTWARE.
 //
 //R: The first parameter has to be Y, because it is a default YUI-object, because moodle gives this object first.
-function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSettings, _page = 1,_annoid = null,_commid = null){ // 3. parameter war mal _fileid
+function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _toolbarSettings, _page = 1,_annoid = null,_commid = null){ // 3. parameter war mal _fileid
 
     // Require amd modules.
-   require(['jquery','core/templates','core/notification','mod_pdfannotator/jspdf'], function($,templates,notification,jsPDF) {
+   require(['jquery','core/templates','core/notification','mod_pdfannotator/jspdf', 'core/fragment'], function($,templates,notification,jsPDF, Fragment) {
         var currentAnnotations = [];
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -492,23 +492,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                 });
             },
             
-            /**
-             * Gets the content of a specific comment.
-             * @param {type} documentId
-             * @param {type} commentId
-             * @returns {unresolved}
-             */
-            getCommentContent(documentId, commentId){
-                return $.ajax({
-                    type: "POST",
-                    url: "action.php",
-                    data: { "documentId": documentId, "commentId": commentId, "action": 'getCommentContent', sesskey: M.cfg.sesskey}
-                }).then(function(data){
-                    return JSON.parse(data);
-                });
-            },
-
-
             /**
              * This function collects all Questions (Annotations with min. one comment)
              * @param {type} documentId
@@ -1745,81 +1728,93 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
            * @param {type} comment
            * @returns {undefined}
            */
-          function createEditFormHandler(comment){
-                // Create an element for click.
-                var editButton = $('#editButton'+comment.uuid);
-                // Add an event handler to the click element that opens a textarea and fills it with the current comment.
-                editButton.click(function(e) {
+          function createEditFormHandler(comment) {
+                var editorExists = false;
+                var handleClickIfEditorExists = function() { // If there is no editor in the comment already, we will insert it and than call this function.
                     var editForm = document.getElementById("edit"+comment.uuid);
                     var editArea = document.getElementById("editarea"+comment.uuid);
                     var text = document.getElementById("chatmessage"+comment.uuid);
                     if (editForm.style.display === "none") {
-                        _2.default.getStoreAdapter().getCommentContent(documentId, comment.uuid)
-                            .then(function(content){
-                                editArea.innerHTML = content;
-                                editForm.style.display = "block";
-                                text.innerHTML = "";
+                        editForm.style.display = "block";
+                        text.innerHTML = "";
+
+                    // Add an event handler to the form for submitting any changes to the database.
+                    editForm.onsubmit = function (e) {
+                        let newContent = editArea.value.trim();
+                        if(newContent < 2){
+                            // Should be more than one character, otherwise it should not be saved.
+                            notification.addNotification({
+                              message: M.util.get_string('min2Chars','pdfannotator'),
+                              type: "error"
                             });
-                        // Add an event handler to the form for submitting any changes to the database.
-                        editForm.onsubmit = function (e) {
-                            let newContent = editArea.value.trim();
-                            if(newContent < 2){
-                                // Should be more than one character, otherwise it should not be saved.
-                                notification.addNotification({
-                                  message: M.util.get_string('min2Chars','pdfannotator'),
-                                  type: "error"
-                                });
-                            } else if(newContent === comment.content) {     // No changes.
-                                editForm.style.display = "none";
-                                text.innerHTML = comment.content;
-                                renderMathJax();
-                            } else {
-                                _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
-                                    .then(function(data){
-                                        if (data.status === "success") {
-                                            editForm.style.display = "none";
-                                            if (data.modifiedby) {
-                                                $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified + " " + M.util.get_string('modifiedby', 'pdfannotator') + " " + data.modifiedby);
-                                            } else {
-                                                $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified);
-                                            }
-                                            newContent = data.newContent;
-                                            text.innerHTML = newContent;
-                                            comment.content = newContent;
-                                            renderMathJax();
-                                            notification.addNotification({
-                                                message: M.util.get_string('successfullyEdited', 'pdfannotator'),
-                                                type: "success"
-                                            });
-                                        } else {
-                                            notification.addNotification({
-                                                message: M.util.get_string('error:editComment','pdfannotator'),
-                                                type: "error"
-                                            });                                        
-                                        }
-                                    });
-                            }
-                            setTimeout(function(){
-                                let notificationpanel = document.getElementById("user-notifications");
-                                while (notificationpanel.hasChildNodes()) {
-                                    notificationpanel.removeChild(notificationpanel.firstChild);
-                                }
-                            }, 4000);
- 
-                            return false; // Prevents normal POST and page reload in favour of an asynchronous load.
-                        };
-                        
-                        $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
+                        } else if(newContent === comment.content) { // No changes.
                             editForm.style.display = "none";
                             text.innerHTML = comment.content;
                             renderMathJax();
-                        });
+                        } else { // Save changes.
+                            _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
+                                .then(function(data){
+                                    if (data.status === "success") {
+                                        editForm.style.display = "none";
+                                        if (data.modifiedby) {
+                                            $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified + " " + M.util.get_string('modifiedby', 'pdfannotator') + " " + data.modifiedby);
+                                        } else {
+                                            $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified);
+                                        }
+                                        newContent = data.newContent;
+                                        text.innerHTML = newContent;
+                                        comment.content = newContent;
+                                        renderMathJax();
+                                        notification.addNotification({
+                                            message: M.util.get_string('successfullyEdited', 'pdfannotator'),
+                                            type: "success"
+                                        });
+                                    } else {
+                                        notification.addNotification({
+                                            message: M.util.get_string('error:editComment','pdfannotator'),
+                                            type: "error"
+                                        });                                        
+                                    }
+                                });
+                        }
+                        setTimeout(function(){
+                            let notificationpanel = document.getElementById("user-notifications");
+                            while (notificationpanel.hasChildNodes()) {
+                                notificationpanel.removeChild(notificationpanel.firstChild);
+                            }
+                        }, 4000);
+
+                        return false; // Prevents normal POST and page reload in favour of an asynchronous load.
+                    };
+                        
+                    $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
+                        editForm.style.display = "none";
+                        text.innerHTML = comment.content;
+                        renderMathJax();
+                    });
                     } else {
                         editForm.style.display = "none";
                         text.innerHTML = comment.content;
                         renderMathJax();
                     }
-                      
+                }
+                // Create an element for click.
+                var editButton = $('#editButton'+comment.uuid);
+                // Add an event handler to the click element that opens a textarea and fills it with the current comment.
+                editButton.click(function(e) {
+                    if(!editorExists) {
+                        let args = {'commentid': comment.uuid, 'cmid': _cm.id};
+                        let fragmentPromise = Fragment.loadFragment('mod_pdfannotator', 'edit_comment_form', _contextId, args);
+                        fragmentPromise.done(function(html, js) {
+                            templates.runTemplateJS(js);
+                        }).fail(notification.exception)
+                        .then(function() {
+                            editorExists = true;
+                            handleClickIfEditorExists();
+                        });
+                    } else {
+                        handleClickIfEditorExists();
+                    }
                 });               
           }
           
@@ -3525,10 +3520,6 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
                             }
                         },
                         
-                        {key:'getCommentContent',value:function getCommentContent(documentId,commentId){
-                                (0,_abstractFunction2.default)('getCommentContent');
-                            }
-                        },
                         /**
                         * Get all the questions of one page
                         *
@@ -3756,9 +3747,13 @@ function startIndex(Y,_cm,_documentObject,_userid,_capabilities, _toolbarSetting
              * @returns {undefined}
              */
             function handleDocumentClickFunction(e,commid = null){
+                let tar = $('#' + e.target.id);
+                if (tar.hasClass('moodle-dialogue') || tar.parents('.moodle-dialogue').length > 0) {
+                    return; //Dialog (for example from atto-editor) was clicked.
+                }
                //the last parameter is true to get an array instead of the first annotation found.
                 var target=(0,_utils.findAnnotationAtPoint)(e.clientX,e.clientY,true);
-                 
+
                 if(target != null && Object.prototype.toString.call( target ) === '[object Array]' && target.length>1){
                         //creats a modal window to select which one of the overlapping annotation should be selected
                         var modal = document.createElement('div');

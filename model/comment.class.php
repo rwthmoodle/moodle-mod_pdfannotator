@@ -60,7 +60,7 @@ class pdfannotator_comment {
             $datarecord->uuid = $commentuuid;
             self::set_username($datarecord);
 
-            $datarecord->content = format_text($datarecord->content, $format = FORMAT_MOODLE, $options = ['para' => false]);
+            $datarecord->content = format_text($datarecord->content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
             $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
             $datarecord->timemodified = pdfannotator_optional_timeago($datarecord->timemodified);
             $datarecord->usevotes = pdfannotator_instance::use_votes($documentid);
@@ -201,7 +201,7 @@ class pdfannotator_comment {
                 $comment->content = get_string('deletedComment', 'pdfannotator');
             } else {
                 $comment->content = $data->content;
-                $comment->content = format_text($data->content, $format = FORMAT_MOODLE, $options = ['para' => false]);
+                $comment->content = format_text($data->content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
             }
 
             self::set_username($comment);
@@ -418,7 +418,7 @@ class pdfannotator_comment {
         }
 
         if ($success) {
-            $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false]);
+            $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
             $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
             if ($comment->userid != $USER->id) {
                 $result['modifiedby'] = pdfannotator_get_username($USER->id);
