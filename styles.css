@@ -373,7 +373,7 @@ body {
     padding: 0;
 }
 
-.path-mod-pdfannotator #comment-wrapper .comment-list {
+.path-mod-pdfannotator #comment-wrapper .pdfannotator-comment-list {
     font-size: 12px;
     position: relative;
     top: 0;
@@ -402,6 +402,9 @@ body {
     right: 0;
     bottom: 0;
     padding: 10px;
+}
+.path-mod-pdfannotator #comment-wrapper .editor_atto { /* Editor in fullscreen must be over the toolbar and annotations. */
+    z-index: 60;
 }
 .path-mod-pdfannotator #comment-wrapper .editor_atto_content {
     border-width: 0px 1px 1px 1px;
@@ -612,7 +615,7 @@ body {
 .path-mod-pdfannotator .chat-message textarea,
 .path-mod-pdfannotator #comment-wrapper .editor_atto_content {
     width: 100%;
-    height: 10em !important;
+    min-height: 10em !important;
 }
 
 .path-mod-pdfannotator .cursor-area * {
