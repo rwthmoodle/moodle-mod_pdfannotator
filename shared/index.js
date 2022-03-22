@@ -1518,8 +1518,15 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	(function (window, document) {
 	  var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
 	  var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
-          var commentText = commentForm.querySelector('#myarea'); // to be found in index.php
-
+          var commentText = commentForm.querySelector('#myarea'); // Plain text editor.
+          // We will need this to reset the typed text for other editors.
+          var editorArea = commentForm.querySelector('#myareaeditable'); // Atto editor.
+          if (!editorArea) { // TinyMCE editor.
+              var iframe = document.getElementById("myarea_ifr");
+              if (iframe) {
+                  editorArea = iframe.contentWindow.document.getElementById("tinymce");
+              }
+          }
           // Function checks whether the target annotation type allows comments
 	  function supportsComments(target) {
 	    var type = target.getAttribute('data-pdf-annotate-type');
@@ -1937,6 +1944,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         .then(function () {
                             document.querySelector('#commentSubmit').disabled = false;
                             commentText.value = '';
+                            if(editorArea) {
+                                editorArea.innerHTML = '';
+                            }
                             commentText.focus();
                         }).catch(function(err){
                             notification.addNotification({
