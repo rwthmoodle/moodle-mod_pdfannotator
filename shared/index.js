@@ -6658,6 +6658,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
                 document.getElementById('myarea').value = "";
                 document.getElementById('myarea').placeholder = M.util.get_string('addAComment','pdfannotator');
+                // Reset the typed text for other editors.
+                var editorArea = document.querySelector('#myareaeditable'); // Atto editor.
+                if (!editorArea) { // TinyMCE editor.
+                    var iframe = document.getElementById("myarea_ifr");
+                    if (iframe) {
+                        editorArea = iframe.contentWindow.document.getElementById("tinymce");
+                    }
+                }
+                if(editorArea) {
+                    editorArea.innerHTML = '';
+                }
                 data=null;
                 textarea=null;
                 submitbutton=null;
