@@ -626,7 +626,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         /* ************** END Store Adapter!! **********************************/
 
 	_2.default.setStoreAdapter(MyStoreAdapter);
-	PDFJS.workerSrc = 'shared/pdf.worker.js';
+	pdfjsLib.workerSrc = 'shared/pdf.worker.js';
 	// Render stuff
 	var NUM_PAGES = 0;
         var oldPageNumber;
@@ -953,15 +953,15 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
          */       
 	function render() {
 
-            return PDFJS.getDocument(RENDER_OPTIONS.documentPath).then(function fulfilled(pdf) {
+            return pdfjsLib.getDocument(RENDER_OPTIONS.documentPath).promise.then(function fulfilled(pdf) {
 	    RENDER_OPTIONS.pdfDocument = pdf;
             pdf.getPage(1).then(function(result){
-               let rotate = result.pageInfo.rotate;
+               let rotate = result._pageInfo.rotate;
                RENDER_OPTIONS.rotate = parseInt(localStorage.getItem(documentId + '/rotate'), 10) || rotate;
    
 	    var viewer = document.getElementById('viewer');
 	    viewer.innerHTML = '';
-	    NUM_PAGES = pdf.pdfInfo.numPages;
+	    NUM_PAGES = pdf._pdfInfo.numPages;
 	    for (var i = 0; i < NUM_PAGES; i++) {
 	      var page = UI.createPage(i + 1);
 	      viewer.appendChild(page);
@@ -971,7 +971,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 
 	      var pdfPage = _ref2[0];
 	      var annotations = _ref2[1];
-	      var viewport = pdfPage.getViewport(RENDER_OPTIONS.scale, RENDER_OPTIONS.rotate);
+	      var viewport = pdfPage.getViewport({scale:RENDER_OPTIONS.scale, rotate:RENDER_OPTIONS.rotate});
 	      PAGE_HEIGHT = viewport.height;
 
               //Set the right page height to every nonseen page to calculate the current seen page better during scrolling
@@ -980,7 +980,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
               });
 
               if (! $('.path-mod-pdfannotator').first().hasClass('fullscreenWrapper')) {
-                  var pageheight100 = pdfPage.getViewport(1, 0).height;
+                  var pageheight100 = pdfPage.getViewport({scale:1, rotate:0}).height;
                   $('#body-wrapper').css('height',pageheight100+40);
               }              
               document.getElementById('currentPage').value = _page;
@@ -6541,8 +6541,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         var svg=page.querySelector('.annotationLayer');
                         var canvas=page.querySelector('.canvasWrapper canvas');
                         var canvasContext=canvas.getContext('2d',{alpha:false});
-                        var viewport=pdfPage.getViewport(scale,rotate);
-                        var viewportWithoutRotate=pdfPage.getViewport(scale,0);
+                        var viewport=pdfPage.getViewport({scale:scale,rotate:rotate});
+                        var viewportWithoutRotate=pdfPage.getViewport({scale:scale,rotate:0});
                         var transform=scalePage(pageNumber,viewport,canvasContext);// Render the page
                         return Promise.all([pdfPage.render({canvasContext:canvasContext,viewport:viewport,transform:transform}),_PDFJSAnnotate2.default.render(svg,viewportWithoutRotate,annotations)])
                             .then(function(){
@@ -6553,8 +6553,31 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         return new Promise(function(resolve,reject){        
                                             // Render text layer for a11y of text content
                                             var textLayer=page.querySelector('.textLayer');
-                                            var textLayerFactory=new PDFJS.DefaultTextLayerFactory();
-                                            var textLayerBuilder=textLayerFactory.createTextLayerBuilder(textLayer,pageNumber-1,viewport);
+                                            var textLayerFactory=new pdfjsViewer.DefaultTextLayerFactory();
+                                            var eventBus=new pdfjsViewer.EventBus();
+                                            // (Optionally) enable hyperlinks within PDF files.
+                                            var pdfLinkService=new pdfjsViewer.PDFLinkService({
+                                                eventBus,
+                                            });
+                                            // (Optionally) enable find controller.
+                                            var pdfFindController=new pdfjsViewer.PDFFindController({
+                                                linkService: pdfLinkService,
+                                                eventBus,
+                                            });
+                                            var pageIdx=pageNumber-1;
+                                            var highlighter = new pdfjsViewer.TextHighlighter({
+                                                pdfFindController,
+                                                eventBus,
+                                                pageIdx
+                                            });
+                                            var textLayerBuilder=textLayerFactory.createTextLayerBuilder(
+                                                textLayer,
+                                                pageIdx,
+                                                viewport,
+                                                false,
+                                                eventBus,
+                                                highlighter,
+                                            );
                                             textLayerBuilder.setTextContent(textContent);
                                             textLayerBuilder.render();// Enable a11y for annotations
 
