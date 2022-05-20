@@ -85,7 +85,7 @@ class pdfannotator_statistics {
                 . "WHERE pdfannotatorid = ? AND isquestion = ? AND isdeleted = ? "
                 . "GROUP BY userid ) AS counts";
 
-        return key($DB->get_records_sql($sql, array($this->annotatorid, $isquestion, '0')));
+        return (float) key($DB->get_records_sql($sql, array($this->annotatorid, $isquestion, '0')));
     }
 
     /**
@@ -102,7 +102,7 @@ class pdfannotator_statistics {
                 . "WHERE a.course = ? AND a.id = c.pdfannotatorid AND c.isquestion = ? AND c.isdeleted = ?"
                 . "GROUP BY c.userid ) AS counts";
 
-        return key($DB->get_records_sql($sql, array($this->courseid, $isquestion, '0')));
+        return (float) key($DB->get_records_sql($sql, array($this->courseid, $isquestion, '0')));
     }
 
     /**
