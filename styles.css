@@ -106,14 +106,15 @@
 
 .path-mod-pdfannotator .textLayer {
     position: absolute;
+    text-align: initial;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
     overflow: hidden;
     opacity: 0.2;
-    line-height: 1.0;
-
+    line-height: 1;
+    text-size-adjust: none;
     z-index: 20;
 }
 
@@ -129,12 +130,30 @@
     transform-origin: 0% 0%;
 }
 
+.path-mod-pdfannotator .textLayer br {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+}
+
+/* Only necessary in Google Chrome, see issue 14205, and most unfortunately
+ * the problem doesn't show up in "text" reference tests. */
+.path-mod-pdfannotator .textLayer span.markedContent {
+    top: 0;
+    height: 0;
+}
+
 .path-mod-pdfannotator .textLayer .highlight {
     margin: -1px;
     padding: 1px;
-
-    background-color: rgb(180, 0, 170);
+    background-color: rgba(180, 0, 170, 1);
     border-radius: 4px;
+}
+
+.path-mod-pdfannotator .textLayer .highlight.appended {
+    position: initial;
 }
 
 .path-mod-pdfannotator .textLayer .highlight.begin {
@@ -154,11 +173,12 @@
 }
 
 .path-mod-pdfannotator .textLayer ::selection {
-    background: rgb(0, 0, 255);
+    background: rgba(0, 0, 255, 1);
 }
 
-.path-mod-pdfannotator .textLayer ::-moz-selection {
-    background: rgb(0, 0, 255);
+/* Avoids https://github.com/mozilla/pdf.js/issues/13840 in Chrome */
+.path-mod-pdfannotator .textLayer br::selection {
+    background: transparent;
 }
 
 .path-mod-pdfannotator .textLayer .endOfContent {
@@ -170,6 +190,7 @@
     bottom: 0;
     z-index: -1;
     cursor: default;
+    user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
     -moz-user-select: none;
@@ -179,12 +200,17 @@
     top: 0;
 }
 
+/******** Annotation Layer *********/
+.path-mod-pdfannotator {
+    --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+}
 
 .path-mod-pdfannotator .annotationLayer section {
     position: absolute;
 }
 
-.path-mod-pdfannotator .annotationLayer .linkAnnotation > a {
+.path-mod-pdfannotator .annotationLayer .linkAnnotation > a,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.pushButton > a {
     position: absolute;
     font-size: 1em;
     top: 0;
@@ -193,19 +219,146 @@
     height: 100%;
 }
 
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.pushButton > canvas {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
 .path-mod-pdfannotator .annotationLayer .linkAnnotation > a /* -ms-a */ {
     background: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0 repeat;
 }
 
-.path-mod-pdfannotator .annotationLayer .linkAnnotation > a:hover {
+.path-mod-pdfannotator .annotationLayer .linkAnnotation > a:hover,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.pushButton > a:hover {
     opacity: 0.2;
-    background: #ff0;
-    box-shadow: 0 2px 10px #ff0;
+    background: rgba(255, 255, 0, 1);
+    box-shadow: 0 2px 10px rgba(255, 255, 0, 1);;
 }
 
 .path-mod-pdfannotator .annotationLayer .textAnnotation img {
     position: absolute;
     cursor: pointer;
+}
+
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input,
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea,
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input {
+  background-image: var(--annotation-unfocused-field-background);
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  font-size: 9px;
+  height: 100%;
+  margin: 0;
+  padding: 0 3px;
+  vertical-align: top;
+  width: 100%;
+}
+
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select option {
+    padding: 0;
+}
+  
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input {
+    border-radius: 50%;
+}
+  
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea {
+    font: message-box;
+    font-size: 9px;
+    resize: none;
+}
+  
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input[disabled],
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea[disabled],
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select[disabled],
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled],
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
+    background: none;
+    border: 1px solid transparent;
+    cursor: not-allowed;
+}
+  
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input:hover,
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea:hover,
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select:hover,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:hover,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input:hover {
+  border: 1px solid rgba(0, 0, 0, 1);
+}
+
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input:focus,
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea:focus,
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select:focus {
+  background: none;
+  border: 1px solid transparent;
+}
+
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input :focus,
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation textarea :focus,
+.path-mod-pdfannotator .annotationLayer .choiceWidgetAnnotation select :focus,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox :focus,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton :focus {
+  background-image: none;
+  background-color: transparent;
+  outline: auto;
+}
+
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
+  background-color: rgba(0, 0, 0, 1);
+  content: "";
+  display: block;
+  position: absolute;
+}
+
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before,
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
+  height: 80%;
+  left: 45%;
+  width: 1px;
+}
+
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before {
+  transform: rotate(45deg);
+}
+
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
+  transform: rotate(-45deg);
+}
+
+.path-mod-pdfannotator .annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
+    border-radius: 50%;
+    height: 50%;
+    left: 30%;
+    top: 20%;
+    width: 50%;
+}
+  
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input.comb {
+    font-family: monospace;
+    padding-left: 2px;
+    padding-right: 0;
+}
+  
+.path-mod-pdfannotator .annotationLayer .textWidgetAnnotation input.comb:focus {
+    /*
+     * Letter spacing is placed on the right side of each character. Hence, the
+     * letter spacing of the last character may be placed outside the visible
+     * area, causing horizontal scrolling. We avoid this by extending the width
+     * when the element has focus and revert this when it loses focus.
+     */
+    width: 103%;
+}
+
+.path-mod-pdfannotator  .annotationLayer .buttonWidgetAnnotation.checkBox input,
+.path-mod-pdfannotator  .annotationLayer .buttonWidgetAnnotation.radioButton input {
+  appearance: none;
+  padding: 0;
 }
 
 .path-mod-pdfannotator .annotationLayer .popupWrapper {
@@ -217,31 +370,79 @@
     position: absolute;
     z-index: 200;
     max-width: 20em;
-    background-color: #ff9;
-    box-shadow: 0 2px 5px #333;
+    background-color: rgba(255, 255, 153, 1);
+    box-shadow: 0 2px 5px rgba(136, 136, 136, 1);
     border-radius: 2px;
-    padding: 0.6em;
+    padding: 6px;
     margin-left: 5px;
     cursor: pointer;
+    font: message-box;
+    font-size: 9px;
+    white-space: normal;
     word-wrap: break-word;
 }
 
-.path-mod-pdfannotator .annotationLayer .popup h1 {
-    font-size: 1em;
-    border-bottom: 1px solid #000;
-    padding-bottom: 0.2em;
+.path-mod-pdfannotator .annotationLayer .popup > * {
+    font-size: 9px;
 }
 
-.path-mod-pdfannotator .annotationLayer .popup p {
-    padding-top: 0.2em;
+.path-mod-pdfannotator .annotationLayer .popup h1 {
+    display: inline-block;
+}
+
+.path-mod-pdfannotator .annotationLayer .popupDate {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.path-mod-pdfannotator .annotationLayer .popupContent {
+    border-top: 1px solid rgba(51, 51, 51, 1);
+    margin-top: 2px;
+    padding-top: 2px;
+  }
+  
+.path-mod-pdfannotator .annotationLayer .richText > * {
+  white-space: pre-wrap;
 }
 
 .path-mod-pdfannotator .annotationLayer .highlightAnnotation,
 .path-mod-pdfannotator .annotationLayer .underlineAnnotation,
 .path-mod-pdfannotator .annotationLayer .squigglyAnnotation,
 .path-mod-pdfannotator .annotationLayer .strikeoutAnnotation,
+.path-mod-pdfannotator .annotationLayer .freeTextAnnotation,
+.path-mod-pdfannotator .annotationLayer .lineAnnotation svg line,
+.path-mod-pdfannotator .annotationLayer .squareAnnotation svg rect,
+.path-mod-pdfannotator .annotationLayer .circleAnnotation svg ellipse,
+.path-mod-pdfannotator .annotationLayer .polylineAnnotation svg polyline,
+.path-mod-pdfannotator .annotationLayer .polygonAnnotation svg polygon,
+.path-mod-pdfannotator .annotationLayer .caretAnnotation,
+.path-mod-pdfannotator .annotationLayer .inkAnnotation svg polyline,
+.path-mod-pdfannotator .annotationLayer .stampAnnotation,
 .path-mod-pdfannotator .annotationLayer .fileAttachmentAnnotation {
-    cursor: pointer;
+  cursor: pointer;
+}
+
+/******* pdfViewer *******/
+.path-mod-pdfannotator {
+    --pdfViewer-padding-bottom: 0;
+    --page-margin: 1px auto -8px auto;
+    --page-border: 9px solid transparent;
+    --spreadHorizontalWrapped-margin-LR: -3.5px;
+    --zoom-factor: 1;
+    --viewport-scale-factor: 1;
+}
+
+@media screen and (forced-colors: active) {
+    .path-mod-pdfannotator {
+    --pdfViewer-padding-bottom: 9px;
+    --page-margin: 9px auto 0 auto;
+    --page-border: none;
+    --spreadHorizontalWrapped-margin-LR: 4.5px;
+  }
+}
+
+.path-mod-pdfannotator .pdfViewer {
+  padding-bottom: var(--pdfViewer-padding-bottom);
 }
 
 .path-mod-pdfannotator .pdfViewer .canvasWrapper {
@@ -252,24 +453,88 @@
     direction: ltr;
     width: 816px;
     height: 1056px;
-    margin: 1px auto -8px auto;
+    margin: var(--page-margin);
     position: relative;
     overflow: visible;
-    border: 9px solid transparent;
+    border: var(--page-border);
     background-clip: content-box;
     border-image: url(images/shadow.png) 9 9 repeat;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.path-mod-pdfannotator .pdfViewer .dummyPage {
+    position: relative;
+    width: 0;
+    /* The height is set via JS, see `BaseViewer.#ensurePageViewVisible`. */
 }
 
 .path-mod-pdfannotator .pdfViewer.removePageBorders .page {
-    margin: 0 auto 10px auto;
+    margin: 0 auto 10px;
     border: none;
+}
+
+.path-mod-pdfannotator .pdfViewer.singlePageView {
+    display: inline-block;
+}
+  
+.path-mod-pdfannotator .pdfViewer.singlePageView .page {
+  margin: 0;
+  border: none;
+}
+
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal,
+.path-mod-pdfannotator .pdfViewer.scrollWrapped,
+.path-mod-pdfannotator .spread {
+  margin-left: 3.5px;
+  margin-right: 3.5px;
+  text-align: center;
+}
+
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal,
+.path-mod-pdfannotator .spread {
+  white-space: nowrap;
+}
+
+.path-mod-pdfannotator .pdfViewer.removePageBorders,
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal .spread,
+.path-mod-pdfannotator .pdfViewer.scrollWrapped .spread {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.path-mod-pdfannotator .spread .page,
+.path-mod-pdfannotator .spread .dummyPage,
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal .page,
+.path-mod-pdfannotator .pdfViewer.scrollWrapped .page,
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal .spread,
+.path-mod-pdfannotator .pdfViewer.scrollWrapped .spread {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.path-mod-pdfannotator .spread .page,
+.path-mod-pdfannotator .pdfViewer.scrollHorizontal .page,
+.path-mod-pdfannotator .pdfViewer.scrollWrapped .page {
+  margin-left: var(--spreadHorizontalWrapped-margin-LR);
+  margin-right: var(--spreadHorizontalWrapped-margin-LR);
+}
+
+.path-mod-pdfannotator .pdfViewer.removePageBorders .spread .page,
+.path-mod-pdfannotator .pdfViewer.removePageBorders.scrollHorizontal .page,
+.path-mod-pdfannotator .pdfViewer.removePageBorders.scrollWrapped .page {
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .path-mod-pdfannotator .pdfViewer .page canvas {
     margin: 0;
     display: block;
 }
+
+.path-mod-pdfannotator .pdfViewer .page canvas[hidden] {
+    display: none;
+}
+  
 
 .path-mod-pdfannotator .pdfViewer .page .loadingIcon {
     position: absolute;
@@ -279,6 +544,28 @@
     right: 0;
     bottom: 0;
     background: url('images/loading-icon.gif') center no-repeat;
+}
+
+.path-mod-pdfannotator .pdfViewer .page .loadingIcon.notVisible {
+    background: none;
+}
+
+.path-mod-pdfannotator .pdfViewer.enablePermissions .textLayer span {
+    user-select: none !important;
+    cursor: not-allowed;
+}
+
+.path-mod-pdfannotator .pdfPresentationMode .pdfViewer {
+  padding-bottom: 0;
+}
+
+.path-mod-pdfannotator .pdfPresentationMode .spread {
+  margin: 0;
+}
+
+.path-mod-pdfannotator .pdfPresentationMode .pdfViewer .page {
+  margin: 0 auto;
+  border: 2px solid transparent;
 }
 
 .path-mod-pdfannotator .pdfPresentationMode:-webkit-full-screen .pdfViewer .page {
