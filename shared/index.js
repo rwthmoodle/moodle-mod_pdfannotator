@@ -971,7 +971,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 
 	      var pdfPage = _ref2[0];
 	      var annotations = _ref2[1];
-	      var viewport = pdfPage.getViewport({scale:RENDER_OPTIONS.scale, rotate:RENDER_OPTIONS.rotate});
+	      var viewport = pdfPage.getViewport({scale:RENDER_OPTIONS.scale, rotation:RENDER_OPTIONS.rotate});
 	      PAGE_HEIGHT = viewport.height;
 
               //Set the right page height to every nonseen page to calculate the current seen page better during scrolling
@@ -980,7 +980,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
               });
 
               if (! $('.path-mod-pdfannotator').first().hasClass('fullscreenWrapper')) {
-                  var pageheight100 = pdfPage.getViewport({scale:1, rotate:0}).height;
+                  var pageheight100 = pdfPage.getViewport({scale:1, rotation:0}).height;
                   $('#body-wrapper').css('height',pageheight100+40);
               }              
               document.getElementById('currentPage').value = _page;
@@ -6529,7 +6529,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 var documentId=renderOptions.documentId;
                 var pdfDocument=renderOptions.pdfDocument;
                 var scale=renderOptions.scale;
-                var rotate=renderOptions.rotate;// Load the page and annotations
+                var _rotate=renderOptions.rotate;// Load the page and annotations
                 return Promise.all([pdfDocument.getPage(pageNumber),_PDFJSAnnotate2.default.getAnnotations(documentId,pageNumber)])
                     .then(function(_ref){
                         var _ref2=_slicedToArray(_ref,2);
@@ -6541,8 +6541,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         var svg=page.querySelector('.annotationLayer');
                         var canvas=page.querySelector('.canvasWrapper canvas');
                         var canvasContext=canvas.getContext('2d',{alpha:false});
-                        var viewport=pdfPage.getViewport({scale:scale,rotate:rotate});
-                        var viewportWithoutRotate=pdfPage.getViewport({scale:scale,rotate:0});
+                        var viewport=pdfPage.getViewport({scale:scale,rotation:_rotate});
+                        var viewportWithoutRotate=pdfPage.getViewport({scale:scale,rotation:0});
                         var transform=scalePage(pageNumber,viewport,canvasContext);// Render the page
                         return Promise.all([pdfPage.render({canvasContext:canvasContext,viewport:viewport,transform:transform}),_PDFJSAnnotate2.default.render(svg,viewportWithoutRotate,annotations)])
                             .then(function(){
@@ -6574,10 +6574,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                                 textLayer,
                                                 pageIdx,
                                                 viewport,
-                                                false,
+                                                true,
                                                 eventBus,
                                                 highlighter,
                                             );
+                                            pdfLinkService.setViewer(textLayerBuilder);
                                             textLayerBuilder.setTextContent(textContent);
                                             textLayerBuilder.render();// Enable a11y for annotations
 
@@ -6602,7 +6603,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             * Scale the elements of a page.
             *
             * @param {Number} pageNumber The page number to be scaled
-            * @param {Object} viewport The viewport of the PDF page (see pdfPage.getViewport(scale, rotate))
+            * @param {Object} viewport The viewport of the PDF page (see pdfPage.getViewport(scale, rotation))
             * @param {Object} context The canvas context that the PDF page is rendered to
             * @return {Array} The transform data for rendering the PDF page
             */function scalePage(pageNumber,viewport,context){var page=document.getElementById('pageContainer'+pageNumber);var canvas=page.querySelector('.canvasWrapper canvas');var svg=page.querySelector('.annotationLayer');var wrapper=page.querySelector('.canvasWrapper');var textLayer=page.querySelector('.textLayer');var outputScale=getOutputScale(context);var transform=!outputScale.scaled?null:[outputScale.sx,0,0,outputScale.sy,0,0];var sfx=approximateFraction(outputScale.sx);var sfy=approximateFraction(outputScale.sy);// Adjust width/height for scale
