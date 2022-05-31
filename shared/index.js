@@ -252,7 +252,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             if(node){
                                 node.parentNode.removeChild(node);
                                 document.querySelector('.comment-list-container').innerHTML = '';
-                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
                                 UI.renderQuestions(documentId,$('#currentPage').val());     
                             }
                     } else if (data.status === 'error') {
@@ -383,7 +383,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
                                 node.parentNode.removeChild(node);
                                 document.querySelector('.comment-list-container').innerHTML = '';
-                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
                                 UI.renderQuestions(documentId,$('#currentPage').val());                                
                             }
                         } else {
@@ -654,7 +654,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
               // Anyway if the other pages are not loaded, they should be loaded.
               if(visiblePageAfter) UI.renderPage(visiblePageNum + 1, RENDER_OPTIONS);
               if(visiblePageBefore) UI.renderPage(visiblePageNum - 1, RENDER_OPTIONS);
-          }
+          } //TODO HIER VLT BUGS ENTSTEHEN
           if(visiblePageNum !== oldPageNumber && $('.comment-list-form')[0].style.display === 'none' && document.querySelector('.comment-list-container p') === null){
                 UI.renderQuestions(documentId,visiblePageNum);
           }
@@ -675,7 +675,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         // Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page.
         document.getElementById('commentCancel').addEventListener('click',function (e){
             var visiblePageNum = document.getElementById('currentPage').value;
-            document.querySelector('.comment-list-form').setAttribute('style','display:none');
+            document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
             document.querySelector('.comment-list-container').innerHTML = '';
@@ -3902,8 +3902,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                //if the click is on an input field or link nothing should happen. 
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT'){
+                // if the click is on editor nothing should happen.
+                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
+                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
+                //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I'){
                     return;
                 }
                 //R: if the click is on the Commentlist nothing should happen.
@@ -5164,7 +5167,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              *
              * @param {Event} e The DOM event that needs to be handled
              */function handleDocumentClick(e){
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON'){
+                // if the click is on editor nothing should happen.
+                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
+                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
+                //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'I'){
                     return;
                 }
                 //if the click is on the Commentlist nothing should happen.
