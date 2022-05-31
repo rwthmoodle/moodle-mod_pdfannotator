@@ -225,14 +225,3 @@ function checkOnlyOneCheckbox( Y ) {
         });
     }
 }
-
-function removeEventListenerCommentListForm(nodes, fn) {
-    var children = nodes.children;
-    if(children) {
-        children.forEach(child => {
-            removeEventListenerCommentListForm(children);
-        })
-    } else {
-        nodes.removeEventListener('click', fn);
-    }
-}

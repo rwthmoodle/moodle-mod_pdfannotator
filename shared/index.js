@@ -678,6 +678,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
+            var editorComment = document.querySelectorAll('#myareaeditable').childNodes;
+            if(editorComment) {
+                editorComment.forEach(comment => {
+                    comment.remove();
+                });
+            }
             document.querySelector('.comment-list-container').innerHTML = '';
             // Disable and then enable to delete overlay and directly add the function to create an overlay.
             UI.disableEdit();
@@ -3902,9 +3908,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                // if the click is on editor nothing should happen.
-                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
-                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
+                if(e.target.parentElement === 'div#myareaeditable.editor_atto_content' || e.target.id === 'myareaeditable') {
+                    return;
+                }
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I'){
                     return;
@@ -3920,7 +3926,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 handleDocumentClickFunction(e);
                 
             });
-            
+
             function fireEvent(){
                 if(arguments[0] === 'annotation:click'){
                     clickNode = arguments[1];
@@ -5167,9 +5173,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              *
              * @param {Event} e The DOM event that needs to be handled
              */function handleDocumentClick(e){
-                // if the click is on editor nothing should happen.
-                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
-                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'I'){
                     return;
@@ -6116,7 +6119,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         
         function handleCancelClick(e){
             //delete Overlay
-            if(_type==='area'&&overlay){
+            if(_type==='input'&&overlay){
                 overlay.parentNode.removeChild(overlay);
                 overlay=null;
             }
