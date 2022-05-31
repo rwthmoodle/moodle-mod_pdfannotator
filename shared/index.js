@@ -252,7 +252,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             if(node){
                                 node.parentNode.removeChild(node);
                                 document.querySelector('.comment-list-container').innerHTML = '';
-                                document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
                                 UI.renderQuestions(documentId,$('#currentPage').val());     
                             }
                     } else if (data.status === 'error') {
@@ -383,7 +383,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
                                 node.parentNode.removeChild(node);
                                 document.querySelector('.comment-list-container').innerHTML = '';
-                                document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
                                 UI.renderQuestions(documentId,$('#currentPage').val());                                
                             }
                         } else {
@@ -654,7 +654,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
               // Anyway if the other pages are not loaded, they should be loaded.
               if(visiblePageAfter) UI.renderPage(visiblePageNum + 1, RENDER_OPTIONS);
               if(visiblePageBefore) UI.renderPage(visiblePageNum - 1, RENDER_OPTIONS);
-          } //TODO HIER VLT BUGS ENTSTEHEN
+          }
           if(visiblePageNum !== oldPageNumber && $('.comment-list-form')[0].style.display === 'none' && document.querySelector('.comment-list-container p') === null){
                 UI.renderQuestions(documentId,visiblePageNum);
           }
@@ -675,7 +675,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         // Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page.
         document.getElementById('commentCancel').addEventListener('click',function (e){
             var visiblePageNum = document.getElementById('currentPage').value;
-            document.querySelector('.comment-list-form').setAttribute('style','display:none'); //TODO HIER VLT BUGS ENTSTEHEN
+            document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
             document.querySelector('.comment-list-container').innerHTML = '';
