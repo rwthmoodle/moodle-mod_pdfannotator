@@ -3902,8 +3902,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                //if the click is on an input field or link nothing should happen. 
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT'){
+                // if the click is on editor nothing should happen.
+                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
+                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
+                //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I'){
                     return;
                 }
                 //R: if the click is on the Commentlist nothing should happen.
@@ -5164,7 +5167,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              *
              * @param {Event} e The DOM event that needs to be handled
              */function handleDocumentClick(e){
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON'){
+                // if the click is on editor nothing should happen.
+                var commentListFormNodes = document.querySelectorAll('div.editor_atto_wrap');
+                removeEventListenerCommentListForm(commentListFormNodes, handleDocumentClick);
+                //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'I'){
                     return;
                 }
                 //if the click is on the Commentlist nothing should happen.
