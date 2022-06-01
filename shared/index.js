@@ -678,7 +678,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
             document.getElementById('myarea').value = "";
-            var editorComment = document.querySelectorAll('#myareaeditable').childNodes;
+            var editorComment = document.querySelectorAll('#myareaeditable')[0].childNodes;
             if(editorComment) {
                 editorComment.forEach(comment => {
                     comment.remove();
