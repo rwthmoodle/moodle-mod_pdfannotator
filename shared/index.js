@@ -3908,7 +3908,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                if(e.target.parentElement === 'div#myareaeditable.editor_atto_content' || e.target.id === 'myareaeditable') {
+                if(e.target.parentElement === 'div#myareaeditable.editor_atto_content' || e.target.id === 'myareaeditable' || e.target.id === 'comment-wrapper') {
                     return;
                 }
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
