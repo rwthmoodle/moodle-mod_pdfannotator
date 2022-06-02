@@ -3908,7 +3908,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(document.querySelector('.cursor').className.indexOf('active') === -1){
                     return;
                 }
-                if(e.target.parentElement === 'div#myareaeditable.editor_atto_content' || e.target.id === 'myareaeditable' || e.target.id === 'comment-wrapper') {
+                //if the click is in atto editor nothing should happen.
+                var editorNodes = document.querySelectorAll('div.editor_atto_wrap')[0];
+                var clickedElement;
+                if(e.target.id) {
+                    clickedElement = '#' + e.target.id;
+                } else if(e.target.className[0]) {
+                    clickedElement = '.' + e.target.className;
+                } else {
+                    clickedElement = '';
+                }
+                if(clickedElement && editorNodes.querySelector(clickedElement)) {
                     return;
                 }
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
