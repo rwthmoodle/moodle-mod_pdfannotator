@@ -416,7 +416,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if (data.status === "success") {
                         $("#comment_" + commentId).addClass('dimmed_text'); // render chat box in grey.
                         $('#chatmessage' + commentId).append("<br><span id='taghidden" + commentId + "' class='tag tag-info'>" + M.util.get_string('hiddenforparticipants', 'pdfannotator') + "</span>");
-                    renderMathJax();
+                        let comment = document.getElementById("comment_" + commentId);
+                        renderMathJax(comment);
                         notification.addNotification({
                             message: M.util.get_string('successfullyHidden', 'pdfannotator'),
                             type: "success"
@@ -452,7 +453,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if (data.status === "success") {
                         $("#comment_" + commentId).removeClass('dimmed_text'); // render chat box in grey.
                         $('#taghidden' + commentId).remove();
-                        renderMathJax();
+                        let comment = document.getElementById("comment_" + commentId);
+                        renderMathJax(comment);
                         notification.addNotification({
                             message: M.util.get_string('successfullyRedisplayed', 'pdfannotator'),
                             type: "success"
@@ -626,7 +628,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         /* ************** END Store Adapter!! **********************************/
 
 	_2.default.setStoreAdapter(MyStoreAdapter);
-	pdfjsLib.workerSrc = 'shared/pdf.worker.js';
+	pdfjsLib.workerSrc = 'shared/pdf.worker.js?ver=00002';
 	// Render stuff
 	var NUM_PAGES = 0;
         var oldPageNumber;
@@ -1576,10 +1578,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             
 
                             let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
-
+                            let element = document.querySelector(selector);
+                            renderMathJax(element);
                         });
                     //    fixCommentForm();
-                        renderMathJax();
                         
                         //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
                         //$("chat-message+:contains('text')").addClass('mark');
@@ -1754,7 +1756,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
-                        if(newContent < 2){
+                        let newTextContent = extract_text_from_html(newContent);
+                        if(newTextContent.length < 2){
                             // Should be more than one character, otherwise it should not be saved.
                             notification.addNotification({
                               message: M.util.get_string('min2Chars','pdfannotator'),
@@ -1763,7 +1766,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         } else if(newContent === comment.content) { // No changes.
                             editForm.style.display = "none";
                             text.innerHTML = comment.content;
-                            renderMathJax();
+                            renderMathJax(text);
                         } else { // Save changes.
                             _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
                                 .then(function(data){
@@ -1777,7 +1780,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         newContent = data.newContent;
                                         text.innerHTML = newContent;
                                         comment.content = newContent;
-                                        renderMathJax();
+                                        renderMathJax(text);
                                         notification.addNotification({
                                             message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                             type: "success"
@@ -1803,12 +1806,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
                         editForm.style.display = "none";
                         text.innerHTML = comment.content;
-                        renderMathJax();
+                        renderMathJax(text);
                     });
                     } else {
                         editForm.style.display = "none";
                         text.innerHTML = comment.content;
-                        renderMathJax();
+                        renderMathJax(text);
                     }
                 }
                 // Create an element for click.
@@ -1935,7 +1938,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       document.querySelector('#commentSubmit').disabled = true;
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
-                      if(commentText.value.trim().length < 2){
+                      let commentTextContent = extract_text_from_html(commentText.value.trim());
+                      if(commentTextContent.length < 2){
                           //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
                             message: M.util.get_string('min2Chars','pdfannotator'),
@@ -7529,4 +7533,13 @@ function read_visibility_of_checkbox(){
             } 
         }                              
     return commentVisibility;    
+}
+
+/**
+ * Extract text from HTML.
+ */
+function extract_text_from_html(html) {
+    let tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent;
 }

@@ -212,7 +212,8 @@ class pdfannotator_annotation {
         if ($annotationtype === "textbox" || $annotationtype === "drawing") {
             $comment = new stdClass();
             $comment->type = $annotationtype;
-            $comment->content = get_string('noCommentsupported', 'pdfannotator');
+            $comment->content = '';
+            $comment->displaycontent = get_string('noCommentsupported', 'pdfannotator');
             $comment->userid = $annotation->userid;
             $comment->username = pdfannotator_get_username($annotation->userid);
             $comment->visibility = 'public';
