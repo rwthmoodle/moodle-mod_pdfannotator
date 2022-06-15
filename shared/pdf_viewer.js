@@ -4695,7 +4695,7 @@ const defaultOptions = {
     kind: OptionKind.WORKER
   },
   workerSrc: {
-    value: "../build/pdf.worker.js",
+    value: "../build/pdf.worker.js?ver=00002",
     kind: OptionKind.WORKER
   }
 };
@@ -8632,4 +8632,4 @@ const pdfjsBuild = '3e593cfc1';
 /******/ })()
 ;
 });
-//# sourceMappingURL=pdf_viewer.js.map
+//# sourceMappingURL=pdf_viewer.js.map?ver=00002

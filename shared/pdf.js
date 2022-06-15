@@ -7413,7 +7413,7 @@ var PDFWorkerUtil = {
 {
   if (_is_node.isNodeJS && typeof require === "function") {
     PDFWorkerUtil.isWorkerDisabled = true;
-    PDFWorkerUtil.fallbackWorkerSrc = "./pdf.worker.js";
+    PDFWorkerUtil.fallbackWorkerSrc = "./pdf.worker.js?ver=00002";
   } else if ((typeof document === "undefined" ? "undefined" : _typeof(document)) === "object") {
     var _document, _document$currentScri;
 
@@ -25046,4 +25046,4 @@ var pdfjsBuild = '3e593cfc1';
 /******/ })()
 ;
 });
-//# sourceMappingURL=pdf.js.map
+//# sourceMappingURL=pdf.js.map?ver=00002

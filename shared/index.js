@@ -628,7 +628,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         /* ************** END Store Adapter!! **********************************/
 
 	_2.default.setStoreAdapter(MyStoreAdapter);
-	pdfjsLib.workerSrc = 'shared/pdf.worker.js';
+	pdfjsLib.workerSrc = 'shared/pdf.worker.js?ver=00002';
 	// Render stuff
 	var NUM_PAGES = 0;
         var oldPageNumber;
