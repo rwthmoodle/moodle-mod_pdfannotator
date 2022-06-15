@@ -83,18 +83,18 @@ function addDropdownNavigation(Y, __capabilities, __cmid) {
 
 }
 
-function renderMathJax() {
+function renderMathJax(node) {
     var counter = 0;
-    let mathjax = function () {
+    let mathjax = function (node) {
         if (typeof (MathJax) !== "undefined") {
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub, node]);
         } else if (counter < 30) {
             counter++;
             setTimeout(mathjax, 100);
         } else {
         }
     };
-    mathjax();
+    mathjax(node);
 }
 
 function fixCommentForm() {

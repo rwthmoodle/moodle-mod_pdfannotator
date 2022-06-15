@@ -416,7 +416,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if (data.status === "success") {
                         $("#comment_" + commentId).addClass('dimmed_text'); // render chat box in grey.
                         $('#chatmessage' + commentId).append("<br><span id='taghidden" + commentId + "' class='tag tag-info'>" + M.util.get_string('hiddenforparticipants', 'pdfannotator') + "</span>");
-                    renderMathJax();
+                        let comment = document.getElementById("comment_" + commentId);
+                        renderMathJax(comment);
                         notification.addNotification({
                             message: M.util.get_string('successfullyHidden', 'pdfannotator'),
                             type: "success"
@@ -452,7 +453,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if (data.status === "success") {
                         $("#comment_" + commentId).removeClass('dimmed_text'); // render chat box in grey.
                         $('#taghidden' + commentId).remove();
-                        renderMathJax();
+                        let comment = document.getElementById("comment_" + commentId);
+                        renderMathJax(comment);
                         notification.addNotification({
                             message: M.util.get_string('successfullyRedisplayed', 'pdfannotator'),
                             type: "success"
@@ -1576,10 +1578,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             
 
                             let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
-
+                            let element = document.querySelector(selector);
+                            renderMathJax(element);
                         });
                     //    fixCommentForm();
-                        renderMathJax();
                         
                         //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
                         //$("chat-message+:contains('text')").addClass('mark');
@@ -1764,7 +1766,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         } else if(newContent === comment.content) { // No changes.
                             editForm.style.display = "none";
                             text.innerHTML = comment.content;
-                            renderMathJax();
+                            renderMathJax(text);
                         } else { // Save changes.
                             _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
                                 .then(function(data){
@@ -1778,7 +1780,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         newContent = data.newContent;
                                         text.innerHTML = newContent;
                                         comment.content = newContent;
-                                        renderMathJax();
+                                        renderMathJax(text);
                                         notification.addNotification({
                                             message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                             type: "success"
@@ -1804,12 +1806,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
                         editForm.style.display = "none";
                         text.innerHTML = comment.content;
-                        renderMathJax();
+                        renderMathJax(text);
                     });
                     } else {
                         editForm.style.display = "none";
                         text.innerHTML = comment.content;
-                        renderMathJax();
+                        renderMathJax(text);
                     }
                 }
                 // Create an element for click.
