@@ -235,7 +235,6 @@ class comment implements \renderable, \templatable {
         }
         if (!empty($comment->ishidden) && !isset($comment->type)) {
             if ($seehiddencomments) {
-                $comment->content = $comment->content;
                 $comment->dimmed = 'dimmed_text';
                 $comment->displayhidden = 1;
                 $comment->buttons[] = ["attributes" => ["name" => "id", "value" => "hideButton" . $comment->uuid],
