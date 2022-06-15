@@ -1754,7 +1754,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
-                        if(newContent < 2){
+                        let newTextContent = extract_text_from_html(newContent);
+                        if(newTextContent.length < 2){
                             // Should be more than one character, otherwise it should not be saved.
                             notification.addNotification({
                               message: M.util.get_string('min2Chars','pdfannotator'),
@@ -1935,7 +1936,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       document.querySelector('#commentSubmit').disabled = true;
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
-                      if(commentText.value.trim().length < 2){
+                      let commentTextContent = extract_text_from_html(commentText.value.trim());
+                      if(commentTextContent.length < 2){
                           //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
                             message: M.util.get_string('min2Chars','pdfannotator'),
@@ -7529,4 +7531,13 @@ function read_visibility_of_checkbox(){
             } 
         }                              
     return commentVisibility;    
+}
+
+/**
+ * Extract text from HTML.
+ */
+function extract_text_from_html(html) {
+    let tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent;
 }
