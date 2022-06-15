@@ -90,7 +90,7 @@ class comment implements \renderable, \templatable {
             $this->addsolvedicon($comment);
 
             if ($comment->isdeleted || isset($comment->type)) {
-                $comment->content = '<em>' . $comment->content . '</em>';
+                $comment->displaycontent = '<em>' . $comment->displaycontent . '</em>';
             }
 
             if (!empty($comment->modifiedby) && ($comment->modifiedby != $comment->userid) && ($comment->userid != 0)) {
@@ -244,7 +244,7 @@ class comment implements \renderable, \templatable {
                     "text" => get_string('removehidden', 'pdfannotator')];
             } else {
                 $comment->visibility = 'anonymous';
-                $comment->content = '<em>' . get_string('hiddenComment', 'pdfannotator') . '</em>';
+                $comment->displaycontent = '<em>' . get_string('hiddenComment', 'pdfannotator') . '</em>';
             }
         } else if (!isset($comment->type)) {
             if ($hidecomments) {

@@ -60,7 +60,7 @@ class pdfannotator_comment {
             $datarecord->uuid = $commentuuid;
             self::set_username($datarecord);
 
-            $datarecord->content = format_text($datarecord->content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
+        $datarecord->displaycontent = format_text($datarecord->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
             $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
             $datarecord->timemodified = pdfannotator_optional_timeago($datarecord->timemodified);
             $datarecord->usevotes = pdfannotator_instance::use_votes($documentid);
@@ -198,10 +198,10 @@ class pdfannotator_comment {
             }
 
             if ($data->isdeleted) {
-                $comment->content = get_string('deletedComment', 'pdfannotator');
+                $comment->displaycontent = get_string('deletedComment', 'pdfannotator');
             } else {
                 $comment->content = $data->content;
-                $comment->content = format_text($data->content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
+                $comment->displaycontent = format_text($data->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
             }
 
             self::set_username($comment);
