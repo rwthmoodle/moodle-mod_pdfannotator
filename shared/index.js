@@ -5206,11 +5206,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
                     destroyEditOverlay();
                 }
-            }/**
+            }
+            /**
             * Handle document.keyup event
             *
             * @param {Event} e The DOM event that needs to be handled
-            */function handleDocumentKeyup(e){if(overlay&&e.keyCode===46&&e.target.nodeName.toLowerCase()!=='textarea'&&e.target.nodeName.toLowerCase()!=='input'){deleteAnnotation();}}/**
+            */function handleDocumentKeyup(e){
+                if (overlay&&e.keyCode === 46 && !e.target.closest('.edit-comment-form')) {
+                    deleteAnnotation();
+                }
+            }
+            /**
             * Handle document.mousedown event
             *
             * @param {Event} e The DOM event that needs to be handled
