@@ -5212,7 +5212,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             *
             * @param {Event} e The DOM event that needs to be handled
             */function handleDocumentKeyup(e){
-                if (overlay&&e.keyCode === 46 && !e.target.closest('.edit-comment-form')) {
+                if (overlay&&e.keyCode === 46 && !e.target.closest('.edit-comment-form') && !e.target.closest('.comment-list-form')) {
                     deleteAnnotation();
                 }
             }
