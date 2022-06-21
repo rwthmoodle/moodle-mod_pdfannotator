@@ -5,7 +5,7 @@
  * @param {type} Y
  * @return {undefined}
  */
-function adjustPdfannotatorNavbar(Y) {
+ function adjustPdfannotatorNavbar(Y) {
     let navbar = document.getElementsByClassName('nav');
     for (let i = 0; i < navbar.length; i++) {
         (function(innerI) {
@@ -1939,7 +1939,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       let commentTextContent = extract_text_from_html(commentText.value.trim());
-                      if(commentTextContent.length < 2){
+                      let commentContentImg = commentForm.querySelector('img.atto_image_button_text-bottom');
+                      if(commentTextContent.length < 2 && !commentContentImg){
                           //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
                             message: M.util.get_string('min2Chars','pdfannotator'),
@@ -5678,7 +5679,20 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             * Handle document.mouseup event
             *
             * @param {Event} The DOM event to be handled
-            */function handleDocumentMouseup(e){   
+            */function handleDocumentMouseup(e){
+                //if the click is in comment wrapper area nothing should happen.
+                var commentWrapperNodes = document.querySelectorAll('div#comment-wrapper')[0];
+                var clickedElement;
+                if(e.target.id) {
+                    clickedElement = '#' + e.target.id;
+                } else if(e.target.className[0]) {
+                    clickedElement = '.' + e.target.className;
+                } else {
+                    clickedElement = '';
+                }
+                if(clickedElement && commentWrapperNodes.querySelector(clickedElement)) {
+                    return;
+                }
                //if the click is on the Commentlist nothing should happen.
                 if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
                     return;
