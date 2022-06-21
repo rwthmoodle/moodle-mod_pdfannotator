@@ -1939,8 +1939,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       let commentTextContent = extract_text_from_html(commentText.value.trim());
-                      let commentContentImg = commentForm.querySelector('img.atto_image_button_text-bottom');
-                      if(commentTextContent.length < 2 && !commentContentImg){
+                      if(commentTextContent.length < 2){
                           //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
                             message: M.util.get_string('min2Chars','pdfannotator'),
