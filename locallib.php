@@ -302,7 +302,7 @@ function pdfannotator_notify_manager($recipient, $course, $cm, $name, $messagete
     $message->component = 'mod_pdfannotator';
     $message->name = $name;
     $message->courseid = $course->id;
-    $message->userfrom = $userfrom;
+    $message->userfrom = $anonymous ? core_user::get_noreply_user() : $userfrom;
     $message->userto = $recipient;
     $message->subject = get_string('notificationsubject:' . $name, 'pdfannotator', $modulename);
     $message->fullmessage = $messagetext->text;
