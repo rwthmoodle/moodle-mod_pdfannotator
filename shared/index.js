@@ -6593,42 +6593,44 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 // highlight and strikeout annotations which require selecting text.
                                 return pdfPage.getTextContent({normalizeWhitespace:true})
                                     .then(function(textContent){
-                                        return new Promise(function(resolve,reject){        
-                                            // Render text layer for a11y of text content
-                                            var textLayer=page.querySelector('.textLayer');
-                                            var textLayerFactory=new pdfjsViewer.DefaultTextLayerFactory();
-                                            var eventBus=new pdfjsViewer.EventBus();
-                                            // (Optionally) enable hyperlinks within PDF files.
-                                            var pdfLinkService=new pdfjsViewer.PDFLinkService({
-                                                eventBus,
-                                            });
-                                            // (Optionally) enable find controller.
-                                            var pdfFindController=new pdfjsViewer.PDFFindController({
-                                                linkService: pdfLinkService,
-                                                eventBus,
-                                            });
-                                            var pageIdx=pageNumber-1;
-                                            var highlighter = new pdfjsViewer.TextHighlighter({
-                                                pdfFindController,
-                                                eventBus,
-                                                pageIdx
-                                            });
-                                            var textLayerBuilder=textLayerFactory.createTextLayerBuilder(
-                                                textLayer,
-                                                pageIdx,
-                                                viewport,
-                                                true,
-                                                eventBus,
-                                                highlighter,
-                                            );
-                                            pdfLinkService.setViewer(textLayerBuilder);
-                                            textLayerBuilder.setTextContent(textContent);
-                                            textLayerBuilder.render();// Enable a11y for annotations
+                                        return new Promise(function(resolve,reject){
+                                            require(['mod_pdfannotator/pdf_viewer'], function(pdfjsViewer) {
+                                                // Render text layer for a11y of text content
+                                                var textLayer=page.querySelector('.textLayer');
+                                                var textLayerFactory=new pdfjsViewer.DefaultTextLayerFactory();
+                                                var eventBus=new pdfjsViewer.EventBus();
+                                                // (Optionally) enable hyperlinks within PDF files.
+                                                var pdfLinkService=new pdfjsViewer.PDFLinkService({
+                                                    eventBus,
+                                                });
+                                                // (Optionally) enable find controller.
+                                                var pdfFindController=new pdfjsViewer.PDFFindController({
+                                                    linkService: pdfLinkService,
+                                                    eventBus,
+                                                });
+                                                var pageIdx=pageNumber-1;
+                                                var highlighter = new pdfjsViewer.TextHighlighter({
+                                                    pdfFindController,
+                                                    eventBus,
+                                                    pageIdx
+                                                });
+                                                var textLayerBuilder=textLayerFactory.createTextLayerBuilder(
+                                                    textLayer,
+                                                    pageIdx,
+                                                    viewport,
+                                                    true,
+                                                    eventBus,
+                                                    highlighter,
+                                                );
+                                                pdfLinkService.setViewer(textLayerBuilder);
+                                                textLayerBuilder.setTextContent(textContent);
+                                                textLayerBuilder.render();// Enable a11y for annotations
 
-                                            // Timeout is needed to wait for `textLayerBuilder.render`
-                                            //setTimeout(function(){try{(0,_renderScreenReaderHints2.default)(annotations.annotations);resolve();}catch(e){reject(e);}});
-                                            //ur weil setTimeout auskommentiert ist!!!!!
-                                            resolve();
+                                                // Timeout is needed to wait for `textLayerBuilder.render`
+                                                //setTimeout(function(){try{(0,_renderScreenReaderHints2.default)(annotations.annotations);resolve();}catch(e){reject(e);}});
+                                                //ur weil setTimeout auskommentiert ist!!!!!
+                                                resolve();
+                                            });
                                         });
                                     });
                             }).then(function(){// Indicate that the page was loaded
