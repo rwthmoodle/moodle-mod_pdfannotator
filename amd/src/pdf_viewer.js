@@ -20,16 +20,8 @@
  * Javascript code in this page
  */
 
- (function webpackUniversalModuleDefinition(root, factory) {
-	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();/*
-	else if(typeof define === 'function' && define.amd)
-		define("pdfjs-dist/web/pdf_viewer", [], factory);
-	else if(typeof exports === 'object')
-		exports["pdfjs-dist/web/pdf_viewer"] = factory();*/
-	else
-		root["pdfjs-dist/web/pdf_viewer"] = root.pdfjsViewer = factory();
-})(this, function() {
+define([], () => {
+
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
