@@ -1757,10 +1757,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
                         let newTextContent = extract_text_from_html(newContent);
-                        if(newTextContent.length < 2){
+                        if(newTextContent.length === 0){
                             // Should be more than one character, otherwise it should not be saved.
                             notification.addNotification({
-                              message: M.util.get_string('min2Chars','pdfannotator'),
+                              message: M.util.get_string('min0Chars','pdfannotator'),
                               type: "error"
                             });
                         } else if(newContent === comment.content) { // No changes.
@@ -1939,10 +1939,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
                       let commentTextContent = extract_text_from_html(commentText.value.trim());
-                      if(commentTextContent.length < 2){
+                      if(commentTextContent.length === 0){
                           //should be more than one character, otherwise it should not be saved.
                           notification.addNotification({
-                            message: M.util.get_string('min2Chars','pdfannotator'),
+                            message: M.util.get_string('min0Chars','pdfannotator'),
                             type: "error"
                           });
                           commentText.focus();
@@ -5830,7 +5830,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             * Save a new point annotation from input
             */
             function savePoint(svg = null){
-                if(textarea.value.trim().length>1){
+                if(textarea.value.trim().length > 0){
                     disablePoint();
                     var page = pageNumber;
                     if (!svg) {
@@ -5889,7 +5889,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                 }else{
                     notification.addNotification({
-                        message: M.util.get_string('min2Chars', 'pdfannotator'),
+                        message: M.util.get_string('min0Chars', 'pdfannotator'),
                         type: "error"
                     });
                     textarea.focus();
@@ -6271,7 +6271,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             var documentId=_getMetadata.documentId;
             var pageNumber=_getMetadata.pageNumber;
             var content=textarea.value.trim();
-            if(textarea.value.trim().length > 1){
+            if(textarea.value.trim().length > 0){
                 
                 (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                 
@@ -6318,7 +6318,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     });
             }else{
                notification.addNotification({
-                    message: M.util.get_string('min2Chars', 'pdfannotator'),
+                    message: M.util.get_string('min0Chars', 'pdfannotator'),
                     type: "error"
                 });
                 textarea.focus(); 
