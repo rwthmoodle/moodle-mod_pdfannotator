@@ -1756,14 +1756,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
-                        let newTextContent = extract_text_from_html(newContent);
-                        if(newTextContent.length < 2){
-                            // Should be more than one character, otherwise it should not be saved.
-                            notification.addNotification({
-                              message: M.util.get_string('min2Chars','pdfannotator'),
-                              type: "error"
-                            });
-                        } else if(newContent === comment.content) { // No changes.
+                        if(newContent === comment.content) { // No changes.
                             editForm.style.display = "none";
                             text.innerHTML = comment.content;
                             renderMathJax(text);
@@ -1938,17 +1931,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                       document.querySelector('#commentSubmit').disabled = true;
                       var commentVisibility= read_visibility_of_checkbox();
                       var isquestion = 0; // this is a normal comment, so it is not a question
-                      let commentTextContent = extract_text_from_html(commentText.value.trim());
-                      if(commentTextContent.length < 2){
-                          //should be more than one character, otherwise it should not be saved.
-                          notification.addNotification({
-                            message: M.util.get_string('min2Chars','pdfannotator'),
-                            type: "error"
-                          });
-                          commentText.focus();
-                          document.querySelector('#commentSubmit').disabled = false;
-                          return false;
-                      }
 	            _2.default.getStoreAdapter().addComment(documentId, annotationId, commentText.value.trim(), commentVisibility, isquestion)
                         .then(insertComments)
                         .then(function () {
@@ -5887,12 +5869,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     
                     textarea = void 0;
                     (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
-                }else{
-                    notification.addNotification({
-                        message: M.util.get_string('min2Chars', 'pdfannotator'),
-                        type: "error"
-                    });
-                    textarea.focus();
                 }
             }
             function closeInput(){data.removeEventListener('blur',handleInputBlur);data.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(data);data=null;}/**
@@ -6316,12 +6292,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             type: "error"
                         });
                     });
-            }else{
-               notification.addNotification({
-                    message: M.util.get_string('min2Chars', 'pdfannotator'),
-                    type: "error"
-                });
-                textarea.focus(); 
             }
         }
         /**
