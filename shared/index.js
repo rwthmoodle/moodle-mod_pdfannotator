@@ -1060,8 +1060,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 // Calculate again in case contentHeight was 1 (because content wasn't loaded yet?)
                 contentHeight = $('#content-wrapper').height();
                 bottom = contentTop + contentHeight - fixedTop - toolbarHeight;
+                var notifications = $('#user-notifications').children();
        
-                if (y >= top + 1 - fixedTop && y < bottom - 50) {
+                if (y >= top + 1 - fixedTop && y < bottom - 50 && !notifications) {
                     $('#pdftoolbar').addClass('fixtool');
                     $('#pdftoolbar').width(width);
                     document.getElementById("pdftoolbar").style.top = fixedTop + "px";
