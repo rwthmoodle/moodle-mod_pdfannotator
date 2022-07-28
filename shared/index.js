@@ -5058,7 +5058,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}
             function _toConsumableArray(arr){if(Array.isArray(arr)){for(var i=0,arr2=Array(arr.length);i<arr.length;i++){arr2[i]=arr[i];}return arr2;}else{return Array.from(arr);}}
             var _enabled=false;
-            var isDragging=false,overlay=void 0,overlayOld=void 0,annoId=0;
+            var isDragging=false,overlay=void 0,overlayOld=void 0,annoId=0, isMoved=true;
             var dragOffsetX=void 0,dragOffsetY=void 0,dragStartX=void 0,dragStartY=void 0;
             var OVERLAY_BORDER_SIZE=3;
             var SIZE = 20;
@@ -5193,7 +5193,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 }
                 //if the click is on the Commentlist nothing should happen.
                 if(((typeof e.target.getAttribute('id')!='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1){
-                    
                     return;
                 }
                 if(!(0,_utils.findSVGAtPoint)(e.clientX, e.clientY)){
@@ -5206,6 +5205,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
                     destroyEditOverlay();
                 }
+                isMoved = false;
             }
             /**
             * Handle document.keyup event
@@ -5246,22 +5246,23 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             *
             * @param {Event} e The DOM event that needs to be handled
             */function handleDocumentMousemove(e){
-                           var annotationId=overlay.getAttribute('data-target-id');
-                           var parentNode=overlay.parentNode;
-                           var rect=parentNode.getBoundingClientRect();
-                           var y=dragStartY+(e.clientY-dragOffsetY);
-                           var x=dragStartX+(e.clientX-dragOffsetX);
-                           var minY=0;
-                           var maxY=rect.height;
-                           var minX=0;
-                           var maxX=rect.width;
-                           if(y>minY&&y+overlay.offsetHeight<maxY){
-                               overlay.style.top=y+'px';
-                           }
-                           if(x>minX&&x+overlay.offsetWidth<maxX){
-                               overlay.style.left=x+'px';
-                           }
-                       }
+                var annotationId=overlay.getAttribute('data-target-id');
+                var parentNode=overlay.parentNode;
+                var rect=parentNode.getBoundingClientRect();
+                var y=dragStartY+(e.clientY-dragOffsetY);
+                var x=dragStartX+(e.clientX-dragOffsetX);
+                var minY=0;
+                var maxY=rect.height;
+                var minX=0;
+                var maxX=rect.width;
+                if(y>minY&&y+overlay.offsetHeight<maxY){
+                    overlay.style.top=y+'px';
+                }
+                if(x>minX&&x+overlay.offsetWidth<maxX){
+                    overlay.style.left=x+'px';
+                }
+                isMoved = true;
+            }
             /**
             * Handle document.mouseup event
             * This function is responsible for shifting areas, pins, textboxes and drawings
@@ -5290,8 +5291,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 (0,_ajaxloader.showLoader)();
                 var oldX = 0;
                 var oldY= 0;
-                var viewY = 0;
-                var viewX = 0;
+                var viewY = dragStartY;
+                var viewX = dragStartX;
                 _PDFJSAnnotate2.default.getStoreAdapter().getAnnotation(documentId,annotationId).then(function(annotation){
                     oldX = annotation['annotation'].x;
                     oldY = annotation['annotation'].y;
@@ -5379,6 +5380,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             }
                     (function editAnnotation(){
                         if(!overlay){
+                            return;
+                        }
+                        if(dragStartX === viewX && dragStartY === viewY) {
                             return;
                         }
                         annoId=overlay.getAttribute('data-target-id');
@@ -5474,7 +5478,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 (0,_event.addEventListener)('annotation:click',handleAnnotationClick);
             };/**
              * Disable edit mode behavior.
-             */function disableEdit(){destroyEditOverlay();if(!_enabled){return;}_enabled=false;document.getElementById('content-wrapper').classList.remove('cursor-edit');(0,_event.removeEventListener)('annotation:click',handleAnnotationClick);};
+             */function disableEdit(){
+                 destroyEditOverlay();
+                 if(!_enabled){return;}
+                 _enabled=false;document.getElementById('content-wrapper').classList.remove('cursor-edit');(0,_event.removeEventListener)('annotation:click',handleAnnotationClick);
+            };
     /***/},
     /* 30 */
     /***/function(module,exports,__webpack_require__){
