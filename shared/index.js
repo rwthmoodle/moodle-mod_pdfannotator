@@ -1302,12 +1302,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	  }
 
 	  function handleToolbarClick(e) {
-              var target = e.target;
-              //The content of some buttons are img-tags. 
-              //Then the nodeName of the clicked target will be IMG, but we need the outer button element 
-              if((target.nodeName === 'IMG' || target.nodeName === 'I')   && target.parentElement.nodeName === 'BUTTON'){
-                  target = e.target.parentElement;
-              }
+        var target = e.target;
+        //The content of some buttons are img-tags. 
+        //Then the nodeName of the clicked target will be IMG, but we need the outer button element 
+        if((target.nodeName === 'IMG' || target.nodeName === 'I')   && target.parentElement.nodeName === 'BUTTON'){
+            target = e.target.parentElement;
+        }
 	    if (target.nodeName === 'BUTTON') {
                 //Only setActiveToolbarItem if the button is not disabled! (It is disables, if the annotations are hidden)
                 if(!target.disabled){
@@ -1320,8 +1320,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 form.style.display = 'none';
                 document.querySelector('.comment-list-container').innerHTML = '';
             }
-	  }
-	  document.querySelector('.toolbar').addEventListener('click', handleToolbarClick);
+	    }
+	    document.querySelector('.toolbar').addEventListener('click', handleToolbarClick);
 	})(); //end Toolbar buttons
 
 	// Scale
@@ -3926,18 +3926,32 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(clickedElement && editorNodes.querySelector(clickedElement)) {
                     return;
                 }
+                //If moodle Modal beeing clicked.
+                var modal = document.querySelectorAll('.modal.show')[0];
+                if(modal) {
+                    if(clickedElement && modal.querySelector(clickedElement)) {
+                        return;
+                    }
+                }
+                //If attoEditor Modal beeing clicked.
+                var modalAtto = document.querySelectorAll('.moodle-dialogue-base')[0];
+                if(modalAtto) {
+                    if(clickedElement && modalAtto.querySelector(clickedElement)) {
+                        return;
+                    }
+                }
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I'){
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I' || e.target.tagName === "BUTTON"){
                     return;
                 }
                 //R: if the click is on the Commentlist nothing should happen.
                 if(((typeof e.target.getAttribute('id')!='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1){
-                    
-                        return;
+                    return;
                 }
                 if(!(0,_utils.findSVGAtPoint)(e.clientX,e.clientY,true)){
                     return;
                 }
+                
                 handleDocumentClickFunction(e);
                 
             });
