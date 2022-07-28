@@ -628,7 +628,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         /* ************** END Store Adapter!! **********************************/
 
 	_2.default.setStoreAdapter(MyStoreAdapter);
-	pdfjsLib.workerSrc = 'shared/pdf.worker.js?ver=00002';
+	pdfjsLib.GlobalWorkerOptions.workerSrc = 'shared/pdf.worker.js?ver=00002';
 	// Render stuff
 	var NUM_PAGES = 0;
         var oldPageNumber;
@@ -756,7 +756,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     doc.text(35, count, title);
 
                                     doc.setTextColor(0,0,51);
-                                    doc.setFontSize(12);
+                                    doc.setFontSize(10);
 
                                     if (data === null) {
                                         doc.text(35, 27, M.util.get_string('emptypdf', 'pdfannotator') + " " + page);
@@ -811,9 +811,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                      * Take a user's post (i.e. an individual question or answer), determine whether
                                      * it contains latex formulae images or not and place its text and/or images on the pdf
                                      */
-                                    function breakLines(author=null, timemodified=null, post, characters = 150) {
+                                    function breakLines(author=null, timemodified=null, post, characters = 130) {
                                         if (typeof post === "string") { // Answer contains text only.
-                                            printTextblock(author, timemodified, post);        
+                                            printTextblock(author, timemodified, post, characters);        
                                         }
 
                                         if (typeof post === "object") { // Answer is an array of text (optional) and a png image of a latex formula.
@@ -824,10 +824,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         }
                                     }
                                     /**
-                                     * Take a text block, split it into pieces no larger than 150 characters
+                                     * Take a text block, split it into pieces no larger than 130 characters
                                      * and print one piece per line                                      
                                      */
-                                    function printTextblock(author=null, timemodified=null, text, characters = 150) {
+                                    function printTextblock(author=null, timemodified=null, text, characters) {
                                         // In the comments linebreaks are represented by <br \>-Tags. Sometimes there is an additional \n
                                         // jsPDF needs \n-linebreaks so we replace <br \> with \n. But first we remove all \n that already exist.
                                         text = text.replace(/\n/g, "");
@@ -841,6 +841,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         var textbit;
                                         for (var j = 0; j < stringarray.length; j++) {
                                             doc.setFont('NotoSans');
+                                            doc.setFontType("normal");
                                             textbit = stringarray[j];
                                             if (count >= 280) {
                                                 doc.addPage();
