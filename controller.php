@@ -417,7 +417,7 @@ if ($action === 'overviewreports') {
     echo $OUTPUT->heading(get_string('reportstab', 'pdfannotator') . ' ' .
             $OUTPUT->help_icon('reportstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
 
-    $reports = pdfannotator_get_reports($thiscourse, $reportfilter);
+    $reports = pdfannotator_get_reports($thiscourse, $reportfilter, $context);
 
     if (empty($reports)) {
         switch ($reportfilter) {
@@ -436,7 +436,7 @@ if ($action === 'overviewreports') {
         $urlparams = array('action' => 'overviewreports', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
             'reportfilter' => $reportfilter);
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
-        pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter);
+        pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter, $context);
     }
 }
 
@@ -560,6 +560,7 @@ if ($action === 'report') {
 
         // Get information about the comment to be reported.
         $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
+        $comment->content = pdfannotator_get_relativelink($comment->content, $comment->id, $context);
         $info = pdfannotator_comment_info::make_from_comment($comment);
 
         // Display it in a table.

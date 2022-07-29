@@ -93,7 +93,8 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // The renderer renders the original index.php / takes the template and renders it.
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     echo $myrenderer->render_index(new index($pdfannotator, $capabilities, $file));
-    pdfannotator_init_editor($context, 'myarea');
+    $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
+    pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', "editor-commentlist-inputs");
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
@@ -102,15 +103,118 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     die;
 }
 
-/**
- * Add editor to given textarea.
- * @param type $context
- * @param type $textarea id of the textarea-element
- */
-function pdfannotator_init_editor($context, $textarea) {
+function pdfannotator_get_image_options_editor() {
+    $image_options = new \stdClass();
+    $image_options->maxbytes = get_config('mod_pdfannotator', 'maxbytes');
+    $image_options->maxfiles = get_config('mod_pdfannotator', 'maxfiles');
+    $image_options->autosave = false;
+    $image_options->env = 'editor';
+    $draftitemid = file_get_unused_draft_itemid();
+    $image_options->itemid = $draftitemid;
+    return $image_options;
+}
+
+function pdfannotator_get_editor_options($context) {
+    $options = [];
+    $options = [
+        'atto:toolbar' => get_config('mod_pdfannotator', 'attobuttons'),
+        'maxbytes' => get_config('mod_pdfannotator', 'maxbytes'),
+        'maxfiles' => get_config('mod_pdfannotator', 'maxfiles'),
+        'return_types' => 15,
+        'enable_filemanagement' => true, 
+        'removeorphaneddrafts' => false, 
+        'autosave' => true,
+        'noclean' => false, 
+        'trusttext' => 0,
+        'subdirs' => true,
+        'forcehttps' => false,
+        'areamaxbytes' => FILE_AREA_MAX_BYTES_UNLIMITED,
+    ];
+    return $options;
+}
+
+function pdfannotator_get_relativelink($content, $commentid, $context) {
+    preg_match('/@@PLUGINFILE@@/', $content, $matches);
+    if($matches) {
+        $relativelink = file_rewrite_pluginfile_urls($content, 'pluginfile.php', $context->id, 'mod_pdfannotator', 'post', $commentid);
+        return $relativelink;
+    }
+    return $content;
+}
+
+function pdfannotator_extract_picture($content) {
+    preg_match('/<img src(\W*[a-zA-Z]*[0-9]*[_|&|%|$]*)*">/', $content, $matches1);
+    if ($matches1) {
+        $imgs = array_filter($matches1, 'trim');
+        foreach ($imgs as $img) {
+
+            $data = new stdClass();
+            preg_match('/(https(...{1,})((.gif)|(.jpe)|(.jpeg)|(.jpg)|(.png)|(.svg)|(.svgz)))/', $img, $url);
+            preg_match('/(gif)|(jpe)|(jpeg)|(jpg)|(png)|(svg)|(svgz)/', $url[0], $extension);
+            if (!$extension) {
+                throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
+            }
+            if (in_array('jpg', $extension) || in_array('jpeg', $extension) || in_array('jpe', $extension)) {
+                $extension[0] = 'jpeg';
+            }
+            $data->image = $url[0];
+            $data->extension = strtoupper($extension[0]);
+            preg_match('/height="[0-9]+"/', $img, $height);
+            $data->imageheight = str_replace("\"", "", explode('=', $height[0])[1]);
+            preg_match('/width="[0-9]+"/', $img, $width);
+            $data->imagewidth = str_replace("\"", "", explode('=', $width[0])[1]);
+            $res[] = $data;
+        }
+        return $res;
+    } else {
+        return $content;
+    }
+}
+
+function pdfannotator_data_preprocessing($context, $textarea, $classname, $draftitemid = 0) {
+    global $PAGE;
+
+    $options = pdfannotator_get_editor_options($context);
+
+    // Check if image button is activated.
+    $attobuttons = $options['atto:toolbar'];
+    $grouplines = explode("\n", $attobuttons);
+    $groups = [];
+    $imagebtn = false;
+    foreach ($grouplines as $groupline) {
+        $line = explode('=', $groupline);
+        $groups = array_map('trim', explode(',', $line[1]));
+        if (in_array('image', $groups)) {
+            $imagebtn = true;
+            break;
+        }
+    }
     $editor = editors_get_preferred_editor(FORMAT_HTML);
-    $attobuttons = get_config('mod_pdfannotator', 'attobuttons');
-    $editor->use_editor($textarea, ['context' => $context, 'autosave' => false, 'atto:toolbar' => $attobuttons]);
+    if(!$imagebtn) {
+        $editor->use_editor($textarea, $options);
+    } else {
+        // inilialize Filepicker if image button is active.
+        $args = new \stdClass();    
+        // need these three to filter repositories list.    
+        $args->accepted_types = ['web_image'];
+        $args->return_types = 15;
+        $args->context = $context;
+        $args->env = 'filepicker';
+        // advimage plugin
+        $image_options = (object)initialise_filepicker($args);
+        $image_options->maxbytes = get_config('mod_pdfannotator', 'maxbytes');
+        $image_options->maxfiles = get_config('mod_pdfannotator', 'maxfiles');
+        $image_options->autosave = false;
+        $image_options->env = 'editor';
+        $draftitemid = file_get_unused_draft_itemid();
+        $image_options->itemid = $draftitemid;
+        $editor->use_editor($textarea, $options, ['image' => $image_options]);
+    }
+
+    // Add draftitemid and editorformat into input-tags.
+    $editorformat = editors_get_preferred_format(FORMAT_HTML);
+
+    $PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
 }
 
 function pdfannotator_get_instance_name($id) {
@@ -806,6 +910,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
             $question->displayhidden = true;
         }
 
+        $question->content = pdfannotator_get_relativelink($question->content, $question->commentid, $context);
         $question->content = format_text($question->content, $options = ['filter' => true]);
         $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $question->cmid,
             'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();
@@ -882,6 +987,7 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
 
         $params = array('id' => $post->cmid, 'page' => $post->page, 'annoid' => $post->annotationid, 'commid' => $post->commid);
         $post->link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
+        $post->content = pdfannotator_get_relativelink($post->content, $post->commid, $context);
         $post->content = format_text($post->content, $options = ['filter' => true]);
     }
     return $posts;
@@ -1012,7 +1118,7 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
  * @param int $reportfilter: 0 for unread, 1 for read, 2 for all
  * @return array of report objects
  */
-function pdfannotator_get_reports($courseid, $reportfilter = 0) {
+function pdfannotator_get_reports($courseid, $reportfilter = 0, $context) {
 
     global $DB;
 
@@ -1042,7 +1148,10 @@ function pdfannotator_get_reports($courseid, $reportfilter = 0) {
     foreach ($reports as $report) {
         $report->link = (new moodle_url('/mod/pdfannotator/view.php',
             array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
+            $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
         $report->reportedcomment = format_text($report->reportedcomment, $options = ['filter' => true]);
+        $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
+        $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
         $report->report = format_text($report->report, $options = ['filter' => true]);
     }
     return $reports;
@@ -1505,7 +1614,7 @@ function pdfannotator_print_this_users_posts($posts, $thiscourse, $url, $current
  * @param Moodle url object $url
  * @param int $currentpage
  */
-function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter) {
+function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter, $context) {
 
     global $CFG, $OUTPUT;
     require_once("$CFG->dirroot/mod/pdfannotator/model/overviewtable.php");
@@ -1521,7 +1630,7 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
     // Add data to the table and print the requested table page.
     if ($itemsperpage == -1) {
         foreach ($reports as $report) {
-            pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage);
+            pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage, $context);
         }
     } else {
         $reportcount = count($reports);
@@ -1533,7 +1642,7 @@ function pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $
             if ($rowstoprint === 0) {
                 break;
             }
-            pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage);
+            pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage, $context);
             $rowstoprint--;
         }
     }
@@ -1665,8 +1774,12 @@ function pdfannotator_userspoststable_add_row($table, $post) {
  * @param int $reportfilter
  * @param int $currentpage
  */
-function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage) {
-    global $CFG, $PAGE;
+function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage, $context) {
+    global $CFG, $PAGE, $DB;
+    
+    $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
+    $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
+    $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
 
     // Prepare report data for display.
     $reportid = 'report_' . $report->reportid;
@@ -1766,6 +1879,7 @@ function pdfannotator_get_last_answer($annotationid, $context) {
         if (!pdfannotator_can_see_comment($answer, $context)) {
             continue;
         } else {
+            $answer->content = pdfannotator_get_relativelink($answer->content, $answer->id, $context);
             return $answer;
         }
     }

@@ -225,3 +225,29 @@ function checkOnlyOneCheckbox( Y ) {
         });
     }
 }
+
+
+/**
+ * Input draftitemid to the input-tag in comment_list_form.
+ */
+ function inputDraftItemID(Y, draftitemid, editorformat, classname) {
+    let elem = document.getElementsByClassName(classname);
+    for (let editorwrap of elem) {
+        let match = '';
+        if(classname.match('editcomment')) {
+            match = 'editcomment';
+        } else if (classname.match('commentlist')) {
+            match = 'content';
+        } else {
+            return false;
+        }
+        if(editorwrap.getElementsByClassName(`pdfannotator_${match}_editoritemid`).length === 0) {
+            let sibling1 = `<input class="pdfannotator_${match}_editoritemid" type="hidden" value=${draftitemid}>`
+            editorwrap.insertAdjacentHTML("afterend", sibling1);
+        }
+        if(editorwrap.getElementsByClassName('pdfannotator_${match}_editorformat').length === 0) {
+            let sibling2 = `<input class="pdfannotator_${match}_editorformat" id="menupdfannotator_${match}_editorformat" type="hidden" value=${editorformat}>`;
+            editorwrap.insertAdjacentHTML("afterend", sibling2);
+        }
+    };
+}

@@ -1758,8 +1758,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
-                        let newTextContent = extract_text_from_html(newContent);
-                        if(newTextContent.length === 0){
+                        let newTextContent = newContent ? extract_text_from_html(newContent) : 0;
+                        let img = editForm.querySelectorAll('img');
+                        if(newTextContent === 0 && !img){
                             // Should be more than one character, otherwise it should not be saved.
                             notification.addNotification({
                               message: M.util.get_string('min0Chars','pdfannotator'),
@@ -1906,52 +1907,59 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	        var annotationId = target.getAttribute('data-pdf-annotate-id');
 
 	        _2.default.getStoreAdapter().getComments(documentId, annotationId).then(function (comments) {
-                  UI.hideLoader();
-                  var title;
-                  if(comments.comments[0].visibility == "protected") {
+                UI.hideLoader();
+                var title;
+                if(comments.comments[0].visibility == "protected") {
                     title = M.util.get_string('protected_comments','pdfannotator');
                     $("#protectedDiv").hide();                    
                     $("#anonymousDiv").hide();
                     $("#privateDiv").hide();
                     $("#myarea").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
-                  } else if (comments.comments[0].visibility == "private") {
+                } else if (comments.comments[0].visibility == "private") {
                     title = M.util.get_string('private_comments','pdfannotator');
                     $("#privateDiv").hide();
                     $("#protectedDiv").hide();                    
                     $("#anonymousDiv").hide();
                     $("#myarea").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
-                  } else {
+                } else {
                     title = M.util.get_string('public_comments','pdfannotator');
                     $("#privateDiv").hide();
                     $("#protectedDiv").hide();
                     $("#anonymousDiv").show();
                     $("#myarea").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
-                  }
+                }
+                
+                $('#comment-wrapper h4')[0].innerHTML = title;
+	            commentList.innerHTML = '';
+	            commentForm.style.display = 'inherit';
                   
-                  $('#comment-wrapper h4')[0].innerHTML = title;
-	          commentList.innerHTML = '';
-	          commentForm.style.display = 'inherit';
-                  
-                  var button1 = document.getElementById('allQuestions'); // to be found in index template
-                  button1.style.display = 'inline';
-                  var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
-                  button2.style.display = 'inline';
-                  commentForm.onsubmit = function (e) {
-                      document.querySelector('#commentSubmit').disabled = true;
-                      var commentVisibility= read_visibility_of_checkbox();
-                      var isquestion = 0; // this is a normal comment, so it is not a question
-                      let commentTextContent = extract_text_from_html(commentText.value.trim());
-                      if(commentTextContent.length === 0){
-                          //should be more than one character, otherwise it should not be saved.
-                          notification.addNotification({
+                var button1 = document.getElementById('allQuestions'); // to be found in index template
+                button1.style.display = 'inline';
+                var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                button2.style.display = 'inline';
+                let commentTextContent;
+                let isEmptyContent;
+                commentForm.onsubmit = function (e) {
+                    document.querySelector('#commentSubmit').disabled = true;
+                    var commentVisibility= read_visibility_of_checkbox();
+                    var isquestion = 0; // this is a normal comment, so it is not a question
+                    commentTextContent = commentText ? extract_text_from_html(commentText.value.trim()) : 0;
+                    var commentContentElements = commentForm.querySelectorAll('#id_pdfannotator_contenteditable');
+                    if (commentContentElements) {
+                        
+                    }
+                    let img = commentForm.querySelectorAll('img');
+                    if(commentTextContent === 0 && !img){
+                        //should be more than one character, otherwise it should not be saved.
+                        notification.addNotification({
                             message: M.util.get_string('min0Chars','pdfannotator'),
                             type: "error"
-                          });
-                          commentText.focus();
-                          document.querySelector('#commentSubmit').disabled = false;
-                          return false;
-                      }
-	            _2.default.getStoreAdapter().addComment(documentId, annotationId, commentText.value.trim(), commentVisibility, isquestion)
+                        });
+                        commentText.focus();
+                        document.querySelector('#commentSubmit').disabled = false;
+                        return false;
+                    }
+	                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentTextContent, commentVisibility, isquestion)
                         .then(insertComments)
                         .then(function () {
                             document.querySelector('#commentSubmit').disabled = false;
@@ -1968,8 +1976,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             console.error(M.util.get_string('error:addComment', 'pdfannotator'));
                         });
 
-	            return false; // Prevents page reload via POST to enable asynchronous loading
-	          };
+	                return false; // Prevents page reload via POST to enable asynchronous loading
+	            };
                   
                   //render comments   
                   insertComments(comments, target.markCommentid);
@@ -7587,4 +7595,8 @@ function extract_text_from_html(html) {
     let tmp = document.createElement('div');
     tmp.innerHTML = html;
     return tmp.textContent;
+}
+
+function get_post_content(commentList) {
+    var commentInsidePtag = commentList.querySelectorAll('');
 }
