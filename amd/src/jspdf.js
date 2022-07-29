@@ -4542,7 +4542,7 @@ define(function() {
   				}
   			}
   		}
-  		if (result === 'UNKOWN' && fallbackFormat !== 'UNKNOWN') {
+  		if (result === 'UNKNOWN' && fallbackFormat !== 'UNKNOWN') {
   			console.warn('FileType of Image not recognized. Processing image as "' + fallbackFormat + '".');
   			result = fallbackFormat;
   		}
