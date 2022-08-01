@@ -71,8 +71,9 @@ class pdfannotator_comment {
 
         $datarecord->uuid = $commentuuid;
         self::set_username($datarecord);
-
+        
         $datarecord->displaycontent = format_text($datarecord->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
+        $datarecord->displaycontent = pdfannotator_get_relativelink($datarecord->displaycontent, $datarecord->id, $context);
         $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
         $datarecord->timemodified = pdfannotator_optional_timeago($datarecord->timemodified);
         $datarecord->usevotes = pdfannotator_instance::use_votes($documentid);
@@ -202,8 +203,8 @@ class pdfannotator_comment {
                 $comment->displaycontent = get_string('deletedComment', 'pdfannotator');
             } else {
                 $comment->content = $data->content;
-                /* $comment->displaycontent = self::get_relativelink($comment, $context); */
                 $comment->displaycontent = format_text($data->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
+                $comment->displaycontent = pdfannotator_get_relativelink($comment->content, $comment->uuid, $context);
             }
 
             self::set_username($comment);

@@ -280,11 +280,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @param {type} isquestion
              * @returns {unresolved}
              */
-            addComment(documentId, annotationId, content, visibility = "public", isquestion = 0) {       
+            addComment(documentId, annotationId, content, visibility = "public", isquestion = 0) {
+                var pdfannotator_content_editoritemid = document.querySelectorAll('.pdfannotator_content_editoritemid')[0].value;  
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, sesskey: M.cfg.sesskey}
+                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, "pdfannotator_content_editoritemid": pdfannotator_content_editoritemid, sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     data = data.substring(data.indexOf('{'),data.length);    
                 //TODO compare to data before data.substring
@@ -679,8 +680,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             var visiblePageNum = document.getElementById('currentPage').value;
             document.querySelector('.comment-list-form').setAttribute('style','display:none');
             document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
-            document.getElementById('myarea').value = "";
-            var editorComment = document.querySelectorAll('#myareaeditable')[0].childNodes;
+            document.getElementById('id_pdfannotator_content').value = "";
+            var editorComment = document.querySelectorAll('#id_pdfannotator_contenteditable')[0].childNodes;
             if(editorComment) {
                 editorComment.forEach(comment => {
                     comment.remove();
@@ -1528,9 +1529,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	(function (window, document) {
 	  var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
 	  var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
-          var commentText = commentForm.querySelector('#myarea'); // Plain text editor.
+          var commentText = commentForm.querySelector('#id_pdfannotator_content'); // Plain text editor.
           // We will need this to reset the typed text for other editors.
-          var editorArea = commentForm.querySelector('#myareaeditable'); // Atto editor.
+          var editorArea = commentForm.querySelector('#id_pdfannotator_contenteditable'); // Atto editor.
           if (!editorArea) { // TinyMCE editor.
               var iframe = document.getElementById("myarea_ifr");
               if (iframe) {
@@ -1914,19 +1915,19 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     $("#protectedDiv").hide();                    
                     $("#anonymousDiv").hide();
                     $("#privateDiv").hide();
-                    $("#myarea").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
+                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
                 } else if (comments.comments[0].visibility == "private") {
                     title = M.util.get_string('private_comments','pdfannotator');
                     $("#privateDiv").hide();
                     $("#protectedDiv").hide();                    
                     $("#anonymousDiv").hide();
-                    $("#myarea").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
+                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
                 } else {
                     title = M.util.get_string('public_comments','pdfannotator');
                     $("#privateDiv").hide();
                     $("#protectedDiv").hide();
                     $("#anonymousDiv").show();
-                    $("#myarea").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
+                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
                 }
                 
                 $('#comment-wrapper h4')[0].innerHTML = title;
@@ -1937,19 +1938,23 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 button1.style.display = 'inline';
                 var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                 button2.style.display = 'inline';
-                let commentTextContent;
-                let isEmptyContent;
+                let isEmptyContent = false;
                 commentForm.onsubmit = function (e) {
                     document.querySelector('#commentSubmit').disabled = true;
                     var commentVisibility= read_visibility_of_checkbox();
                     var isquestion = 0; // this is a normal comment, so it is not a question
-                    commentTextContent = commentText ? extract_text_from_html(commentText.value.trim()) : 0;
-                    var commentContentElements = commentForm.querySelectorAll('#id_pdfannotator_contenteditable');
-                    if (commentContentElements) {
-                        
+                    var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
+                    var imgContents = commentContentElements.querySelectorAll('img');
+                    if(commentContentElements.innerText.replace('/\n/g', '').trim() === '') {
+                        isEmptyContent = true;
                     }
-                    let img = commentForm.querySelectorAll('img');
-                    if(commentTextContent === 0 && !img){
+                    var temp = commentContentElements.querySelectorAll('p')[0];
+                    if(temp) {
+                        if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                            isEmptyContent = true;
+                        }
+                    }
+                    if(isEmptyContent && imgContents.length === 0){
                         //should be more than one character, otherwise it should not be saved.
                         notification.addNotification({
                             message: M.util.get_string('min0Chars','pdfannotator'),
@@ -1959,7 +1964,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         document.querySelector('#commentSubmit').disabled = false;
                         return false;
                     }
-	                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentTextContent, commentVisibility, isquestion)
+	                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
                         .then(insertComments)
                         .then(function () {
                             document.querySelector('#commentSubmit').disabled = false;
@@ -6757,10 +6762,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 document.getElementById('commentCancel').removeEventListener('click',handleCancelClick);
                 document.querySelector('.toolbar').removeEventListener('click',toolbarClick);
                 document.getElementById('commentSubmit').value = M.util.get_string('answerButton','pdfannotator');
-                document.getElementById('myarea').value = "";
-                document.getElementById('myarea').placeholder = M.util.get_string('addAComment','pdfannotator');
+                document.getElementById('id_pdfannotator_content').value = "";
+                document.getElementById('id_pdfannotator_content').placeholder = M.util.get_string('addAComment','pdfannotator');
                 // Reset the typed text for other editors.
-                var editorArea = document.querySelector('#myareaeditable'); // Atto editor.
+                var editorArea = document.querySelector('#id_pdfannotator_contenteditable'); // Atto editor.
                 if (!editorArea) { // TinyMCE editor.
                     var iframe = document.getElementById("myarea_ifr");
                     if (iframe) {
@@ -6812,7 +6817,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     $('#privateDiv').show();
                     $('#protectedDiv').show();
                 });
-                textarea = document.getElementById('myarea');
+                textarea = document.getElementById('id_pdfannotator_content');
                 textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
                 submitbutton = document.getElementById('commentSubmit');
                 submitbutton.value = M.util.get_string('createAnnotation','pdfannotator');
@@ -6860,7 +6865,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 $('#anonymousCheckbox').show();
                 $('#privateCheckbox').show();
                 $('#protectedCheckbox').show();
-                textarea = document.getElementById('myarea');
+                textarea = document.getElementById('id_pdfannotator_content');
                 textarea.placeholder = M.util.get_string('startDiscussion','pdfannotator');
                 submitbutton = document.getElementById('commentSubmit');
                 submitbutton.value = M.util.get_string('createAnnotation','pdfannotator');

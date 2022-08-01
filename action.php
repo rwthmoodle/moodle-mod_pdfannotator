@@ -337,11 +337,14 @@ if ($action === 'addComment') {
 
     // Get the comment data.
     $content = required_param('content', PARAM_RAW);
+    $regex = "/?time=[0-9]*/";
+    $extracted_content = str_replace($regex, "", $content);
+
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
     // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
-    $comment = pdfannotator_comment::create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context);
+    $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
     $commentid = $comment->uuid;
 
     // If successful, create a comment array and return it as json.

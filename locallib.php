@@ -1527,7 +1527,7 @@ function pdfannotator_print_questions($questions, $thiscourse, $urlparams, $curr
  * @param Moodle url object $url
  * @param int $thiscourse
  */
-function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter) {
+function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter, $context) {
 
     global $CFG, $OUTPUT;
     require_once("$CFG->dirroot/mod/pdfannotator/model/overviewtable.php");
@@ -1545,7 +1545,7 @@ function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $ite
     // Add data to the table and print the requested table page.
     if ($itemsperpage == -1) { // No pagination.
         foreach ($data as $answer) {
-            pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter);
+            pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter, $context);
         }
     } else {
         $answercount = count($data);
@@ -1557,7 +1557,7 @@ function pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $ite
             if ($rowstoprint === 0) {
                 break;
             }
-            pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter);
+            pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter, $context);
             $rowstoprint--;
         }
     }
@@ -1702,8 +1702,11 @@ function pdfannotator_questionstable_add_row($thiscourse, $table, $question, $ur
  * @param answerstable $table
  * @param object $answer
  */
-function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter) {
+function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, $currentpage, $itemsperpage, $answerfilter, $context) {
     global $CFG, $PAGE;
+
+    $answer->answer = pdfannotator_get_relativelink($answer->answer, $answer->answerid, $context);
+    $answer->answeredquestion = pdfannotator_get_relativelink($answer->answeredquestion, $answer->questionid, $context);
 
     if (isset($answer->displayquestionhidden)) {
         $question = "<a class='" . $answer->annoid . " more dimmed' href=$answer->questionlink>$answer->answeredquestion</a>";

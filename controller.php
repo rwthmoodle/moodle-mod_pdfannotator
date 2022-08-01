@@ -282,7 +282,7 @@ if ($action === 'overviewanswers') {
         $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
             'answerfilter' => $answerfilter);
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
-        pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter);
+        pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter, $context);
     }
 }
 /*
