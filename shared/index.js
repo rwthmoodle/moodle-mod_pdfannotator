@@ -293,6 +293,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if(data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
                         return false;
+                    } else if (data.status === "error" && data.type === "maxfile") {
+                        notification.addNotification({
+                            message: M.util.get_string('error:maximalfilenumber','pdfannotator'),
+                            type: "error"
+                        });
+                        return false;
                     }
                     return data;
                 });
@@ -1558,54 +1564,56 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             }
 
             (function(templates, data) {
-                templates.render('mod_pdfannotator/comment', data)
-                    .then(function(html,js){
-                        if(data.comments.length === 1 && !data.comments[0].isquestion) {
-                            $('.comment-list-container').append(html);
-                        } else {
-                            templates.replaceNodeContents('.comment-list-container', html, js);
-                        }                      
-                                                          
-                    }).then(function() {
-                        
-                        data.comments.forEach(function(comment) {
-                            createVoteHandler(comment);
-                            createEditFormHandler(comment);
-                            createSubscriptionHandler(comment);
-                            createHideHandler(comment);
-                            createDeleteHandler(comment);
-                            createSolvedHandler(comment);                           
-                            let pattern = $('#searchPattern').val();
-                            if(pattern !== '' && comment.content.search(new RegExp(pattern, "i")) !== -1){
-                                $('#comment_'+comment.uuid).addClass('mark');
-                            }
+                if(data.comments[0] !== false) {
+                    templates.render('mod_pdfannotator/comment', data)
+                        .then(function(html,js){
+                            if(data.comments.length === 1 && !data.comments[0].isquestion) {
+                                $('.comment-list-container').append(html);
+                            } else {
+                                templates.replaceNodeContents('.comment-list-container', html, js);
+                            }                      
+                                                              
+                        }).then(function() {
                             
-
-                            let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
-                            let element = document.querySelector(selector);
-                            renderMathJax(element);
-                        });
-                    //    fixCommentForm();
-                        
-                        //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
-                        //$("chat-message+:contains('text')").addClass('mark');
-                        //if the target has the attribute markCommentid a specific comment should be marked with an red border
-                        //after 3 sec the border should disappear
-                        if(markCommentid !== undefined && markCommentid !== null){
-                          //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
-                            $('#comment_'+markCommentid).addClass('mark');
-                            markCommentid = undefined;
-                            setTimeout(function(){
-                                if(document.querySelector('#comment_'+markCommentid)){
-                                    document.querySelector('#comment_'+markCommentid).style.border = "none";
+                            data.comments.forEach(function(comment) {
+                                createVoteHandler(comment);
+                                createEditFormHandler(comment);
+                                createSubscriptionHandler(comment);
+                                createHideHandler(comment);
+                                createDeleteHandler(comment);
+                                createSolvedHandler(comment);                           
+                                let pattern = $('#searchPattern').val();
+                                if(pattern !== '' && comment.content.search(new RegExp(pattern, "i")) !== -1){
+                                    $('#comment_'+comment.uuid).addClass('mark');
                                 }
-                            },3000);
-                        }else{
-                            // Otherwise the inputfield of the form should be focused.
-                          commentText.focus();
-                        }                       
-                        
-                    }); // add a catch
+                                
+    
+                                let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
+                                let element = document.querySelector(selector);
+                                renderMathJax(element);
+                            });
+                        //    fixCommentForm();
+                            
+                            //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
+                            //$("chat-message+:contains('text')").addClass('mark');
+                            //if the target has the attribute markCommentid a specific comment should be marked with an red border
+                            //after 3 sec the border should disappear
+                            if(markCommentid !== undefined && markCommentid !== null){
+                              //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
+                                $('#comment_'+markCommentid).addClass('mark');
+                                markCommentid = undefined;
+                                setTimeout(function(){
+                                    if(document.querySelector('#comment_'+markCommentid)){
+                                        document.querySelector('#comment_'+markCommentid).style.border = "none";
+                                    }
+                                },3000);
+                            }else{
+                                // Otherwise the inputfield of the form should be focused.
+                              commentText.focus();
+                            }                       
+                            
+                        }); // add a catch
+                }
             })(templates, comments);
             
 	  }
@@ -1801,6 +1809,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         notification.addNotification({
                                             message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                             type: "success"
+                                        });
+                                    } else if (data.status === "error:maxfile") {
+                                        notification.addNotification({
+                                            message: M.util.get_string('error:maximalfilenumber','pdfannotator'),
+                                            type: "error"
                                         });
                                     } else {
                                         notification.addNotification({

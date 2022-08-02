@@ -343,30 +343,30 @@ if ($action === 'addComment') {
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
-    $pattern = '/<img/';
-    $imgcounter = substr_count($extracted_content, $pattern);
+    $imgcounter = substr_count($extracted_content, '<img');
     if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
-        throw new \moodle_exception('error:maximalfilenumber', 'pdfannotator');
-    }
-
-    // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
-    $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
-    $commentid = $comment->uuid;
-
-    // If successful, create a comment array and return it as json.
-    if ($comment) {
-        $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
-        $templatable = new comment($comment, $cm, $context);
-        $data = $templatable->export_for_template($myrenderer);
-
-        echo json_encode($data);
+        echo json_encode(['status' => 'error', 'type' => "maxfile"]);
     } else {
-        if ($commentid == -1) {
-            echo json_encode(['status' => '-1']);
+        // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
+        $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
+        $commentid = $comment->uuid;
+    
+        // If successful, create a comment array and return it as json.
+        if ($comment) {
+            $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
+            $templatable = new comment($comment, $cm, $context);
+            $data = $templatable->export_for_template($myrenderer);
+    
+            echo json_encode($data);
         } else {
-            echo json_encode(['status' => 'error']);
+            if ($commentid == -1) {
+                echo json_encode(['status' => '-1']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
         }
     }
+
 }
 
 /* * ******************************* Retrieve information about a specific annotation from db ******************************* */
@@ -446,17 +446,17 @@ if ($action === 'editComment') {
 
     $commentid = required_param('commentId', PARAM_INT);
     $content = required_param('content', PARAM_RAW);
-    $regex = "/?time=[0-9]*/";
+    $regex = ["/?time=[0-9]*|/", '"'];
     $extracted_content = str_replace($regex, "", $content);
 
-    $pattern = '/<img/';
-    $imgcounter = substr_count($extracted_content, $pattern);
+    $imgcounter = substr_count($extracted_content, "<img");
     if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
-        throw new \moodle_exception('error:maximalfilenumber', 'pdfannotator');
+        echo json_encode(['status' => 'error:maxfile']);
+    } else {
+        $data = pdfannotator_comment::update($commentid, $extracted_content, $editanypost, $context);
+        echo json_encode($data);
     }
 
-    $data = pdfannotator_comment::update($commentid, $extracted_content, $editanypost, $context);
-    echo json_encode($data);
 }
 
 /* * ****************************************** Vote for a comment ****************************************** */
