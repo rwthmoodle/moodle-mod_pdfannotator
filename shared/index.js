@@ -306,11 +306,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @param {type} content
              * @returns {unresolved}
              */
-            editComment(documentId, commentId, content) {
+            editComment(documentId, commentId, content, editForm) {
+                var pdfannotator_editcomment_editoritemid = editForm.querySelectorAll('.pdfannotator_editcomment_editoritemid')[0].value;
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "commentId": commentId, "content": content, "action": "editComment", "cmid":_cm.id, sesskey: M.cfg.sesskey}
+                    data: { "documentId": documentId, "commentId": commentId, "content": content, "action": "editComment", "pdfannotator_editcomment_editoritemid": pdfannotator_editcomment_editoritemid, "cmid":_cm.id, sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     return JSON.parse(data);      
                 });
@@ -1748,20 +1749,32 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
            */
           function createEditFormHandler(comment) {
                 var editorExists = false;
+                var editForm;
+                var editArea;
                 var handleClickIfEditorExists = function() { // If there is no editor in the comment already, we will insert it and than call this function.
-                    var editForm = document.getElementById("edit"+comment.uuid);
-                    var editArea = document.getElementById("editarea"+comment.uuid);
+                    editForm = document.getElementById("edit"+comment.uuid);
+                    editArea = document.getElementById("editarea"+comment.uuid);
                     var text = document.getElementById("chatmessage"+comment.uuid);
                     if (editForm.style.display === "none") {
                         editForm.style.display = "block";
                         text.innerHTML = "";
 
+                    var isEmptyContent = false;
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
                         let newContent = editArea.value.trim();
-                        let newTextContent = newContent ? extract_text_from_html(newContent) : 0;
-                        let img = editForm.querySelectorAll('img');
-                        if(newTextContent === 0 && !img){
+                        var commentEditContentElements = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
+                        var imgContents = commentEditContentElements.querySelectorAll('img');
+                        if(commentEditContentElements.innerText.replace('/\n/g', '').trim() === '') {
+                            isEmptyContent = true;
+                        }
+                        var temp = commentEditContentElements.querySelectorAll('p')[0];
+                        if(temp) {
+                            if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                                isEmptyContent = true;
+                            }
+                        }
+                        if(isEmptyContent && imgContents.length === 0){
                             // Should be more than one character, otherwise it should not be saved.
                             notification.addNotification({
                               message: M.util.get_string('min0Chars','pdfannotator'),
@@ -1772,7 +1785,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             text.innerHTML = comment.content;
                             renderMathJax(text);
                         } else { // Save changes.
-                            _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent)
+                            _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent, editForm)
                                 .then(function(data){
                                     if (data.status === "success") {
                                         editForm.style.display = "none";
@@ -1827,8 +1840,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         let fragmentPromise = Fragment.loadFragment('mod_pdfannotator', 'edit_comment_form', _contextId, args);
                         fragmentPromise.done(function(html, js) {
                             templates.runTemplateJS(js);
+                            return html;
                         }).fail(notification.exception)
-                        .then(function() {
+                        .then(function(html) {
+                            var editareaEditable = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
+                            editareaEditable.innerHTML = '';
+                            editareaEditable.innerHTML = html;
                             editorExists = true;
                             handleClickIfEditorExists();
                         });

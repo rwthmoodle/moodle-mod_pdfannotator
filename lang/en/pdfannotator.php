@@ -113,6 +113,7 @@ $string['error:hideComment'] = "An error has occured while trying to hide the co
 $string['error:markasread'] = 'The item could not be marked as read.';
 $string['error:markasunread'] = 'The item could not be marked as unread.';
 $string['error:markcorrectanswer'] = 'An error has occured while marking the answer as correct.';
+$string['error:maximalfilenumber'] = 'the maximum number of files has been exceeded.';
 $string['error:missingAnnotationtype'] = 'Annotationtype does not exists. Possibly the entry in table pdfannotator_annotationtypes is missing.';
 $string['error:openingPDF'] = 'An error occurred while opening the PDF file.';
 $string['error:openprintview'] = 'An error has occured while trying to open the pdf in Acrobat Reader.';

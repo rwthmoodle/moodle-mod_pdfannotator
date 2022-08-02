@@ -181,6 +181,7 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
     $grouplines = explode("\n", $attobuttons);
     $groups = [];
     $imagebtn = false;
+    $image_options = new stdClass();
     foreach ($grouplines as $groupline) {
         $line = explode('=', $groupline);
         $groups = array_map('trim', explode(',', $line[1]));
@@ -215,6 +216,81 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
     $editorformat = editors_get_preferred_format(FORMAT_HTML);
 
     $PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
+    
+    return $draftitemid;
+}
+
+function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
+    global $CFG, $USER, $CFG, $DB;
+
+    $options = (array)$options;
+    if (!isset($options['subdirs'])) {
+        $options['subdirs'] = false;
+    }
+    if (!isset($options['forcehttps'])) {
+        $options['forcehttps'] = false;
+    }
+
+    $usercontext = \context_user::instance($USER->id);
+    $fs = get_file_storage();
+
+    if (empty($draftitemid)) {
+        // create a new area and copy existing files into
+        $draftitemid = file_get_unused_draft_itemid();
+    }
+    $file_record = array('contextid'=>$usercontext->id, 'component'=>'user', 'filearea'=>'draft', 'itemid'=>$draftitemid);
+    if (!is_null($itemid) and $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
+        foreach ($files as $file) {
+            if ($file->is_directory() and $file->get_filepath() === '/') {
+                // we need a way to mark the age of each draft area,
+                // by not copying the root dir we force it to be created automatically with current timestamp
+                continue;
+            }
+            if (!$options['subdirs'] and ($file->is_directory() or $file->get_filepath() !== '/')) {
+                continue;
+            }
+
+            // We are adding to an already existing draft area so we need to make sure we don't double add draft files!
+            $checkfile = array_merge($file_record, ['filename' => $file->get_filename()]);
+            $draftexists = $DB->get_record('files', $checkfile);
+            if ($draftexists) {
+                continue;
+            }
+            $draftfile = $fs->create_file_from_storedfile($file_record, $file);
+            // XXX: This is a hack for file manager (MDL-28666)
+            // File manager needs to know the original file information before copying
+            // to draft area, so we append these information in mdl_files.source field
+            // {@link file_storage::search_references()}
+            // {@link file_storage::search_references_count()}
+            $sourcefield = $file->get_source();
+            $newsourcefield = new \stdClass;
+            $newsourcefield->source = $sourcefield;
+            $original = new \stdClass;
+            $original->contextid = $contextid;
+            $original->component = $component;
+            $original->filearea  = $filearea;
+            $original->itemid    = $itemid;
+            $original->filename  = $file->get_filename();
+            $original->filepath  = $file->get_filepath();
+            $newsourcefield->original = \file_storage::pack_reference($original);
+            $draftfile->set_source(serialize($newsourcefield));
+            // End of file manager hack
+        }
+    }
+    if (!is_null($text)) {
+        // at this point there should not be any draftfile links yet,
+        // because this is a new text from database that should still contain the @@pluginfile@@ links
+        // this happens when developers forget to post process the text
+        $text = str_replace("\"$CFG->httpswwwroot/draftfile.php", "\"$CFG->httpswwwroot/brokenfile.php#", $text);
+    }
+
+
+    if (is_null($text)) {
+        return null;
+    }
+
+    // relink embedded files - editor can not handle @@PLUGINFILE@@ !
+    return file_rewrite_pluginfile_urls($text, 'draftfile.php', $usercontext->id, 'user', 'draft', $draftitemid, $options);
 }
 
 function pdfannotator_get_instance_name($id) {

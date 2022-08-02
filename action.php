@@ -343,6 +343,12 @@ if ($action === 'addComment') {
     $visibility = required_param('visibility', PARAM_ALPHA);
     $isquestion = required_param('isquestion', PARAM_INT);
 
+    $pattern = '/<img/';
+    $imgcounter = substr_count($extracted_content, $pattern);
+    if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
+        throw new \moodle_exception('error:maximalfilenumber', 'pdfannotator');
+    }
+
     // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
     $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
     $commentid = $comment->uuid;
@@ -440,8 +446,16 @@ if ($action === 'editComment') {
 
     $commentid = required_param('commentId', PARAM_INT);
     $content = required_param('content', PARAM_RAW);
+    $regex = "/?time=[0-9]*/";
+    $extracted_content = str_replace($regex, "", $content);
 
-    $data = pdfannotator_comment::update($commentid, $content, $editanypost, $context);
+    $pattern = '/<img/';
+    $imgcounter = substr_count($extracted_content, $pattern);
+    if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
+        throw new \moodle_exception('error:maximalfilenumber', 'pdfannotator');
+    }
+
+    $data = pdfannotator_comment::update($commentid, $extracted_content, $editanypost, $context);
     echo json_encode($data);
 }
 

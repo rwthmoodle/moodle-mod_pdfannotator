@@ -770,8 +770,14 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
  * @return string
  */
 function mod_pdfannotator_output_fragment_edit_comment_form($args) {
+    global $DB;
     $context = context_module::instance($args['cmid']);
     $html = '';
-    pdfannotator_data_preprocessing($context, 'editarea' . $args['commentid'], 'editor-editcomment-inputs' . $args['commentid'], 1);
+
+    $draftitemid = pdfannotator_data_preprocessing($context, 'editarea' . $args['commentid'], 'editor-editcomment-inputs' . $args['commentid'], 1);
+    $comment = $DB->get_record('pdfannotator_comments', ['id' => $args['commentid']]);
+    $html = pdfannotator_file_prepare_draft_area($draftitemid, $context->id, 'mod_pdfannotator', 'post',
+    $args['commentid'], pdfannotator_get_editor_options($context), $comment->content);
+
     return $html;
 }

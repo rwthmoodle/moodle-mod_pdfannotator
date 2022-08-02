@@ -429,6 +429,7 @@ class pdfannotator_comment {
         }
 
         if ($success) {
+            $content = pdfannotator_get_relativelink($comment->content, $comment->id, $context);
             $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
             $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
             if ($comment->userid != $USER->id) {
