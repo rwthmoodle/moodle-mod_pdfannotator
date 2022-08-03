@@ -62,8 +62,8 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00021"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00004"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00022"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00005"));
 
     // Pass parameters from PHP to JavaScript.
 

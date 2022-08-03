@@ -161,6 +161,7 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
     protected function after_execute() {
         // Add pdfannotator related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_pdfannotator', 'intro', null);
+        $this->add_related_files('mod_pdfannotator', 'post', 'pdfannotator_comment');
         $this->add_related_files('mod_pdfannotator', 'content', null);
     }
 }

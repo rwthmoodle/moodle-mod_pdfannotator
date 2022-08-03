@@ -129,6 +129,8 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // 6. Define file annotations (vgl. resource activity).
         $pdfannotator->annotate_files('mod_pdfannotator', 'intro', null); // This file area does not have an itemid.
         $pdfannotator->annotate_files('mod_pdfannotator', 'content', null); // See above.
+        $comment->annotate_files('mod_pdfannotator', 'post', null);
+        $report->annotate_files('mod_pdfannotator', 'post', null);
 
         // 7. Return the root element (pdfannotator), wrapped into standard activity structure.
         return $this->prepare_activity_structure($pdfannotator);
