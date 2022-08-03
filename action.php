@@ -631,7 +631,7 @@ if ($action === 'getCommentsToPrint') {
         foreach ($conversations as $conversation) {
             $post = new stdClass();
             $post->answeredquestion = pdfannotator_handle_latex($context, $conversation->answeredquestion);
-            //$post->answeredquestion = pdfannotator_extract_picture($post->answeredquestion);
+            $post->answeredquestion = pdfannotator_extract_images($post->answeredquestion);
             $post->page = $conversation->page;
             $post->annotationtypeid = $conversation->annotationtypeid;
             $post->author = $conversation->author;
@@ -642,7 +642,7 @@ if ($action === 'getCommentsToPrint') {
             foreach ($conversation->answers as $ca) {
                 $answer = new stdClass();
                 $answer->answer = pdfannotator_handle_latex($context, $ca->answer);
-                //$answer->answer = pdfannotator_extract_picture($answer->answer);
+                $answer->answer = pdfannotator_extract_images($answer->answer);
                 $answer->author = $ca->author;
                 $answer->timemodified = $ca->timemodified;
                 $post->answers[$answercount] = $answer;

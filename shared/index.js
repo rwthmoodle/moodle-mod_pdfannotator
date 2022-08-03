@@ -861,7 +861,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     }
                                     function printItem(item, index) {
                                         if (typeof item === "object") { //item.includes('data:image/png;base64,')) {
-                                            printImage(item);
+                                            if (item['mathform']) {
+                                                printMathFrom(item);
+                                            } else if (item['image']) {
+                                                printImage(item);
+                                            }
                                         } else if (typeof item === "string"){
                                             printTextblock(null, null, item);
                                         } else {
@@ -872,17 +876,28 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             });
                                         }
                                     }
-                                    /**
-                                     * Take an image, calculate its height in millimeters and print it on the pdf
-                                     */
                                     function printImage(data) {
-                                        var img = data['image'];
+                                        var url = data['image'];
                                         var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
                                         if ( (count+height) >= 280 ) {
                                             doc.addPage();
                                             count = 27;
                                         }
-                                        doc.addImage(img, 'PNG', 35, count, 0, 0); // image data, format, offset to the left, offset to the top, width, height
+                                        var width = data['imagewidth'] * 0.264583333333334;
+                                        doc.addImage(url, data['format'], 35, count, width, height); // image data, format, offset to the left, offset to the top, width, height
+                                        count += (5 + height);
+                                    }
+                                    /**
+                                     * Take an image, calculate its height in millimeters and print it on the pdf
+                                     */
+                                    function printMathFrom(data) {
+                                        var img = data['mathform'];
+                                        var height = data['mathformheight'] * 0.264583333333334; // Convert pixel into mm.
+                                        if ( (count+height) >= 280 ) {
+                                            doc.addPage();
+                                            count = 27;
+                                        }
+                                        doc.addImage(img, data['format'], 35, count, 0, 0); // image data, format, offset to the left, offset to the top, width, height
                                         count += (5 + height);
                                     }
                                     /**

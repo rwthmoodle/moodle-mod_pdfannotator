@@ -142,33 +142,60 @@ function pdfannotator_get_relativelink($content, $commentid, $context) {
     return $content;
 }
 
-function pdfannotator_extract_picture($content) {
-    preg_match('/<img src(\W*[a-zA-Z]*[0-9]*[_|&|%|$]*)*">/', $content, $matches1);
-    if ($matches1) {
-        $imgs = array_filter($matches1, 'trim');
-        foreach ($imgs as $img) {
-
-            $data = new stdClass();
-            preg_match('/(https(...{1,})((.gif)|(.jpe)|(.jpeg)|(.jpg)|(.png)|(.svg)|(.svgz)))/', $img, $url);
-            preg_match('/(gif)|(jpe)|(jpeg)|(jpg)|(png)|(svg)|(svgz)/', $url[0], $extension);
-            if (!$extension) {
-                throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
-            }
-            if (in_array('jpg', $extension) || in_array('jpeg', $extension) || in_array('jpe', $extension)) {
-                $extension[0] = 'jpeg';
-            }
-            $data->image = $url[0];
-            $data->extension = strtoupper($extension[0]);
-            preg_match('/height="[0-9]+"/', $img, $height);
-            $data->imageheight = str_replace("\"", "", explode('=', $height[0])[1]);
-            preg_match('/width="[0-9]+"/', $img, $width);
-            $data->imagewidth = str_replace("\"", "", explode('=', $width[0])[1]);
-            $res[] = $data;
-        }
-        return $res;
-    } else {
-        return $content;
+function pdfannotator_extract_images($contentarr) {
+    // Remove quotes here, in case if there is no math form.
+    if (gettype($contentarr) === 'string') {
+        $str = preg_replace('/[\"]/', "", $contentarr);
+        $contentarr = [$str];
     }
+    $res = [];
+    $index = 0;
+    foreach ($contentarr as $content) {
+        $index++;
+        if (gettype($content) === "array") {
+            $res[] = $content;
+            continue;
+        }
+        $res = pdfannotator_split_content_image($content, $res);
+    }
+    return $res;
+}
+
+function pdfannotator_split_content_image($content, $res) {
+    $imgmatch = [];
+    $firststr = '';
+    $data = [];
+    while (preg_match_all('/<img/', $content, $imgmatch)) {
+        $offsetlength = strlen($content);
+        
+        $imgpos_start = strpos($content, '<img');                
+        $imgpos_end = strpos($content, '>', $imgpos_start);
+
+        $firststr = substr($content, 0, $imgpos_start);
+        $imgstr = substr($content, $imgpos_start, $imgpos_end - $imgpos_start + 1);
+        $laststr = substr($content, $imgpos_end + 1, $offsetlength - $imgpos_end);
+
+        preg_match('/(https...{1,}((.gif)|(.jpe)g*|(.jpg)|(.png)|(.svg)|(.svgz)))/', $imgstr, $url);
+        preg_match('/(gif)|(jpe)g*|(jpg)|(png)|(svg)|(svgz)/', $url[0], $format);
+        if (!$format) {
+            throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
+        }
+        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format)) {
+            $format[0] = 'jpeg';
+        }
+        $data['image'] = $url[0];
+        $data['format'] = strtoupper($format[0]);
+        preg_match('/height=[0-9]+/', $imgstr, $height);
+        $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
+        preg_match('/width=[0-9]+/', $imgstr, $width);
+        $data['imagewidth'] = str_replace("\"", "", explode('=', $width[0])[1]);
+
+        $res[] = $firststr;
+        $res[] = $data;
+        $content = $laststr;      
+    }
+    $res[] = $content;
+    return $res;
 }
 
 function pdfannotator_data_preprocessing($context, $textarea, $classname, $draftitemid = 0) {
@@ -411,11 +438,12 @@ function pdfannotator_process_latex_moodle($context, $string) {
         return false;
     }
     $imagedata = file_get_contents($image);
-    $result['image'] = IMAGE_PREFIX . base64_encode($imagedata);
+    $result['mathform'] = IMAGE_PREFIX . base64_encode($imagedata);
     // Imageinfo returns an array with the info of the size of the image. In Parameter 1 there is the height, which is the only
     // thing needed here.
     $imageinfo = getimagesize($image);
-    $result['imageheight'] = $imageinfo[1];
+    $result['mathformheight'] = $imageinfo[1];
+    $result['extension'] = 'PNG';
     return $result;
 }
 /**
