@@ -885,15 +885,18 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     function printImage(data) {
                                         var url = data['image'];
                                         var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
+
+                                        // Reduce height and witdh if its size more than a4height.
+                                        while ( height > (a4height-(2*contentTopBottomMargin) )) {
+                                            height = height - (height*0.1);
+                                        }
+                                        var width = data['imagewidth'] * 0.264583333333334;
+                                        while ( width > (a4width-(contentLeftMargin+contentRightMargin)) ) {
+                                            width = width - (width*0.1);
+                                        }
                                         if ( (count+height) >= a4height ) {
                                             doc.addPage();
                                             count = contentTopBottomMargin;
-                                        }
-                                        var width = data['imagewidth'] * 0.264583333333334;
-                                        // TODO minimize image
-                                        if ( (contentRightMargin+width) >= (a4width-contentTopBottomMargin) ) {
-                                            // Minimize image with percentage.
-
                                         }
                                         doc.addImage(url, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
                                         count += (5 + height);
