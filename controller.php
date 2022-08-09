@@ -417,7 +417,7 @@ if ($action === 'overviewreports') {
     echo $OUTPUT->heading(get_string('reportstab', 'pdfannotator') . ' ' .
             $OUTPUT->help_icon('reportstabicon', 'mod_pdfannotator')) . " <span id='pdfannotator-filter'></span>";
 
-    $reports = pdfannotator_get_reports($thiscourse, $reportfilter, $context);
+    $reports = pdfannotator_get_reports($thiscourse, $context,  $reportfilter);
 
     if (empty($reports)) {
         switch ($reportfilter) {

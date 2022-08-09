@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die;
 require_once("$CFG->libdir/filelib.php");
 require_once("$CFG->libdir/resourcelib.php");
 require_once("$CFG->dirroot/mod/pdfannotator/lib.php");
+require_once($CFG->dirroot . '/repository/lib.php');
 
 /**
  * Display embedded pdfannotator file.
@@ -1222,7 +1223,7 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
  * @param int $reportfilter: 0 for unread, 1 for read, 2 for all
  * @return array of report objects
  */
-function pdfannotator_get_reports($courseid, $reportfilter = 0, $context) {
+function pdfannotator_get_reports($courseid, $context, $reportfilter = 0) {
 
     global $DB;
 
