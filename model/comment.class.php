@@ -34,7 +34,7 @@ class pdfannotator_comment {
      *
      * @param type $documentid specifies the pdf
      * @param type $annotationid specifies the annotation (usually a highlight) to be commented
-     * @param type $content the text or comment itself
+     * @param String $content the text or comment itself
      */
     public static function create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context) {
         global $DB, $USER, $CFG;
@@ -58,11 +58,22 @@ class pdfannotator_comment {
 
         // Create a new record in the table named 'comments' and return its id, which is created by autoincrement.
         $commentuuid = $DB->insert_record('pdfannotator_comments', $datarecord, true);
+        $datarecord->id = $commentuuid;
+        
+        // Get the draftitemid and prepare the draft area.
+        $draftitemid = required_param('pdfannotator_content_editoritemid', PARAM_INT);
+        $options = pdfannotator_get_editor_options($context);
+
+        $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentuuid, $options, $datarecord->content, true);
+
+        $datarecord->content = $text;
+        $DB->update_record('pdfannotator_comments', $datarecord);
 
         $datarecord->uuid = $commentuuid;
         self::set_username($datarecord);
-
+        
         $datarecord->displaycontent = format_text($datarecord->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
+        $datarecord->displaycontent = pdfannotator_get_relativelink($datarecord->displaycontent, $datarecord->id, $context);
         $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
         $datarecord->timemodified = pdfannotator_optional_timeago($datarecord->timemodified);
         $datarecord->usevotes = pdfannotator_instance::use_votes($documentid);
@@ -193,6 +204,7 @@ class pdfannotator_comment {
             } else {
                 $comment->content = $data->content;
                 $comment->displaycontent = format_text($data->content, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
+                $comment->displaycontent = pdfannotator_get_relativelink($comment->content, $comment->uuid, $context);
             }
 
             self::set_username($comment);
@@ -395,7 +407,7 @@ class pdfannotator_comment {
         }
     }
 
-    public static function update($commentid, $content, $editanypost) {
+    public static function update($commentid, $content, $editanypost, $context) {
         global $DB, $USER;
         $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
         if ($comment && ( $comment->userid == $USER->id || $editanypost) && $comment->isdeleted == 0) {
@@ -403,12 +415,21 @@ class pdfannotator_comment {
             $comment->timemodified = time();
             $comment->modifiedby = $USER->id;
             $time = pdfannotator_optional_timeago($comment->timemodified);
+
+            // Get the draftitemid and prepare the draft area.
+            $draftitemid = required_param('pdfannotator_editcomment_editoritemid', PARAM_INT);
+            $options = pdfannotator_get_editor_options($context);
+
+            $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentid, $options, $content, true);
+
+            $comment->content = $text;
             $success = $DB->update_record('pdfannotator_comments', $comment);
         } else {
             $success = false;
         }
 
         if ($success) {
+            $content = pdfannotator_get_relativelink($comment->content, $comment->id, $context);
             $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
             $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
             if ($comment->userid != $USER->id) {
@@ -564,7 +585,8 @@ class pdfannotator_comment {
     public static function get_subscribed_users($annotationid) {
         global $DB;
         $select = 'annotationid = ?';
-        return $DB->get_fieldset_select('pdfannotator_subscriptions', 'userid', $select, array($annotationid));
+        $test = $DB->get_fieldset_select('pdfannotator_subscriptions', 'userid', $select, array($annotationid));
+        return $test;
     }
 
     public static function get_questions($documentid, $pagenumber, $context) {
@@ -591,6 +613,7 @@ class pdfannotator_comment {
             if ($question->ishidden == 1 && !$displayhidden) {
                 $question->content = get_string('hiddenComment', 'pdfannotator');
             }
+            $question->content = pdfannotator_get_relativelink($question->content, $question->id, $context);
             $ret[] = $question;
         }
 
@@ -610,6 +633,7 @@ class pdfannotator_comment {
             if ( !pdfannotator_can_see_comment($question, $context) ) {
                 continue;
             }
+            $question->content = pdfannotator_get_relativelink($question->content, $question->id, $context);
             $ret[$question->page][] = $question;
         }
         return $ret;
@@ -648,6 +672,7 @@ class pdfannotator_comment {
             if ($question->ishidden == 1 && !$displayhidden) {
                 $question->content = get_string('hiddenComment', 'pdfannotator');
             }
+            $question->content = pdfannotator_get_relativelink($question->content, $question->id, $context);
             $ret[$i] = $question;   // Without this array the order by page would get lost, because js sorts by id.
             $i++;
         }

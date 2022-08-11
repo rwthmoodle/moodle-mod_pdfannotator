@@ -58,7 +58,8 @@
 
                 <form id="edit{{ uuid }}" class="edit-comment-form" style="display:none;">
                     <div> {{! necessary for atto-editor }}
-                        <textarea id="editarea{{ uuid }}" placeholder="" cols="40" rows="3">{{{ content }}}</textarea>
+                        <textarea id="editarea{{ uuid }}" placeholder="" cols="40" rows="3">{{{ displaycontent }}}</textarea>
+                        <div class="editor-editcomment-inputs{{ uuid }}"></div>
                     </div>
                     <input id="commentSubmit" class="owner btn btn-primary mb-1" type="submit" value="{{# str }} editButton, pdfannotator {{/ str }}">
                     <input id="commentCancel" class="owner btn btn-secondary mb-1" type="reset" value="{{# str }} cancelButton, pdfannotator {{/ str }}" >

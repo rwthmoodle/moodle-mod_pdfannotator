@@ -68,10 +68,27 @@ style2 = strike, subscript, superscript
 font = fontfamily, fontsize
 indent = indent, align
 extra = equation, matrix, chemistry, charmap
-undo = undo
+undo = undo, images
 screen = fullscreen';
     $setting = new admin_setting_configtextarea('mod_pdfannotator/attobuttons', $name, $desc, $default);
     $settings->add($setting);
 
+    if (isset($CFG->maxbytes)) {
+
+        $name = new lang_string('maximumfilesize', 'pdfannotator');
+        $description = new lang_string('configmaxbytes', 'pdfannotator');
+    
+        $maxbytes = get_config('pdfannotator', 'maxbytes');
+        $element = new admin_setting_configselect('mod_pdfannotator/maxbytes',
+                                                  $name,
+                                                  $description,
+                                                  $CFG->maxbytes,
+                                                  get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes));
+        $settings->add($element);
+    }
+
+    $settings->add(new admin_setting_configtext('mod_pdfannotator/maxfiles',
+                   new lang_string('maxfiles', 'pdfannotator'),
+                   new lang_string('maxfiles_help', 'pdfannotator'), 20, PARAM_INT));
 
 }

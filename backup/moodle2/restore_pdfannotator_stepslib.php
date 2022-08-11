@@ -123,7 +123,7 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $data->pdfannotatorid = $this->get_mappingid('pdfannotator', $data->pdfannotatorid);
 
         $newitemid = $DB->insert_record('pdfannotator_comments', $data);
-        $this->set_mapping('pdfannotator_comment', $oldid, $newitemid);
+        $this->set_mapping('pdfannotator_comment', $oldid, $newitemid, true);
     }
 
     protected function process_pdfannotator_vote($data) {
@@ -162,5 +162,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         // Add pdfannotator related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_pdfannotator', 'intro', null);
         $this->add_related_files('mod_pdfannotator', 'content', null);
+        $this->add_related_files('mod_pdfannotator', 'post', 'pdfannotator_comment');
     }
 }
