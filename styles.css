@@ -1244,3 +1244,8 @@ header, section, footer, aside, nav, main, article, figure {
     display: inline-block;
     visibility: visible;
 }
+
+.path-mod-pdfannotator [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+}
