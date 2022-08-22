@@ -76,7 +76,7 @@ class pdfannotator_statistics {
      * Returns the average number of questions/answers a user wrote in this pdf-annotator.
      * Only users that wrote at least one comment are included.
      * @param type $isquestion '1' for questions, '0' for answers
-     * @return type
+     * @return float
      */
     public function get_comments_average_annotator($isquestion) {
         global $DB;
@@ -85,14 +85,14 @@ class pdfannotator_statistics {
                 . "WHERE pdfannotatorid = ? AND isquestion = ? AND isdeleted = ? "
                 . "GROUP BY userid ) AS counts";
 
-        return key($DB->get_records_sql($sql, array($this->annotatorid, $isquestion, '0')));
+        return (float) key($DB->get_records_sql($sql, array($this->annotatorid, $isquestion, '0')));
     }
 
     /**
      * Returns the average number of questions/answers a user wrote in this course.
      * Only users that wrote at least one comment are included.
      * @param type $isquestion '1' for questions, '0' for answers
-     * @return type
+     * @return float
      */
     public function get_comments_average_course($isquestion) {
         global $DB;
@@ -102,7 +102,7 @@ class pdfannotator_statistics {
                 . "WHERE a.course = ? AND a.id = c.pdfannotatorid AND c.isquestion = ? AND c.isdeleted = ?"
                 . "GROUP BY c.userid ) AS counts";
 
-        return key($DB->get_records_sql($sql, array($this->courseid, $isquestion, '0')));
+        return (float) key($DB->get_records_sql($sql, array($this->courseid, $isquestion, '0')));
     }
 
     /**
@@ -224,7 +224,7 @@ class pdfannotator_statistics {
      * @param type $annotatorid
      * @param type $isquestion '1' for questions, '0' for answers
      * @param type $userid false by default for comments by all users. Userid for comments by a specific user
-     * @return type
+     * @return float
      */
     public static function count_comments_annotator($annotatorid, $isquestion, $userid = false) {
         global $DB;
@@ -234,7 +234,7 @@ class pdfannotator_statistics {
             $conditions['userid'] = $userid;
         }
 
-        return $DB->count_records('pdfannotator_comments', $conditions);
+        return (float) $DB->count_records('pdfannotator_comments', $conditions);
     }
 
     /**
