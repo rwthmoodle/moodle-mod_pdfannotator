@@ -1062,7 +1062,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 UI.renderAllQuestions(documentId);
             });
         })();
-        
+
         //initialize button questionsOnThisPage
         (function (){
             document.querySelector('#questionsOnThisPage').addEventListener('click', function(){
@@ -5980,7 +5980,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                         return _ret.v;
                     }
-                    
                     textarea = void 0;
                     (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,true);
                 }else{
@@ -6550,7 +6549,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 closeInput();
             }/**
             * Close the input
-            */function closeInput(){if(input){input.removeEventListener('blur',handleInputBlur);input.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(input);input=null; pos = null;}}/**
+            */function closeInput(){try{if(input){input.removeEventListener('blur',handleInputBlur);input.removeEventListener('keyup',handleInputKeyup);document.body.removeChild(input);input=null; pos = null;}}catch{}}/**
             * Set the text attributes
             *
             * @param {Number} textSize The size of the text
