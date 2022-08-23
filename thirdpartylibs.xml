@@ -23,7 +23,7 @@
         <licenseversion>2.0</licenseversion>
     </library>
     <library>
-        <location>shared/pdf_viewer.js</location>
+        <location>amd/src/pdf_viewer.js</location>
         <name>pdf_viewer.js</name>
         <version></version>
         <license>Apache</license>
