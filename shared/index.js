@@ -1819,7 +1819,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             });
                         } else if(newContent === comment.content) { // No changes.
                             editForm.style.display = "none";
-                            text.innerHTML = comment.content;
+                            text.innerHTML = comment.displaycontent;
                             renderMathJax(text);
                         } else { // Save changes.
                             _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent, editForm)
@@ -1841,7 +1841,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         });
                                     } else if (data.status === "error:maxfile") {
                                         notification.addNotification({
-                                            message: M.util.get_string('error:maximalfilenumber','pdfannotator'),
+                                            message: M.util.get_string('error:maximalfilenumber_edited','pdfannotator'),
                                             type: "error"
                                         });
                                     } else {
@@ -1864,12 +1864,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         
                     $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
                         editForm.style.display = "none";
-                        text.innerHTML = comment.content;
+                        text.innerHTML = comment.displaycontent;
                         renderMathJax(text);
                     });
                     } else {
                         editForm.style.display = "none";
-                        text.innerHTML = comment.content;
+                        text.innerHTML = comment.displaycontent;
                         renderMathJax(text);
                     }
                 }
