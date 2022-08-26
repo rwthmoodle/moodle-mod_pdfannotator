@@ -176,7 +176,7 @@ function pdfannotator_split_content_image($content, $res) {
         $imgstr = substr($content, $imgpos_start, $imgpos_end - $imgpos_start + 1);
         $laststr = substr($content, $imgpos_end + 1, $offsetlength - $imgpos_end);
 
-        preg_match('/(https...{1,}((.gif)|(.jpe)g*|(.jpg)|(.png)|(.svg)|(.svgz)))/', $imgstr, $url);
+        preg_match('/(https...{1,}[.]((gif)|(jpe)g*|(jpg)|(png)|(svg)|(svgz)))/', $imgstr, $url);
         preg_match('/(gif)|(jpe)g*|(jpg)|(png)|(svg)|(svgz)/', $url[0], $format);
         if (!$format) {
             throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
@@ -1253,7 +1253,7 @@ function pdfannotator_get_reports($courseid, $context, $reportfilter = 0) {
     foreach ($reports as $report) {
         $report->link = (new moodle_url('/mod/pdfannotator/view.php',
             array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
-            $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
+        $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
         $report->reportedcomment = format_text($report->reportedcomment, $options = ['filter' => true]);
         $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
         $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
