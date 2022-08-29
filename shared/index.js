@@ -675,12 +675,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         // Add EventListener to GUI-Elements.
         // Add scroll event to dynamically load the single pages of the pdf.
         var scrollTimer = null;
-	document.getElementById('content-wrapper').addEventListener('scroll', function (e) {
-	  if(scrollTimer) {
-              clearTimeout(scrollTimer);
-          }
-          scrollTimer = setTimeout(handleScroll, 500, e);
-	});
+        document.getElementById('content-wrapper').addEventListener('scroll', function (e) {
+        if(scrollTimer) {
+                clearTimeout(scrollTimer);
+            }
+            scrollTimer = setTimeout(handleScroll, 500, e);
+        });
 
         // Add click event to cancel-Button of commentswrapper to close the comments view and load the questions of this page.
         document.getElementById('commentCancel').addEventListener('click',function (e){
@@ -1791,6 +1791,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 var handleClickIfEditorExists = function() { // If there is no editor in the comment already, we will insert it and than call this function.
                     editForm = document.getElementById("edit"+comment.uuid);
                     editArea = document.getElementById("editarea"+comment.uuid);
+                    var editAreaEditable = document.getElementById("editarea"+comment.uuid+"editable");
                     var text = document.getElementById("chatmessage"+comment.uuid);
                     if (editForm.style.display === "none") {
                         editForm.style.display = "block";
@@ -1864,6 +1865,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         
                     $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
                         editForm.style.display = "none";
+                        editArea.innerHTML = '';
+                        editArea.innerHTML = comment.displaycontent;
+                        editAreaEditable.innerHTML = '';
+                        editAreaEditable.innerHTML = comment.displaycontent;
                         text.innerHTML = comment.displaycontent;
                         renderMathJax(text);
                     });
@@ -6247,7 +6252,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         
         function handleCancelClick(e){
             //delete Overlay
-            if(_type==='input'&&overlay){
+            if(_type==='area'&&overlay){
                 overlay.parentNode.removeChild(overlay);
                 overlay=null;
             }
