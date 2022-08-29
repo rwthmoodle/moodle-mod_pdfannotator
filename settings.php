@@ -68,7 +68,7 @@ style2 = strike, subscript, superscript
 font = fontfamily, fontsize
 indent = indent, align
 extra = equation, matrix, chemistry, charmap
-undo = undo, images
+undo = undo, image
 screen = fullscreen';
     $setting = new admin_setting_configtextarea('mod_pdfannotator/attobuttons', $name, $desc, $default);
     $settings->add($setting);
