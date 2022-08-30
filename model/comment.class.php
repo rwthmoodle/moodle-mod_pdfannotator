@@ -64,7 +64,7 @@ class pdfannotator_comment {
         $draftitemid = required_param('pdfannotator_content_editoritemid', PARAM_INT);
         $options = pdfannotator_get_editor_options($context);
 
-        $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentuuid, $options, $datarecord->content, true);
+        $text = pdfannotator_file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentuuid, $options, $datarecord->content, true, $commentuuid);
 
         $datarecord->content = $text;
         $DB->update_record('pdfannotator_comments', $datarecord);
@@ -420,7 +420,7 @@ class pdfannotator_comment {
             $draftitemid = required_param('pdfannotator_editcomment_editoritemid', PARAM_INT);
             $options = pdfannotator_get_editor_options($context);
 
-            $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentid, $options, $content, true);
+            $text = pdfannotator_file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentid, $options, $content, true);
 
             $comment->content = $text;
             $success = $DB->update_record('pdfannotator_comments', $comment);

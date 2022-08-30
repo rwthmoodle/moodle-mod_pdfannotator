@@ -344,8 +344,9 @@ if ($action === 'addComment') {
     $isquestion = required_param('isquestion', PARAM_INT);
 
     $imgcounter = substr_count($extracted_content, '<img');
-    if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
-        echo json_encode(['status' => 'error', 'type' => "maxfile"]);
+    $maxFileCount = get_config('mod_pdfannotator', 'maxfiles');
+    if($imgcounter > $maxFileCount) {
+        echo json_encode(['status' => 'error', 'type' => "maxfile", 'maxFileCount' => $maxFileCount]);
     } else {
         // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
         $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
@@ -450,8 +451,9 @@ if ($action === 'editComment') {
     $extracted_content = str_replace($regex, "", $content);
 
     $imgcounter = substr_count($extracted_content, "<img");
-    if($imgcounter > get_config('mod_pdfannotator', 'maxfiles')) {
-        echo json_encode(['status' => 'error:maxfile']);
+    $maxFileCount = get_config('mod_pdfannotator', 'maxfiles');
+    if($imgcounter > $maxFileCount) {
+        echo json_encode(['status' => 'error:maxfile', 'maxFileCount' => $maxFileCount]);
     } else {
         $data = pdfannotator_comment::update($commentid, $extracted_content, $editanypost, $context);
         echo json_encode($data);

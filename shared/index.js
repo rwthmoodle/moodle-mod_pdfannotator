@@ -295,7 +295,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return false;
                     } else if (data.status === "error" && data.type === "maxfile") {
                         notification.addNotification({
-                            message: M.util.get_string('error:maximalfilenumber','pdfannotator'),
+                            message: M.util.get_string('error:maximalfilenumber_created','pdfannotator', data.maxFileCount),
                             type: "error"
                         });
                         return false;
@@ -1603,7 +1603,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             }                      
                                                               
                         }).then(function() {
-                            
                             data.comments.forEach(function(comment) {
                                 createVoteHandler(comment);
                                 createEditFormHandler(comment);
@@ -1842,7 +1841,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         });
                                     } else if (data.status === "error:maxfile") {
                                         notification.addNotification({
-                                            message: M.util.get_string('error:maximalfilenumber_edited','pdfannotator'),
+                                            message: M.util.get_string('error:maximalfilenumber_edited','pdfannotator', data.maxFileCount),
                                             type: "error"
                                         });
                                     } else {
@@ -1921,7 +1920,24 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     confirmDelete = M.util.get_string('deletingComment', 'pdfannotator');
                 }
                 var deleteCallback = function() {
-                    dialogCallbackForDelete.call(this, comment)
+                    dialogCallbackForDelete.call(this, comment);
+                    var comments = document.querySelectorAll('.comment-list-container')[0].childNodes;
+                    var count = comments.length;
+                    if(comments) {
+                        comments.forEach(commentNode => {
+                            var editingButton = commentNode.querySelector('.chat-message-meta').children;
+                            if(editingButton.length===0 || (count===1 && editingButton.length>1)) {
+                                count--;
+                            }
+                        });
+                        if(count===0) {
+                            var overlay = document.querySelectorAll('#pdf-annotate-edit-overlay')[0];
+                            if(overlay) {
+                                overlay.removeChild(overlay.firstChild);
+                                overlay.parentNode.removeChild(overlay);
+                            }
+                        }
+                    }
                 };
                 notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), deleteCallback, null);                     
             });
