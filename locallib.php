@@ -181,7 +181,8 @@ function pdfannotator_split_content_image($content, $res) {
         if (!$format) {
             throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
         }
-        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format)) {
+        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format) 
+        || in_array('JPG', $format) || in_array('JPEG', $format) || in_array('JPE', $format)) {
             $format[0] = 'jpeg';
         }
         $data['image'] = $url[0];
