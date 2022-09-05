@@ -118,6 +118,7 @@ class comment implements \renderable, \templatable {
     public function export_for_template(\renderer_base $output) {
         $data = [];
         $data['comments'] = $this->comments;
+        $data['status'] = 'success';
         return $data;
     }
 

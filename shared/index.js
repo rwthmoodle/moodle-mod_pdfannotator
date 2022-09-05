@@ -121,7 +121,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	};
 
         /* *********************** eigener Store Adapter!! **********************************/
-
+    var setTimeoutNotification = () => {
+        setTimeout(function(){
+            let notificationpanel = document.getElementById("user-notifications");
+            while (notificationpanel.hasChildNodes()) {  
+                notificationpanel.removeChild(notificationpanel.firstChild);
+            } 
+        }, 10000);
+    }
         let MyStoreAdapter = new _2.default.StoreAdapter({
             /**
              * This function get all annotations of a specific document on a specific page.
@@ -188,12 +195,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             if (data.log){
                                 console.error(data.log);
                             }
-                            setTimeout(function(){
-                            let notificationpanel = document.getElementById("user-notifications");
-                            while (notificationpanel.hasChildNodes()) {  
-                                notificationpanel.removeChild(notificationpanel.firstChild);
-                            } 
-                            }, 6000);
+                            setTimeoutNotification();
                     }
                     return {'status':'error'};
                 });
@@ -235,7 +237,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @param {type} annotation
              * @returns {unresolved} the status success or error
              */
-            deleteAnnotation(documentId, annotation) {
+            deleteAnnotation(documentId, annotation, deletionInfo=true) {
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
@@ -243,30 +245,26 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 }).then(function(data){
                     data = JSON.parse(data);
                     if(data.status === "success") {
+                        if(deletionInfo) {
                             notification.addNotification({
                                         message: M.util.get_string('annotationDeleted', 'pdfannotator'),
                                         type: "success"
                             });
-                            
-                            var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
-                            if(node){
-                                node.parentNode.removeChild(node);
-                                document.querySelector('.comment-list-container').innerHTML = '';
-                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
-                                UI.renderQuestions(documentId,$('#currentPage').val());     
-                            }
+                        }                            
+                        var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
+                        if(node){
+                            node.parentNode.removeChild(node);
+                            document.querySelector('.comment-list-container').innerHTML = '';
+                            document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                            UI.renderQuestions(documentId,$('#currentPage').val());     
+                        }
                     } else if (data.status === 'error') {
                             notification.addNotification({                                   
                                         message: M.util.get_string('deletionForbidden', 'pdfannotator') + data.reason,
                                         type: "error"
                             });
                     }
-                    setTimeout(function(){
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {  
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        } 
-                    }, 3000);
+                    setTimeoutNotification();
 
                     return data;
                 });
@@ -288,19 +286,24 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, "pdfannotator_content_editoritemid": pdfannotator_content_editoritemid, sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     data = data.substring(data.indexOf('{'),data.length);    
-                //TODO compare to data before data.substring
+                    //TODO compare to data before data.substring
                     data = JSON.parse(data);
-                    if(data.status == -1){
+                    if (data.status === 'success') {
+                        return data;
+                    }else if (data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
-                        return false;
                     } else if (data.status === "error" && data.type === "maxfile") {
                         notification.addNotification({
                             message: M.util.get_string('error:maximalfilenumber_created','pdfannotator', data.maxFileCount),
                             type: "error"
                         });
-                        return false;
+                    } else {
+                        notification.addNotification({
+                            message: M.util.get_string('error:addComment','pdfannotator'),
+                            type: "error"
+                        });
                     }
-                    return data;
+                    setTimeoutNotification();
                 });
             },
             
@@ -371,12 +374,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 message: M.util.get_string('commentDeleted', 'pdfannotator'),
                                 type: "success"
                             });
-                            setTimeout(function(){
-                                let notificationpanel = document.getElementById("user-notifications");
-                                while (notificationpanel.hasChildNodes()) {  
-                                    notificationpanel.removeChild(notificationpanel.firstChild);
-                                } 
-                            }, 3000);
 
                             // If the predecessor comment was marked as deleted, remove it from DOM as well
                             // (This is currently irrelevant, because we jump back to overview after deletion, but I'd prefer to stay in the thread.)
@@ -400,6 +397,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 type: "error"
                             });
                         }
+                        setTimeoutNotification();
                         return data;
                     });
                 }
@@ -630,7 +628,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return JSON.parse(data);
                     });
                 }
-            }
+            },
         });
 
         /* ************** END Store Adapter!! **********************************/
@@ -884,6 +882,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     }
                                     function printImage(data) {
                                         var url = data['image'];
+                                        var imageElement = document.createElement("img");
+                                        imageElement.src = url;
                                         var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
 
                                         // Reduce height and witdh if its size more than a4height.
@@ -898,7 +898,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             doc.addPage();
                                             count = contentTopBottomMargin;
                                         }
-                                        doc.addImage(url, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
+                                        doc.addImage(imageElement, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
                                         count += (5 + height);
                                     }
                                     /**
@@ -1921,23 +1921,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 }
                 var deleteCallback = function() {
                     dialogCallbackForDelete.call(this, comment);
-                    var comments = document.querySelectorAll('.comment-list-container')[0].childNodes;
-                    var count = comments.length;
-                    if(comments) {
-                        comments.forEach(commentNode => {
-                            var editingButton = commentNode.querySelector('.chat-message-meta').children;
-                            if(editingButton.length===0 || (count===1 && editingButton.length>1)) {
-                                count--;
-                            }
-                        });
-                        if(count===0) {
-                            var overlay = document.querySelectorAll('#pdf-annotate-edit-overlay')[0];
-                            if(overlay) {
-                                overlay.removeChild(overlay.firstChild);
-                                overlay.parentNode.removeChild(overlay);
-                            }
-                        }
-                    }
                 };
                 notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), deleteCallback, null);                     
             });
@@ -4027,13 +4010,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return;
                     }
                 }
-                //If attoEditor Modal beeing clicked.
-                var modalAtto = document.querySelectorAll('.moodle-dialogue-base')[0];
-                if(modalAtto) {
-                    if(clickedElement && modalAtto.querySelector(clickedElement)) {
-                        return;
-                    }
+
+                //If Modal Dialogue beeing clicked.
+                var clickedMoodleDialogue = e.target.closest('.moodle-dialogue-base');
+                if(clickedMoodleDialogue) {
+                    return;
                 }
+
                 //if the click is on an input field or link or icon in editor toolbar ('I') nothing should happen. 
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'A' || e.target.tagName === 'SELECT' || e.target.tagName === 'I' || e.target.tagName === "BUTTON"){
                     return;
@@ -5809,6 +5792,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if(clickedElement && commentWrapperNodes.querySelector(clickedElement)) {
                     return;
                 }
+
+                //If Modal Dialogue beeing clicked.
+                var clickedMoodleDialogue = e.target.closest('.moodle-dialogue-base');
+                if(clickedMoodleDialogue) {
+                    return;
+                }
+
                //if the click is on the Commentlist nothing should happen.
                 if(((typeof e.target.getAttribute('id')=='string') && e.target.id.indexOf('comment') !== -1) || e.target.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('comment') !== -1 || e.target.parentNode.className.indexOf('chat') !== -1 || e.target.tagName == 'INPUT' || e.target.tagName == 'LABEL'){
                     return;
@@ -5973,6 +5963,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 .then(function(annotation){
                                     _PDFJSAnnotate2.default.getStoreAdapter().addComment(documentId,annotation.uuid,content,commentVisibility,isquestion)
                                     .then(function(msg){
+                                        if(!msg) { throw new Error(); }
                                         deleteUndefinedPin();
                                 //get old y-koordniate, because of scrolling
                                         annotation.y = annotationObj.y;
@@ -5980,14 +5971,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
                                         document.querySelector('button.cursor').click();
                                         (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
-                                    },function(err){
+                                    })
+                                    .catch(function(err){
                                         /*if there is an error in addComment, the annotation will be deleted!*/ 
                                         var annotationid = annotation.uuid;
-                                        notification.addNotification({
-                                            message: M.util.get_string('error:addComment','pdfannotator'),
-                                            type: "error"
-                                        });
-                                        _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid);
+                                        _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid, false);
                                     });
                                 }, function (err){
                                     deleteUndefinedPin();
@@ -6107,6 +6095,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             originX=e.clientX;
             overlay=document.createElement('div');
             overlay.style.position='absolute';
+            overlay.id = 'overlay-rect';
             overlay.style.top=originY-rect.top+'px';
             overlay.style.left=originX-rect.left+'px';
             overlay.style.border='3px solid '+_utils.BORDER_COLOR;
@@ -6247,8 +6236,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         function handleToolbarClick(e){
             //delete Overlay
             if(_type==='area'&&overlay){
-                overlay.parentNode.removeChild(overlay);
-                overlay=null;
+                if(overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                    overlay=null;
+                }
             }
             document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
             (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
@@ -6261,7 +6252,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             if(_type!=='area'&&(rects=rectsSelection)){
                 saveRect(_type,[].concat(_toConsumableArray(rects)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null,e);
             }else if(_type==='area'&&overlay){
-                saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e);
+                saveRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null,e,overlay);
             }
             return false;
         }
@@ -6381,7 +6372,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         * @param {Array} rects The rects to use for annotation
         * @param {String} color The color of the rects
         */
-        function saveRect(type,rects,color,e){
+        function saveRect(type,rects,color,e,overlay){
             var annotation = initializeAnnotation(type,rects,color,_svg);
             var _getMetadata=(0,_utils.getMetadata)(_svg);
             var documentId=_getMetadata.documentId;
@@ -6400,30 +6391,27 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 // Add the annotation
                 _PDFJSAnnotate2.default.getStoreAdapter()
                     .addAnnotation(documentId,pageNumber,annotation)
-                    .then(function(annotation){
-                        
+                    .then(function(annotation){                        
                         var commentVisibility= read_visibility_of_checkbox();
                         var isquestion = 1; //The annotation was created, so this comment has to be a question;
                         _PDFJSAnnotate2.default.getStoreAdapter().addComment(documentId,annotation.uuid,content,commentVisibility,isquestion)
                             .then(function(msg){
+                                if(!msg) throw new Error();
                                 //delete previous annotation to render new one with the right id
                                 deleteUndefinedRect();
                                 //get Old rectangles because of scrolling
                                 annotation.rectangles = rectObj[1].rectangles;
 
-                                (0,_appendChild2.default)(_svg,annotation); 
+                                (0,_appendChild2.default)(_svg,annotation);
                                 document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
                                 //simulate an click on cursor
                                 document.querySelector('button.cursor').click();
                                 (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
-                            },function(err){
-                                notification.addNotification({
-                                    message: M.util.get_string('error:addComment','pdfannotator'),
-                                    type: "error"
-                                });
+                            })
+                            .catch(function(){
                                 //if there is an error in addComment, the annotation should be deleted!
                                 var annotationid = annotation.uuid;
-                                _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid);
+                                _PDFJSAnnotate2.default.getStoreAdapter().deleteAnnotation(documentId,annotationid, false);
                             });
                     }, function (err){
                         deleteUndefinedRect();
@@ -6437,6 +6425,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     message: M.util.get_string('min0Chars', 'pdfannotator'),
                     type: "error"
                 });
+                handleCancelClick(e);
                 textarea.focus(); 
             }
         }
