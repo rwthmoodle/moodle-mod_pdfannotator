@@ -2008,12 +2008,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     var isquestion = 0; // this is a normal comment, so it is not a question
                     var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
                     var imgContents = commentContentElements.querySelectorAll('img');
-                    if(commentContentElements.innerText.replace('/\n/g', '').trim() === '') {
-                        isEmptyContent = true;
-                    }
+                    var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
                     var temp = commentContentElements.querySelectorAll('p')[0];
                     if(temp) {
-                        if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                        if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) || innerContent === '') {
                             isEmptyContent = true;
                         }
                     }
