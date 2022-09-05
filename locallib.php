@@ -660,7 +660,7 @@ function pdfannotator_process_latex_moodle($context, $string) {
     // thing needed here.
     $imageinfo = getimagesize($image);
     $result['mathformheight'] = $imageinfo[1];
-    $result['extension'] = 'PNG';
+    $result['format'] = 'PNG';
     return $result;
 }
 /**
@@ -1422,9 +1422,6 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
             $entry->displayhidden = true;
         }
 
-        $entry->answeredquestion = format_text($entry->answeredquestion, $options = ['filter' => true]);
-        $entry->answer = format_text($entry->answer, $options = ['filter' => true]);
-
         $res[] = $entry;
     }
 
@@ -2027,7 +2024,10 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
     global $CFG, $PAGE;
 
     $answer->answer = pdfannotator_get_relativelink($answer->answer, $answer->answerid, $context);
+    $answer->answer = format_text($answer->answer, $options = ['filter' => true]);
     $answer->answeredquestion = pdfannotator_get_relativelink($answer->answeredquestion, $answer->questionid, $context);
+    $answer->answeredquestion = format_text($answer->answeredquestion, $options = ['filter' => true]);
+
 
     if (isset($answer->displayquestionhidden)) {
         $question = "<a class='" . $answer->annoid . " more dimmed' href=$answer->questionlink>$answer->answeredquestion</a>";
