@@ -63,7 +63,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00025"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00026"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00005"));
 
     // Pass parameters from PHP to JavaScript.
@@ -185,7 +185,11 @@ function pdfannotator_split_content_image($content, $res) {
         || in_array('JPG', $format) || in_array('JPEG', $format) || in_array('JPE', $format)) {
             $format[0] = 'jpeg';
         }
+
+        $imagedata = file_get_contents($url[0]);
         $data['image'] = $url[0];
+
+        //$data['image'] = $url[0];
         $data['format'] = strtoupper($format[0]);
         preg_match('/height=[0-9]+/', $imgstr, $height);
         $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
