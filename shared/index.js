@@ -121,14 +121,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 	};
 
         /* *********************** eigener Store Adapter!! **********************************/
-    var setTimeoutNotification = () => {
-        setTimeout(function(){
-            let notificationpanel = document.getElementById("user-notifications");
-            while (notificationpanel.hasChildNodes()) {  
-                notificationpanel.removeChild(notificationpanel.firstChild);
-            } 
-        }, 10000);
-    }
         let MyStoreAdapter = new _2.default.StoreAdapter({
             /**
              * This function get all annotations of a specific document on a specific page.
@@ -195,7 +187,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             if (data.log){
                                 console.error(data.log);
                             }
-                            setTimeoutNotification();
                     }
                     return {'status':'error'};
                 });
@@ -264,7 +255,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         type: "error"
                             });
                     }
-                    setTimeoutNotification();
 
                     return data;
                 });
@@ -303,7 +293,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             type: "error"
                         });
                     }
-                    setTimeoutNotification();
                 });
             },
             
@@ -397,7 +386,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 type: "error"
                             });
                         }
-                        setTimeoutNotification();
                         return data;
                     });
                 }
