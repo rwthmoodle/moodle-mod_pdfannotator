@@ -282,16 +282,19 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return data;
                     }else if (data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
+                        return false;
                     } else if (data.status === "error" && data.type === "maxfile") {
                         notification.addNotification({
                             message: M.util.get_string('error:maximalfilenumber_created','pdfannotator', data.maxFileCount),
                             type: "error"
                         });
+                        return false;
                     } else {
                         notification.addNotification({
                             message: M.util.get_string('error:addComment','pdfannotator'),
                             type: "error"
                         });
+                        return false;
                     }
                 });
             },
@@ -1576,6 +1579,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
            * @return {Element}
            */
 	  function insertComments(comments, markCommentid = undefined) {
+            if(!comments) {
+                return false;
+            }
             if(!comments.comments){
                comments = {comments: [comments]};
             }
@@ -1631,7 +1637,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         }); // add a catch
                 }
             })(templates, comments);
-            
+            return true;
 	  }
           
           function createSolvedHandler(comment){
@@ -2015,7 +2021,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
 	                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
                         .then(insertComments)
-                        .then(function () {
+                        .then(function (success) {
+                            if (!success) {
+                                return false;
+                            }
                             document.querySelector('#commentSubmit').disabled = false;
                             commentText.value = '';
                             if(editorArea) {
