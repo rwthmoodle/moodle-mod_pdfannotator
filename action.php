@@ -350,21 +350,16 @@ if ($action === 'addComment') {
     } else {
         // Insert the comment into the mdl_pdfannotator_comments table and get its record id.
         $comment = pdfannotator_comment::create($documentid, $annotationid, $extracted_content, $visibility, $isquestion, $cm, $context);
-        $commentid = $comment->uuid;
-    
+
         // If successful, create a comment array and return it as json.
         if ($comment) {
             $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
             $templatable = new comment($comment, $cm, $context);
             $data = $templatable->export_for_template($myrenderer);
-    
+
             echo json_encode($data);
         } else {
-            if ($commentid == -1) {
-                echo json_encode(['status' => '-1']);
-            } else {
-                echo json_encode(['status' => 'error']);
-            }
+            echo json_encode(['status' => '-1']);
         }
     }
 
