@@ -31,6 +31,7 @@ require_once("$CFG->libdir/filelib.php");
 require_once("$CFG->libdir/resourcelib.php");
 require_once("$CFG->dirroot/mod/pdfannotator/lib.php");
 require_once($CFG->dirroot . '/repository/lib.php');
+require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
 
 /**
  * Display embedded pdfannotator file.
@@ -87,15 +88,18 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $capabilities->usedrawing = has_capability('mod/pdfannotator:usedrawing', $context);
     $capabilities->useprint = has_capability('mod/pdfannotator:printdocument', $context);
     $capabilities->useprintcomments = has_capability('mod/pdfannotator:printcomments', $context);
+    // 3. Comment editor setting.
+    $editorsettings = new stdClass();
+    $editorsettings->active_editor = explode(',', get_config('core', 'texteditors'))[0];
 
-    $params = [$cm, $documentobject, $context->id, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid];
+    $params = [$cm, $documentobject, $context->id, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid, $editorsettings];
     $PAGE->requires->js_init_call('adjustPdfannotatorNavbar', null, true);
     $PAGE->requires->js_init_call('startIndex', $params, true);
     // The renderer renders the original index.php / takes the template and renders it.
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     echo $myrenderer->render_index(new index($pdfannotator, $capabilities, $file));
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
-    pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', "editor-commentlist-inputs");
+    //pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', "editor-commentlist-inputs");
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
@@ -107,7 +111,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
 function pdfannotator_get_image_options_editor() {
     $image_options = new \stdClass();
     $image_options->maxbytes = get_config('mod_pdfannotator', 'maxbytes');
-    $image_options->maxfiles = get_config('mod_pdfannotator', 'maxfiles');
+    $image_options->maxfiles = PDFANNOTATOR_EDITOR_UNLIMITED_FILES;
     $image_options->autosave = false;
     $image_options->env = 'editor';
     $draftitemid = file_get_unused_draft_itemid();
@@ -120,7 +124,7 @@ function pdfannotator_get_editor_options($context) {
     $options = [
         'atto:toolbar' => get_config('mod_pdfannotator', 'attobuttons'),
         'maxbytes' => get_config('mod_pdfannotator', 'maxbytes'),
-        'maxfiles' => get_config('mod_pdfannotator', 'maxfiles'),
+        'maxfiles' => PDFANNOTATOR_EDITOR_UNLIMITED_FILES,
         'return_types' => 15,
         'enable_filemanagement' => true, 
         'removeorphaneddrafts' => false, 
@@ -237,10 +241,12 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
         // advimage plugin
         $image_options = (object)initialise_filepicker($args);
         $image_options->maxbytes = get_config('mod_pdfannotator', 'maxbytes');
-        $image_options->maxfiles = get_config('mod_pdfannotator', 'maxfiles');
+        $image_options->maxfiles = PDFANNOTATOR_EDITOR_UNLIMITED_FILES;
         $image_options->autosave = false;
         $image_options->env = 'editor';
-        $draftitemid = file_get_unused_draft_itemid();
+        if (!$draftitemid) {
+            $draftitemid = file_get_unused_draft_itemid();
+        }
         $image_options->itemid = $draftitemid;
         $editor->use_editor($textarea, $options, ['image' => $image_options]);
     }
@@ -248,11 +254,15 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
     // Add draftitemid and editorformat into input-tags.
     $editorformat = editors_get_preferred_format(FORMAT_HTML);
 
-    $PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
+    //$PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
     
-    return $draftitemid;
+    return ['draftItemId' => $draftitemid, 'editorFormat' => $editorformat, 'className' => $classname];
 }
 
+/**
+ * Same function as core, however we need to add files into the existing draft area!
+ * 
+ */
 function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
     global $CFG, $USER, $CFG, $DB;
 
@@ -267,11 +277,7 @@ function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $compon
     $usercontext = \context_user::instance($USER->id);
     $fs = get_file_storage();
 
-    if (empty($draftitemid)) {
-        // create a new area and copy existing files into
-        $draftitemid = file_get_unused_draft_itemid();
-    }
-    $file_record = array('contextid'=>$usercontext->id, 'component'=>'user', 'filearea'=>'draft', 'itemid'=>$draftitemid);
+    $file_record = ['contextid'=>$usercontext->id, 'component'=>'user', 'filearea'=>'draft', 'itemid'=>$draftitemid];
     if (!is_null($itemid) and $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
         foreach ($files as $file) {
             if ($file->is_directory() and $file->get_filepath() === '/') {
@@ -364,7 +370,6 @@ function pdfannotator_get_annotationtype_name($typeid) {
 
 function pdfannotator_handle_latex($context, string $subject) {
     global $CFG;
-    require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
     $latexapi = get_config('mod_pdfannotator', 'latexapi');
 
     // Look for these formulae: $$ ... $$, \( ... \) and \[ ... \]

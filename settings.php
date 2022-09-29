@@ -87,8 +87,4 @@ screen = fullscreen';
         $settings->add($element);
     }
 
-    $settings->add(new admin_setting_configtext('mod_pdfannotator/maxfiles',
-                   new lang_string('maxfiles', 'pdfannotator'),
-                   new lang_string('maxfiles_help', 'pdfannotator'), 20, PARAM_INT));
-
 }

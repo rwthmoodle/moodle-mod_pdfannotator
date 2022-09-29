@@ -39,7 +39,7 @@
 //SOFTWARE.
 //
 //R: The first parameter has to be Y, because it is a default YUI-object, because moodle gives this object first.
-function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _toolbarSettings, _page = 1,_annoid = null,_commid = null){ // 3. parameter war mal _fileid
+function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _toolbarSettings, _page = 1,_annoid = null,_commid = null, _editorSettings){ // 3. parameter war mal _fileid
 
     // Require amd modules.
    require(['jquery','core/templates','core/notification','mod_pdfannotator/jspdf', 'core/fragment'], function($,templates,notification,jsPDF, Fragment) {
@@ -282,12 +282,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return data;
                     }else if (data.status == -1){
                         notification.alert(M.util.get_string('error','pdfannotator'),M.util.get_string('missingAnnotation','pdfannotator'),'ok');
-                        return false;
-                    } else if (data.status === "error" && data.type === "maxfile") {
-                        notification.addNotification({
-                            message: M.util.get_string('error:maximalfilenumber_created','pdfannotator', data.maxFileCount),
-                            type: "error"
-                        });
                         return false;
                     } else {
                         notification.addNotification({
@@ -1554,22 +1548,22 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         
 	// Comment annotations
 	(function (window, document) {
-	  var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
-	  var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
-          var commentText = commentForm.querySelector('#id_pdfannotator_content'); // Plain text editor.
-          // We will need this to reset the typed text for other editors.
-          var editorArea = commentForm.querySelector('#id_pdfannotator_contenteditable'); // Atto editor.
-          if (!editorArea) { // TinyMCE editor.
-              var iframe = document.getElementById("myarea_ifr");
-              if (iframe) {
-                  editorArea = iframe.contentWindow.document.getElementById("tinymce");
-              }
-          }
-          // Function checks whether the target annotation type allows comments
-	  function supportsComments(target) {
-	    var type = target.getAttribute('data-pdf-annotate-type');
-	    return ['point', 'highlight', 'area', 'strikeout'].indexOf(type) > -1;
-	  }
+        var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
+        var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
+        var commentText = commentForm.querySelector('#id_pdfannotator_content'); // Plain text editor.
+        // We will need this to reset the typed text for other editors.
+        var editorArea = commentForm.querySelector('#id_pdfannotator_contenteditable'); // Atto editor.
+        if (!editorArea) { // TinyMCE editor.
+            var iframe = document.getElementById("myarea_ifr");
+            if (iframe) {
+                editorArea = iframe.contentWindow.document.getElementById("tinymce");
+            }
+        }
+        // Function checks whether the target annotation type allows comments
+        function supportsComments(target) {
+            var type = target.getAttribute('data-pdf-annotate-type');
+            return ['point', 'highlight', 'area', 'strikeout'].indexOf(type) > -1;
+        }
           
                    
           /*
@@ -1578,12 +1572,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
            * 
            * @return {Element}
            */
-	  function insertComments(comments, markCommentid = undefined) {
+        function insertComments(comments, markCommentid = undefined) {
             if(!comments) {
                 return false;
             }
             if(!comments.comments){
-               comments = {comments: [comments]};
+            comments = {comments: [comments]};
             }
 
             (function(templates, data) {
@@ -1595,8 +1589,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             } else {
                                 templates.replaceNodeContents('.comment-list-container', html, js);
                             }                      
-                                                              
-                        }).then(function() {
+                                                            
+                        }).then(function(e) {
                             data.comments.forEach(function(comment) {
                                 createVoteHandler(comment);
                                 createEditFormHandler(comment);
@@ -1614,14 +1608,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 let element = document.querySelector(selector);
                                 renderMathJax(element);
                             });
-                        //    fixCommentForm();
-                            
-                            //$("#comment_"+comment.uuid+" chat-message-p:contains('"+pattern+"')").addClass('mark');
-                            //$("chat-message+:contains('text')").addClass('mark');
+
                             //if the target has the attribute markCommentid a specific comment should be marked with an red border
                             //after 3 sec the border should disappear
                             if(markCommentid !== undefined && markCommentid !== null){
-                              //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
+                            //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
                                 $('#comment_'+markCommentid).addClass('mark');
                                 markCommentid = undefined;
                                 setTimeout(function(){
@@ -1631,14 +1622,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 },3000);
                             }else{
                                 // Otherwise the inputfield of the form should be focused.
-                              commentText.focus();
+                            commentText.focus();
                             }                       
                             
                         }); // add a catch
                 }
             })(templates, comments);
             return true;
-	  }
+        }
           
           function createSolvedHandler(comment){
             var button = $('#comment_'+comment.uuid+' .comment-solve-a');
@@ -1789,7 +1780,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if (editForm.style.display === "none") {
                         editForm.style.display = "block";
                         text.innerHTML = "";
-
+                    
                     var isEmptyContent = false;
                     // Add an event handler to the form for submitting any changes to the database.
                     editForm.onsubmit = function (e) {
@@ -1798,6 +1789,22 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         var imgContents = commentEditContentElements.querySelectorAll('img');
                         if(commentEditContentElements.innerText.replace('/\n/g', '').trim() === '') {
                             isEmptyContent = true;
+                        }
+                        if(imgContents) {
+                            imgContents.forEach(img => {
+                                if(img.size > maxFile) {
+                                    setTimeout(function(){
+                                        notification.addNotification({
+                                            message: M.util.get_string('','pdfannotator'),
+                                            type: "error"
+                                          });
+                                        let notificationpanel = document.getElementById("user-notifications");
+                                        while (notificationpanel.hasChildNodes()) {
+                                            notificationpanel.removeChild(notificationpanel.firstChild);
+                                        }
+                                    }, 5000);
+                                }
+                            });
                         }
                         var temp = commentEditContentElements.querySelectorAll('p')[0];
                         if(temp) {
@@ -1828,15 +1835,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         newContent = data.newContent;
                                         text.innerHTML = newContent;
                                         comment.content = newContent;
+                                        editArea = newContent;
                                         renderMathJax(text);
                                         notification.addNotification({
                                             message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                             type: "success"
-                                        });
-                                    } else if (data.status === "error:maxfile") {
-                                        notification.addNotification({
-                                            message: M.util.get_string('error:maximalfilenumber_edited','pdfannotator', data.maxFileCount),
-                                            type: "error"
                                         });
                                     } else {
                                         notification.addNotification({
@@ -1869,29 +1872,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         editForm.style.display = "none";
                         text.innerHTML = comment.displaycontent;
                         renderMathJax(text);
-                    }
+                    } 
                 }
                 // Create an element for click.
                 var editButton = $('#editButton'+comment.uuid);
                 // Add an event handler to the click element that opens a textarea and fills it with the current comment.
                 editButton.click(function(e) {
-                    if(!editorExists) {
-                        let args = {'commentid': comment.uuid, 'cmid': _cm.id};
-                        let fragmentPromise = Fragment.loadFragment('mod_pdfannotator', 'edit_comment_form', _contextId, args);
-                        fragmentPromise.done(function(html, js) {
-                            templates.runTemplateJS(js);
-                            return html;
-                        }).fail(notification.exception)
-                        .then(function(html) {
-                            var editareaEditable = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
-                            editareaEditable.innerHTML = '';
-                            editareaEditable.innerHTML = html;
-                            editorExists = true;
-                            handleClickIfEditorExists();
-                        });
-                    } else {
-                        handleClickIfEditorExists();
-                    }
+                    UI.loadEditor('editcomment', 'edit', comment.uuid);
+                    handleClickIfEditorExists();
                 });               
           }
           
@@ -1988,9 +1976,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 }
                 
                 $('#comment-wrapper h4')[0].innerHTML = title;
-	            commentList.innerHTML = '';
-	            commentForm.style.display = 'inherit';
-                  
+                commentList.innerHTML = '';
+                commentForm.style.display = 'inherit';
+                    
                 var button1 = document.getElementById('allQuestions'); // to be found in index template
                 button1.style.display = 'inline';
                 var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
@@ -2019,12 +2007,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         document.querySelector('#commentSubmit').disabled = false;
                         return false;
                     }
-	                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
+                    _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
                         .then(insertComments)
                         .then(function (success) {
                             if (!success) {
                                 return false;
                             }
+                            UI.loadEditor('content');
                             document.querySelector('#commentSubmit').disabled = false;
                             commentText.value = '';
                             if(editorArea) {
@@ -2033,19 +2022,21 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             commentText.focus();
                         }).catch(function(err){
                             notification.addNotification({
-                              message: M.util.get_string('error:addComment','pdfannotator'),
-                              type: "error"
+                                message: M.util.get_string('error:addComment','pdfannotator'),
+                                type: "error"
                             });
                             console.error(M.util.get_string('error:addComment', 'pdfannotator'));
                         });
 
-	                return false; // Prevents page reload via POST to enable asynchronous loading
-	            };
-                  
+                    return false; // Prevents page reload via POST to enable asynchronous loading
+                };
+
+                //render comments   
                   //render comments   
-                  insertComments(comments, target.markCommentid);
-                  
-                }, function (err){
+                //render comments   
+                insertComments(comments, target.markCommentid);
+                
+            }, function (err){
                     commentList.innerHTML = '';
                     commentForm.style.display = 'none';
                     commentForm.onsubmit = null;
@@ -3995,7 +3986,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 } else {
                     clickedElement = '';
                 }
-                if(clickedElement && editorNodes.querySelector(clickedElement)) {
+                if(clickedElement && editorNodes && editorNodes.querySelector(clickedElement)) {
                     return;
                 }
                 //If moodle Modal beeing clicked.
@@ -5094,7 +5085,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             var _shortText = __webpack_require__(39);
             var _newAnnotations = __webpack_require__(40);
             var _ajaxloader=__webpack_require__(36);
-            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, renderAllQuestions: _questionsRenderer.renderAllQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, mathJaxAndShortenText:_shortText.mathJaxAndShortenText, loadNewAnnotations : _newAnnotations.load};
+            var _commentWrapper=__webpack_require__(35);
+            exports.default={addEventListener:_event.addEventListener,removeEventListener:_event.removeEventListener,fireEvent:_event.fireEvent,disableEdit:_edit.disableEdit,enableEdit:_edit.enableEdit,disablePen:_pen.disablePen,enablePen:_pen.enablePen,setPen:_pen.setPen,disablePoint:_point.disablePoint,enablePoint:_point.enablePoint,disableRect:_rect.disableRect,enableRect:_rect.enableRect,disableText:_text.disableText,enableText:_text.enableText,setText:_text.setText,createPage:_page.createPage,renderPage:_page.renderPage,showLoader:_ajaxloader.showLoader,hideLoader:_ajaxloader.hideLoader,pickAnnotation:_pickAnno.pickAnnotation, renderQuestions:_questionsRenderer.renderQuestions, renderAllQuestions: _questionsRenderer.renderAllQuestions, shortenTextDynamic:_shortText.shortenTextDynamic, mathJaxAndShortenText:_shortText.mathJaxAndShortenText, loadNewAnnotations : _newAnnotations.load, loadEditor: _commentWrapper.loadEditor};
             module.exports=exports['default'];
     /***/},
     /** 29 */
@@ -5808,6 +5800,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 deleteUndefinedPin();
                 [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
                 renderPin();
+                _commentWrapper.loadEditor('content');
             }
             
             // Reset dragging to false.
@@ -5925,7 +5918,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             }
             function initializeAnnotationTouchscreen(rect,svg,coordinates){
                 var clientX=(0,_utils.roundDigits)(coordinates.x,4);
-                var clientY=(0,_utils.roundDigits)(coordinates.y,4);
+                var clientY=(0,_utils.roundDigits)(coordinates.y,4);                
                 return Object.assign({type:'point'},(0,_utils.scaleDown)(svg,{x:clientX-((0,_utils.roundDigits)(rect.left,4)),y:clientY-((0,_utils.roundDigits)(rect.top,4))}));
             }
             /**
@@ -6186,10 +6179,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
+                    _commentWrapper.loadEditor('content');
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
                     
+                    _commentWrapper.loadEditor('content');
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                 }else{
                     enableRect(_type);
@@ -6339,7 +6334,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 }else if(type==='strikeout'){
                     color='rgb(0,84,159)';
                 }
-            }// Initialize the annotation
+            }
+            // Initialize the annotation
             annotation={type:type,color:color,rectangles:[].concat(_toConsumableArray(rects)).map(function(r){var offset=0;if(type==='strikeout'){offset=r.height/2;}return(0,_utils.scaleDown)(svg,{y:r.top+offset-rect.top,x:r.left-rect.left,width:r.width,height:r.height});}).filter(function(r){return r.width>0&&r.height>0&&r.x>-1&&r.y>-1;})};// Short circuit if no rectangles exist
             if(annotation.rectangles.length===0){
                 return;
@@ -6358,7 +6354,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             }
             return annotation;
         }
-
         
         /**
         * Save a rect annotation
@@ -6401,7 +6396,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
                                 //simulate an click on cursor
                                 document.querySelector('button.cursor').click();
-                                (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
+                                (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);                                
+                                //_commentWrapper.loadEditor('content');
                             })
                             .catch(function(){
                                 //if there is an error in addComment, the annotation should be deleted!
@@ -6776,6 +6772,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             exports.closeComment = closeComment;
             exports.showCommentsAfterCreation = showCommentsAfterCreation;
             exports.openCommentTouchscreen = openCommentTouchscreen;
+            exports.loadEditor = loadEditor;
             var _PDFJSAnnotate=__webpack_require__(1);
             var _event=__webpack_require__(4);
             var _PDFJSAnnotate2=_interopRequireDefault(_PDFJSAnnotate);
@@ -6955,6 +6952,77 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 textarea.focus();
                 return [textarea,data];
             }
+
+            /**
+             * 
+             * @param {type} section is a part of class name of editor input: pdfannotator_${section}_editoritemid, pdfannotator_${section}_editorFormat. It could be
+             */
+            function loadEditor(section, action='add', uuid=0){
+                _ajaxloader.showLoader('.editor-loader-placeholder');
+                let addCommentEditor = document.querySelectorAll('#add_comment_editor_wrapper').length;
+                let editCommentEditor = document.querySelectorAll('#edit_comment_editor_wrapper').length;
+                // If one of the Moodle Editor is active, then remove it from DOM and reappend the textarea for editor needs and the input fields.
+                if(addCommentEditor > 0 && action === "add") {                    
+                    templates.render('mod_pdfannotator/add_comment_editor')
+                    .then(function(html, js) {
+                        let commentListForm = document.querySelectorAll('#comment-list-form')[0];
+                        commentListForm.appendChild(html);
+                        return html;
+                    })
+                    .catch(notification.exception)
+                    .then(function(html) {
+                        $('input').remove('[name="input_value_editor"]');
+                        let args = {'section': section, 'cmid': _cm.id};
+                        Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
+                        .done(function(html, js) {
+                            _ajaxloader.hideLoader('.editor-loader-placeholder');              
+                            if (!html) {
+                                throw new TypeError("Invalid HMTL Input");
+                            }
+                            templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
+                            return html;
+                        }.bind(this))
+                        .catch(notification.exception);
+                    });
+                } else if(editCommentEditor > 0 && action === "edit") {
+                    templates.render('mod_pdfannotator/edit_comment_editor')
+                    .then(function(html, js) {
+                        let editForm = document.querySelectorAll(`edit${uuid}`)[0];
+                        editForm.appendChild(html);
+                        return html;
+                    })
+                    .catch(notification.exception)
+                    .then(function() {
+                        $('input').remove('[name="input_value_editor"]');
+                        let args = {'section': section, 'cmid': _cm.id};
+                        Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
+                        .done(function(html, js) {
+                            _ajaxloader.hideLoader('.editor-loader-placeholder');              
+                            if (!html) {
+                                throw new TypeError("Invalid HMTL Input");
+                            }
+                            templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
+                            return html;
+                        }.bind(this))
+                        .catch(notification.exception);
+                    });
+                } else {
+                    // nothing to do.
+                }
+                
+                /* $('input').remove('[name="input_value_editor"]');
+                let args = {'section': section, 'cmid': _cm.id};
+                Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
+                .done(function(html, js) {
+                    _ajaxloader.hideLoader('.editor-loader-placeholder');              
+                    if (!html) {
+                        throw new TypeError("Invalid HMTL Input");
+                    }
+                    templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
+                    return html;
+                }.bind(this))
+                .catch(notification.exception) */
+            }
             
     /***/},
     /* 36 *//*OWN Module! To show and hide ajaxloader*/
@@ -6970,10 +7038,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * hides the loading animation
              * @returns {undefined}
              */
-            function hideLoader(){
+            function hideLoader(selector='.comment-list-container'){
                 let loader = document.querySelector('#ajaxLoaderCreation');
                 if(loader !== null){
-                    let commentContainer = document.querySelector('.comment-list-container');
+                    let commentContainer = document.querySelector(`${selector}`);
                     commentContainer.removeChild(loader);
                 }
             }
@@ -6982,8 +7050,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * Shows an loading animation in the comment wrapper
              * @returns {undefined}
              */
-            function showLoader(){
-                let commentContainer = document.querySelector('.comment-list-container');
+            function showLoader(selector='.comment-list-container'){
+                let commentContainer = document.querySelector(`${selector}`);
                 commentContainer.innerHTML = '';
                 let img = document.createElement('img');
                 img.id = "ajaxLoaderCreation";

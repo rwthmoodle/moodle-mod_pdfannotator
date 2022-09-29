@@ -774,10 +774,23 @@ function mod_pdfannotator_output_fragment_edit_comment_form($args) {
     $context = context_module::instance($args['cmid']);
     $html = '';
 
-    $draftitemid = pdfannotator_data_preprocessing($context, 'editarea' . $args['commentid'], 'editor-editcomment-inputs' . $args['commentid'], 1);
+    $draftitemid = pdfannotator_data_preprocessing($context, 'editarea' . $args['commentid'], 'editor-editcomment-inputs' . $args['commentid'], 0);
     $comment = $DB->get_record('pdfannotator_comments', ['id' => $args['commentid']]);
     $html = pdfannotator_file_prepare_draft_area($draftitemid, $context->id, 'mod_pdfannotator', 'post',
     $args['commentid'], pdfannotator_get_editor_options($context), $comment->content);
 
     return $html;
+}
+
+function mod_pdfannotator_output_fragment_open_editor($args) {
+    global $DB;
+    $context = context_module::instance($args['cmid']);
+
+    $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', "editor-commentlist-inputs", 0);
+    file_prepare_draft_area($draftitemid, $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
+    
+    $out = html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['section'] . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['section'] . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
+
+    return $out;
 }

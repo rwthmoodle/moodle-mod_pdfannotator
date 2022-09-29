@@ -39,3 +39,8 @@ define('LATEX_TO_PNG_GOOGLE_API', 1);
  * Prefix needed for encode64 images
  */
 define('IMAGE_PREFIX', 'data:image/png;base64,');
+
+/**
+ * Editor unlimited files variable
+ */
+define('PDFANNOTATOR_EDITOR_UNLIMITED_FILES', -1);
