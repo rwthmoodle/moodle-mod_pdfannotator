@@ -129,11 +129,7 @@
 
                 </div>
                 <form id="comment-list-form" class="comment-list-form" style="display:none;">
-                    <div id="editor_wrapper"> {{! necessary for atto-editor }}
-                        <textarea id="id_pdfannotator_content" placeholder="{{# str }} addAComment, pdfannotator {{/ str }}" cols="40" rows="3"></textarea>                 
-                        <div id="editor-commentlist-inputs"></div>
-                        <div class="editor-loader-placeholder"></div>
-                    </div>
+                    <div class="editor-loader-placeholder-add"></div>
                     <div id="anonymousDiv" class="row-fluid row">
                         <input type="checkbox" name="visibility" value="anonymous" id="anonymousCheckbox" class="pdfannotator-radio" style="width:auto;"><label id="anonymousLabel" for="anonymousCheckbox">{{# str }} sendAnonymous, pdfannotator {{/ str }}</label>
                     </div>

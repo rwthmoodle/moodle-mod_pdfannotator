@@ -1546,51 +1546,42 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             
         })();
         
-	// Comment annotations
-	(function (window, document) {
-        var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
-        var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
-        var commentText = commentForm.querySelector('#id_pdfannotator_content'); // Plain text editor.
-        // We will need this to reset the typed text for other editors.
-        var editorArea = commentForm.querySelector('#id_pdfannotator_contenteditable'); // Atto editor.
-        if (!editorArea) { // TinyMCE editor.
-            var iframe = document.getElementById("myarea_ifr");
-            if (iframe) {
-                editorArea = iframe.contentWindow.document.getElementById("tinymce");
-            }
-        }
-        // Function checks whether the target annotation type allows comments
-        function supportsComments(target) {
-            var type = target.getAttribute('data-pdf-annotate-type');
-            return ['point', 'highlight', 'area', 'strikeout'].indexOf(type) > -1;
-        }
-          
-                   
-          /*
-           * Function inserts a comment into the HTML DOM for display
-           * A comment consists of its content as well as a delete button, wrapped up in a shared div
-           * 
-           * @return {Element}
-           */
-        function insertComments(comments, markCommentid = undefined) {
-            if(!comments) {
-                return false;
-            }
-            if(!comments.comments){
-            comments = {comments: [comments]};
-            }
+        // Comment annotations.
+        (function (window, document) {
+            var commentList = document.querySelector('#comment-wrapper .comment-list-container'); // to be found in index.php
+	        var commentForm = document.querySelector('#comment-wrapper .comment-list-form'); // to be found in index.php
 
-            (function(templates, data) {
-                if(data.comments[0] !== false) {
-                    templates.render('mod_pdfannotator/comment', data)
+            // Function checks whether the target annotation type allows comments.
+            function supportsComments(target) {
+                var type = target.getAttribute('data-pdf-annotate-type');
+                return ['point', 'highlight', 'area', 'strikeout'].indexOf(type) > -1;
+            }
+            
+                    
+            /*
+            * Function inserts a comment into the HTML DOM for display.
+            * A comment consists of its content as well as a delete button, wrapped up in a shared div.
+            * 
+            * @return {Element}
+            */
+            function insertComments(comments, markCommentid = undefined) {
+                if(!comments) {
+                    return false;
+                }
+                if(!comments.comments){
+                   comments = {comments: [comments]};
+                }
+    
+                (function(templates, data) {
+                    if(data.comments[0] !== false) {
+                        templates.render('mod_pdfannotator/comment', data)
                         .then(function(html,js){
                             if(data.comments.length === 1 && !data.comments[0].isquestion) {
                                 $('.comment-list-container').append(html);
                             } else {
                                 templates.replaceNodeContents('.comment-list-container', html, js);
-                            }                      
-                                                            
-                        }).then(function(e) {
+                            }                                
+                        }).then(function() {
                             data.comments.forEach(function(comment) {
                                 createVoteHandler(comment);
                                 createEditFormHandler(comment);
@@ -1603,16 +1594,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     $('#comment_'+comment.uuid).addClass('mark');
                                 }
                                 
-    
                                 let selector = '#comment_' + comment.uuid + ' .chat-message-text p';
                                 let element = document.querySelector(selector);
                                 renderMathJax(element);
                             });
 
-                            //if the target has the attribute markCommentid a specific comment should be marked with an red border
-                            //after 3 sec the border should disappear
+                            //if the target has the attribute markCommentid a specific comment should be marked with an red border.
+                            //after 3 sec the border should disappear.
                             if(markCommentid !== undefined && markCommentid !== null){
-                            //  document.querySelector('#comment_'+markCommentid).style.cssText = "border:3px solid red !important";
                                 $('#comment_'+markCommentid).addClass('mark');
                                 markCommentid = undefined;
                                 setTimeout(function(){
@@ -1620,18 +1609,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         document.querySelector('#comment_'+markCommentid).style.border = "none";
                                     }
                                 },3000);
-                            }else{
-                                // Otherwise the inputfield of the form should be focused.
-                            commentText.focus();
-                            }                       
-                            
-                        }); // add a catch
-                }
-            })(templates, comments);
-            return true;
-        }
-          
-          function createSolvedHandler(comment){
+                            }
+                        }).catch(notification.exception);
+                    }
+                })(templates, comments);
+                return true;
+            }
+            
+            function createSolvedHandler(comment){
             var button = $('#comment_'+comment.uuid+' .comment-solve-a');
             var i = $('#comment_'+comment.uuid+' .comment-solve-a i');
             var span = $('#comment_'+comment.uuid+' .comment-solve-a span.menu-action-text');
@@ -1639,9 +1624,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             button.click(function(e) {
                 _2.default.getStoreAdapter().markSolved(RENDER_OPTIONS.documentId, comment)
             });
-          }
-          
-          function createSubscriptionHandler(comment){
+            }
+            
+            function createSubscriptionHandler(comment){
 
             var button = $('#comment_'+comment.uuid+' .comment-subscribe-a');
             var i = $('#comment_'+comment.uuid+' .comment-subscribe-a i');
@@ -1667,7 +1652,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 } else {
                     _2.default.getStoreAdapter().subscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
                         .then(function(data){
-                             if(data.status === "success") {
+                                if(data.status === "success") {
                                 notification.addNotification({
                                         message: M.util.get_string('successfullySubscribed', 'pdfannotator'),
                                         type: "success"
@@ -1692,9 +1677,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         }
                 }, 3000);
             });            
-          }
-          
-          function createVoteHandler(comment){
+            }
+            
+            function createVoteHandler(comment){
                 // Create an element for click.
                 var likeButton = $('#comment_'+comment.uuid+' .comment-like-a');
                 if (comment.isdeleted == 1 || !comment.usevotes) {
@@ -1703,7 +1688,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 } else if ((comment.userid == _userid) || (comment.isvoted)) {
                     likeButton.attr("disabled","disabled");                    
                 }              
-                              
+                                
                 likeButton.click(function(e) { 
                     _2.default.getStoreAdapter().voteComment(RENDER_OPTIONS.documentId, comment.uuid)
                         .then(function(data){
@@ -1736,138 +1721,125 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             }
                         });
                 });
-          }
-          /**
-           * Function enables managers to hide a comment from participants
-           * or to display it to participants once more.
-           * 
-           * @param {type} comment
-           * @returns {undefined}
-           */
-          function createHideHandler(comment){
+            }
 
-            var button = $('#hideButton'+comment.uuid);
+            /**
+             * Function enables managers to hide a comment from participants
+             * or to display it to participants once more.
+             * 
+             * @param {type} comment
+             * @returns {undefined}
+             */
+            function createHideHandler(comment){
 
-            button.click(function(e) {
-                var icon = button.children().first();
-                var menutext = button.children().last();
-                if(comment.ishidden){
-                    _2.default.getStoreAdapter().redisplayComment(RENDER_OPTIONS.documentId, comment.uuid);
-                    menutext.html(M.util.get_string('markhidden', 'pdfannotator'));
-                } else {
-                    _2.default.getStoreAdapter().hideComment(RENDER_OPTIONS.documentId, comment.uuid);
-                    menutext.html(M.util.get_string('removehidden', 'pdfannotator'));
-                }
-                comment.ishidden = !comment.ishidden;
-                icon.toggleClass("fa-eye");
-                icon.toggleClass("fa-eye-slash");
-            });            
-          }
-          /**
-           * Function handles opening/closing and submitting the edit comment form
-           * @param {type} comment
-           * @returns {undefined}
-           */
-          function createEditFormHandler(comment) {
+                var button = $('#hideButton'+comment.uuid);
+
+                button.click(function(e) {
+                    var icon = button.children().first();
+                    var menutext = button.children().last();
+                    if(comment.ishidden){
+                        _2.default.getStoreAdapter().redisplayComment(RENDER_OPTIONS.documentId, comment.uuid);
+                        menutext.html(M.util.get_string('markhidden', 'pdfannotator'));
+                    } else {
+                        _2.default.getStoreAdapter().hideComment(RENDER_OPTIONS.documentId, comment.uuid);
+                        menutext.html(M.util.get_string('removehidden', 'pdfannotator'));
+                    }
+                    comment.ishidden = !comment.ishidden;
+                    icon.toggleClass("fa-eye");
+                    icon.toggleClass("fa-eye-slash");
+                });            
+            }
+
+            /**
+             * Function handles opening/closing and submitting the edit comment form.
+             * @param {type} comment
+             * @returns {undefined}
+             */
+            function createEditFormHandler(comment) {
                 var editorExists = false;
                 var editForm;
                 var editArea;
-                var handleClickIfEditorExists = function() { // If there is no editor in the comment already, we will insert it and than call this function.
+                // If there is no editor in the comment already, we will insert it and than call this function.
+                var handleClickIfEditorExists = function() { 
                     editForm = document.getElementById("edit"+comment.uuid);
                     editArea = document.getElementById("editarea"+comment.uuid);
                     var editAreaEditable = document.getElementById("editarea"+comment.uuid+"editable");
                     var text = document.getElementById("chatmessage"+comment.uuid);
-                    if (editForm.style.display === "none") {
-                        editForm.style.display = "block";
-                        text.innerHTML = "";
-                    
-                    var isEmptyContent = false;
-                    // Add an event handler to the form for submitting any changes to the database.
-                    editForm.onsubmit = function (e) {
-                        let newContent = editArea.value.trim();
-                        var commentEditContentElements = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
-                        var imgContents = commentEditContentElements.querySelectorAll('img');
-                        if(commentEditContentElements.innerText.replace('/\n/g', '').trim() === '') {
-                            isEmptyContent = true;
-                        }
-                        if(imgContents) {
-                            imgContents.forEach(img => {
-                                if(img.size > maxFile) {
-                                    setTimeout(function(){
-                                        notification.addNotification({
-                                            message: M.util.get_string('','pdfannotator'),
-                                            type: "error"
-                                          });
-                                        let notificationpanel = document.getElementById("user-notifications");
-                                        while (notificationpanel.hasChildNodes()) {
-                                            notificationpanel.removeChild(notificationpanel.firstChild);
-                                        }
-                                    }, 5000);
-                                }
-                            });
-                        }
-                        var temp = commentEditContentElements.querySelectorAll('p')[0];
-                        if(temp) {
-                            if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                        if (editForm.style.display === "none") {
+                            editForm.style.display = "block";
+                            text.innerHTML = "";
+                        
+                        var isEmptyContent = false;
+                        // Add an event handler to the form for submitting any changes to the database.
+                        editForm.onsubmit = function (e) {
+                            let newContent = editArea.value.trim();
+                            var commentEditContentElements = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
+                            var imgContents = commentEditContentElements.querySelectorAll('img');
+                            if(commentEditContentElements.innerText.replace('/\n/g', '').trim() === '') {
                                 isEmptyContent = true;
                             }
-                        }
-                        if(isEmptyContent && imgContents.length === 0){
-                            // Should be more than one character, otherwise it should not be saved.
-                            notification.addNotification({
-                              message: M.util.get_string('min0Chars','pdfannotator'),
-                              type: "error"
-                            });
-                        } else if(newContent === comment.content) { // No changes.
+                            var temp = commentEditContentElements.querySelectorAll('p')[0];
+                            if(temp) {
+                                if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                                    isEmptyContent = true;
+                                }
+                            }
+                            if(isEmptyContent && imgContents.length === 0){
+                                // Should be more than one character, otherwise it should not be saved.
+                                notification.addNotification({
+                                    message: M.util.get_string('min0Chars','pdfannotator'),
+                                    type: "error"
+                                });
+                            } else if(newContent === comment.content) { // No changes.
+                                editForm.style.display = "none";
+                                text.innerHTML = comment.displaycontent;
+                                renderMathJax(text);
+                            } else { // Save changes.
+                                _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent, editForm)
+                                    .then(function(data){
+                                        if (data.status === "success") {
+                                            editForm.style.display = "none";
+                                            if (data.modifiedby) {
+                                                $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified + " " + M.util.get_string('modifiedby', 'pdfannotator') + " " + data.modifiedby);
+                                            } else {
+                                                $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified);
+                                            }
+                                            newContent = data.newContent;
+                                            text.innerHTML = newContent;
+                                            comment.content = newContent;
+                                            editArea = newContent;
+                                            renderMathJax(text);
+                                            notification.addNotification({
+                                                message: M.util.get_string('successfullyEdited', 'pdfannotator'),
+                                                type: "success"
+                                            });
+                                        } else {
+                                            notification.addNotification({
+                                                message: M.util.get_string('error:editComment','pdfannotator'),
+                                                type: "error"
+                                            });                                        
+                                        }
+                                    });
+                            }
+                            setTimeout(function(){
+                                let notificationpanel = document.getElementById("user-notifications");
+                                while (notificationpanel.hasChildNodes()) {
+                                    notificationpanel.removeChild(notificationpanel.firstChild);
+                                }
+                            }, 4000);
+
+                            return false; // Prevents normal POST and page reload in favour of an asynchronous load.
+                        };
+                            
+                        $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
                             editForm.style.display = "none";
+                            editArea.innerHTML = '';
+                            editArea.innerHTML = comment.displaycontent;
+                            editAreaEditable.innerHTML = '';
+                            editAreaEditable.innerHTML = comment.displaycontent;
                             text.innerHTML = comment.displaycontent;
                             renderMathJax(text);
-                        } else { // Save changes.
-                            _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent, editForm)
-                                .then(function(data){
-                                    if (data.status === "success") {
-                                        editForm.style.display = "none";
-                                        if (data.modifiedby) {
-                                            $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified + " " + M.util.get_string('modifiedby', 'pdfannotator') + " " + data.modifiedby);
-                                        } else {
-                                            $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified);
-                                        }
-                                        newContent = data.newContent;
-                                        text.innerHTML = newContent;
-                                        comment.content = newContent;
-                                        editArea = newContent;
-                                        renderMathJax(text);
-                                        notification.addNotification({
-                                            message: M.util.get_string('successfullyEdited', 'pdfannotator'),
-                                            type: "success"
-                                        });
-                                    } else {
-                                        notification.addNotification({
-                                            message: M.util.get_string('error:editComment','pdfannotator'),
-                                            type: "error"
-                                        });                                        
-                                    }
-                                });
-                        }
-                        setTimeout(function(){
-                            let notificationpanel = document.getElementById("user-notifications");
-                            while (notificationpanel.hasChildNodes()) {
-                                notificationpanel.removeChild(notificationpanel.firstChild);
-                            }
-                        }, 4000);
-
-                        return false; // Prevents normal POST and page reload in favour of an asynchronous load.
-                    };
-                        
-                    $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
-                        editForm.style.display = "none";
-                        editArea.innerHTML = '';
-                        editArea.innerHTML = comment.displaycontent;
-                        editAreaEditable.innerHTML = '';
-                        editAreaEditable.innerHTML = comment.displaycontent;
-                        text.innerHTML = comment.displaycontent;
-                        renderMathJax(text);
-                    });
+                        });
                     } else {
                         editForm.style.display = "none";
                         text.innerHTML = comment.displaycontent;
@@ -1881,224 +1853,233 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     UI.loadEditor('editcomment', 'edit', comment.uuid);
                     handleClickIfEditorExists();
                 });               
-          }
-          
-          /**
-           * This function creates an Node-Element for deleting the comment
-           * @param {type} comment The comment-object for which the deletebutton is.
-           * @returns {Element|startIndex.indexstartIndex#L#26.indexstartIndex#L#26#L#72.indexstartIndex#L#26#L#72#L#743.createDeleteButton.deleteSpan}
-           */
-          function createDeleteHandler(comment) {
-            var button = $('#comment_'+comment.uuid+' .comment-delete-a');
-            button.click(function(e) {
-                var confirmDelete = '';
-                if(comment.isquestion==1){                            
-                    if (_capabilities.deleteany) {
-                        confirmDelete = M.util.get_string('deletingQuestion_manager', 'pdfannotator');
-                    } else {
-                        confirmDelete = M.util.get_string('deletingQuestion_student', 'pdfannotator');
-                    }
-                } else {
-                    confirmDelete = M.util.get_string('deletingComment', 'pdfannotator');
-                }
-                var deleteCallback = function() {
-                    dialogCallbackForDelete.call(this, comment);
-                };
-                notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), deleteCallback, null);                     
-            });
-
-            function dialogCallbackForDelete(args = comment){
-                if(args.type === "textbox" || args.type === "drawing"){
-                    _2.default.getStoreAdapter().deleteAnnotation(documentId, args.annotation).then(function(data){
-                        if(data.status === "success"){
-                            var node = document.querySelector('[data-pdf-annotate-id="'+args.annotation+'"]');
-                            var visiblePageNum = node.parentNode.getAttribute('data-pdf-annotate-page');
-                            node.parentNode.removeChild(node);
-                            // Not possible to enter new comments.
-                            document.querySelector('.comment-list-container').innerHTML = '';
-                            document.querySelector('.comment-list-form').setAttribute('style','display:none');
-                            UI.renderQuestions(documentId,visiblePageNum);
-                        }
-                    },function(err){
-                        notification.addNotification({
-                            message: M.util.get_string('error:deleteAnnotation', 'pdfannotator'),
-                            type: "error"
-                        });
-                        console.error(M.util.get_string('error:deleteAnnotation', 'pdfannotator'));
-                    });
-                } else {  
-                    _2.default.getStoreAdapter().deleteComment(RENDER_OPTIONS.documentId, args.uuid).then(function(data) {
-                        // If comment was answered so that it is not completly deleted but displayed as deleted.
-                        // If question: Close   If answer: Remove marking as correct
-                        if(data.wasanswered && ((comment.isquestion && !comment.solved) || (!comment.isquestion && comment.solved))){
-                            _2.default.getStoreAdapter().markSolved(RENDER_OPTIONS.documentId, args);
-                        }
-                    });
-                } 
+            }
             
-          }
-      }
-                
-        /**
-         * This function is called, when an annotation is clicked. The corresponding comments are rendered and a form to submit a comment.
-         * @param {type} target
-         * @returns {undefined}
-         */    
-        function handleAnnotationClick(target) {
-	    if (supportsComments(target)) {
-                //showLoader
-                UI.showLoader();
-	      (function () {
-	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
-	        var annotationId = target.getAttribute('data-pdf-annotate-id');
-
-	        _2.default.getStoreAdapter().getComments(documentId, annotationId).then(function (comments) {
-                UI.hideLoader();
-                var title;
-                if(comments.comments[0].visibility == "protected") {
-                    title = M.util.get_string('protected_comments','pdfannotator');
-                    $("#protectedDiv").hide();                    
-                    $("#anonymousDiv").hide();
-                    $("#privateDiv").hide();
-                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
-                } else if (comments.comments[0].visibility == "private") {
-                    title = M.util.get_string('private_comments','pdfannotator');
-                    $("#privateDiv").hide();
-                    $("#protectedDiv").hide();                    
-                    $("#anonymousDiv").hide();
-                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
-                } else {
-                    title = M.util.get_string('public_comments','pdfannotator');
-                    $("#privateDiv").hide();
-                    $("#protectedDiv").hide();
-                    $("#anonymousDiv").show();
-                    $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
-                }
-                
-                $('#comment-wrapper h4')[0].innerHTML = title;
-                commentList.innerHTML = '';
-                commentForm.style.display = 'inherit';
-                    
-                var button1 = document.getElementById('allQuestions'); // to be found in index template
-                button1.style.display = 'inline';
-                var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
-                button2.style.display = 'inline';
-                let isEmptyContent = false;
-                commentForm.onsubmit = function (e) {
-                    document.querySelector('#commentSubmit').disabled = true;
-                    var commentVisibility= read_visibility_of_checkbox();
-                    var isquestion = 0; // this is a normal comment, so it is not a question
-                    var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
-                    var imgContents = commentContentElements.querySelectorAll('img');
-                    var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
-                    var temp = commentContentElements.querySelectorAll('p')[0];
-                    if(temp) {
-                        if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) || innerContent === '') {
-                            isEmptyContent = true;
+            /**
+             * This function creates an Node-Element for deleting the comment.
+             * @param {type} comment The comment-object for which the deletebutton is.
+             * @returns {Element|startIndex.indexstartIndex#L#26.indexstartIndex#L#26#L#72.indexstartIndex#L#26#L#72#L#743.createDeleteButton.deleteSpan}
+             */
+            function createDeleteHandler(comment) {
+                var button = $('#comment_'+comment.uuid+' .comment-delete-a');
+                button.click(function(e) {
+                    var confirmDelete = '';
+                    if(comment.isquestion==1){                            
+                        if (_capabilities.deleteany) {
+                            confirmDelete = M.util.get_string('deletingQuestion_manager', 'pdfannotator');
+                        } else {
+                            confirmDelete = M.util.get_string('deletingQuestion_student', 'pdfannotator');
                         }
+                    } else {
+                        confirmDelete = M.util.get_string('deletingComment', 'pdfannotator');
                     }
-                    if(isEmptyContent && imgContents.length === 0){
-                        //should be more than one character, otherwise it should not be saved.
-                        notification.addNotification({
-                            message: M.util.get_string('min0Chars','pdfannotator'),
-                            type: "error"
-                        });
-                        commentText.focus();
-                        document.querySelector('#commentSubmit').disabled = false;
-                        return false;
-                    }
-                    _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
-                        .then(insertComments)
-                        .then(function (success) {
-                            if (!success) {
-                                return false;
+                    var deleteCallback = function() {
+                        dialogCallbackForDelete.call(this, comment);
+                    };
+                    notification.confirm(M.util.get_string('deletingCommentTitle', 'pdfannotator'), confirmDelete, M.util.get_string('yesButton', 'pdfannotator'), M.util.get_string('cancelButton', 'pdfannotator'), deleteCallback, null);                     
+                });
+
+                function dialogCallbackForDelete(args = comment){
+                    if(args.type === "textbox" || args.type === "drawing"){
+                        _2.default.getStoreAdapter().deleteAnnotation(documentId, args.annotation).then(function(data){
+                            if(data.status === "success"){
+                                var node = document.querySelector('[data-pdf-annotate-id="'+args.annotation+'"]');
+                                var visiblePageNum = node.parentNode.getAttribute('data-pdf-annotate-page');
+                                node.parentNode.removeChild(node);
+                                // Not possible to enter new comments.
+                                document.querySelector('.comment-list-container').innerHTML = '';
+                                document.querySelector('.comment-list-form').setAttribute('style','display:none');
+                                UI.renderQuestions(documentId,visiblePageNum);
                             }
-                            UI.loadEditor('content');
-                            document.querySelector('#commentSubmit').disabled = false;
-                            commentText.value = '';
-                            if(editorArea) {
-                                editorArea.innerHTML = '';
-                            }
-                            commentText.focus();
-                        }).catch(function(err){
+                        },function(err){
                             notification.addNotification({
-                                message: M.util.get_string('error:addComment','pdfannotator'),
+                                message: M.util.get_string('error:deleteAnnotation', 'pdfannotator'),
                                 type: "error"
                             });
-                            console.error(M.util.get_string('error:addComment', 'pdfannotator'));
+                            console.error(M.util.get_string('error:deleteAnnotation', 'pdfannotator'));
                         });
-
-                    return false; // Prevents page reload via POST to enable asynchronous loading
-                };
-
-                //render comments   
-                  //render comments   
-                //render comments   
-                insertComments(comments, target.markCommentid);
+                    } else {  
+                        _2.default.getStoreAdapter().deleteComment(RENDER_OPTIONS.documentId, args.uuid).then(function(data) {
+                            // If comment was answered so that it is not completly deleted but displayed as deleted.
+                            // If question: Close   If answer: Remove marking as correct
+                            if(data.wasanswered && ((comment.isquestion && !comment.solved) || (!comment.isquestion && comment.solved))){
+                                _2.default.getStoreAdapter().markSolved(RENDER_OPTIONS.documentId, args);
+                            }
+                        });
+                    } 
                 
-            }, function (err){
+                }
+            }
+                
+            /**
+             * This function is called, when an annotation is clicked. The corresponding comments are rendered and a form to submit a comment.
+             * @param {type} target
+             * @returns {undefined}
+             */    
+            function handleAnnotationClick(target) {
+                if (supportsComments(target)) {
+                    (function () {
+                        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
+                        var annotationId = target.getAttribute('data-pdf-annotate-id');
+
+                        _2.default.getStoreAdapter().getComments(documentId, annotationId)
+                        .then(function (comments) {
+                            var title;
+                            if(comments.comments[0].visibility == "protected") {
+                                title = M.util.get_string('protected_comments','pdfannotator');
+                                $("#protectedDiv").hide();                    
+                                $("#anonymousDiv").hide();
+                                $("#privateDiv").hide();
+                                $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_protected_comment', 'pdfannotator'));
+                            } else if (comments.comments[0].visibility == "private") {
+                                title = M.util.get_string('private_comments','pdfannotator');
+                                $("#privateDiv").hide();
+                                $("#protectedDiv").hide();                    
+                                $("#anonymousDiv").hide();
+                                $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('add_private_comment', 'pdfannotator'));
+                            } else {
+                                title = M.util.get_string('public_comments','pdfannotator');
+                                $("#privateDiv").hide();
+                                $("#protectedDiv").hide();
+                                $("#anonymousDiv").show();
+                                $("#id_pdfannotator_contenteditable").attr("placeholder", M.util.get_string('addAComment', 'pdfannotator'));
+                            }
+                            
+                            $('#comment-wrapper h4')[0].innerHTML = title;
+                            commentList.innerHTML = '';
+                            commentForm.style.display = 'inherit';
+                                
+                            var button1 = document.getElementById('allQuestions'); // to be found in index template
+                            button1.style.display = 'inline';
+                            var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                            button2.style.display = 'inline';
+                            let isEmptyContent = false;
+
+                            commentForm.onsubmit = function (e) {
+                                document.querySelector('#commentSubmit').disabled = true;
+                                var commentVisibility= read_visibility_of_checkbox();
+                                var isquestion = 0; // this is a normal comment, so it is not a question
+                                var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
+                                var imgContents = commentContentElements.querySelectorAll('img');
+                                var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
+                                var temp = commentContentElements.querySelectorAll('p')[0];
+                                if(temp) {
+                                    if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) || innerContent === '') {
+                                        isEmptyContent = true;
+                                    }
+                                }
+                                if(isEmptyContent && imgContents.length === 0){
+                                    //should be more than one character, otherwise it should not be saved.
+                                    notification.addNotification({
+                                        message: M.util.get_string('min0Chars','pdfannotator'),
+                                        type: "error"
+                                    });
+                                    document.querySelector('#commentSubmit').disabled = false;
+                                    return false;
+                                }
+
+                                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
+                                .then(function (response) {
+                                    var fn = (response) => insertComments(response);
+                                    UI.loadEditor('content', 'add', 0, fn, response);
+                                })
+                                .then(function (success) {
+                                    if (!success) {
+                                        return false;
+                                    }
+                                    document.querySelector('#commentSubmit').disabled = false;
+                                })
+                                .catch(function(err){
+                                    notification.addNotification({
+                                        message: M.util.get_string('error:addComment','pdfannotator'),
+                                        type: "error"
+                                    });
+                                    console.error(M.util.get_string('error:addComment', 'pdfannotator'));
+                                });
+
+                                return false; // Prevents page reload via POST to enable asynchronous loading
+                            };
+                            
+                            var params = {'comments':comments, 'markCommentid':target.markCommentid};
+                            var fn = (params) => {
+                                var comments = params.comments;
+                                var markCommentid = params.markCommentid;
+                                //render comments   
+                                insertComments(comments, markCommentid);
+                            }
+                            UI.loadEditor('content', 'add', 0, fn, params);
+                                
+                        })
+                        .catch(function (err){
+                            commentList.innerHTML = '';
+                            commentForm.style.display = 'none';
+                            commentForm.onsubmit = null;
+
+                            insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});
+                            
+                            notification.addNotification({
+                                message: M.util.get_string('error:getComments','pdfannotator'),
+                                type: "error"
+                            });
+
+                            setTimeout(function(){
+                                let notificationpanel = document.getElementById("user-notifications");
+                                while (notificationpanel.hasChildNodes()) {
+                                    notificationpanel.removeChild(notificationpanel.firstChild);
+                                }
+                            }, 4000);
+                        });
+                    })();
+                }else{      
+                    // Drawing or textbox                        
+                    (function () {
+                        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
+                        var annotationId = target.getAttribute('data-pdf-annotate-id');
+            
+                        _2.default.getStoreAdapter().getInformation(documentId, annotationId)
+                        .then(function (annotation) {
+                            UI.hideLoader();
+                            commentList.innerHTML = '';
+                            commentForm.style.display = 'none';
+                            commentForm.onsubmit = null;
+                            
+                            var button1 = document.getElementById('allQuestions'); // to be found in index template
+                            button1.style.display = 'inline';
+                            var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
+                            button2.style.display = 'inline';
+                            
+                            //render comments  
+                            insertComments(annotation);
+
+                        }).catch(function (err){
+                            commentList.innerHTML = '';
+                            commentForm.style.display = 'none';
+                            commentForm.onsubmit = null;
+
+                            insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});
+
+                            notification.addNotification({
+                                message: M.util.get_string('error:getComments','pdfannotator'),
+                                type: "error"
+                            });
+                        });
+                    })();
+                }
+            }
+
+            function handleAnnotationBlur(target) {
+                if (supportsComments(target)) {
                     commentList.innerHTML = '';
                     commentForm.style.display = 'none';
                     commentForm.onsubmit = null;
-                    insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
-                    notification.addNotification({
-                        message: M.util.get_string('error:getComments','pdfannotator'),
-                        type: "error"
-                    });
-                    setTimeout(function(){
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        }
-                    }, 4000);
-                });
-	      })();
-	    }else{      // Drawing or textbox
-                
-                (function () {
-	        var documentId = target.parentNode.getAttribute('data-pdf-annotate-document');
-	        var annotationId = target.getAttribute('data-pdf-annotate-id');
+                }
+                var visiblePageNum = document.getElementById('currentPage').value;
+                UI.renderQuestions(documentId,visiblePageNum);
+            }
 
-	        _2.default.getStoreAdapter().getInformation(documentId, annotationId).then(function (annotation) {
-                    UI.hideLoader();
-	          commentList.innerHTML = '';
-	          commentForm.style.display = 'none';
-                  commentForm.onsubmit = null;
-                  
-                  var button1 = document.getElementById('allQuestions'); // to be found in index template
-                  button1.style.display = 'inline';
-                  var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
-                  button2.style.display = 'inline';
-                  
-                  //render comments  
-                  insertComments(annotation);
-                }, function (err){
-                    commentList.innerHTML = '';
-                    commentForm.style.display = 'none';
-                    commentForm.onsubmit = null;
-                    insertComments({ content: M.util.get_string('error:getComments', 'pdfannotator')});        
-                    notification.addNotification({
-                        message: M.util.get_string('error:getComments','pdfannotator'),
-                        type: "error"
-                      });
-                });
-	      })();
-             }
-	  }
-
-	  function handleAnnotationBlur(target) {
-	    if (supportsComments(target)) {
-	      commentList.innerHTML = '';
-	      commentForm.style.display = 'none';
-	      commentForm.onsubmit = null;
-	    }
-            var visiblePageNum = document.getElementById('currentPage').value;
-              UI.renderQuestions(documentId,visiblePageNum);
-	  }
-
-	  UI.addEventListener('annotation:click', handleAnnotationClick);
-	  UI.addEventListener('annotation:blur', handleAnnotationBlur);
-	})(window, document); //end comment annotation
+            UI.addEventListener('annotation:click', handleAnnotationClick);
+            UI.addEventListener('annotation:blur', handleAnnotationBlur);
+        })(window, document); //end comment annotation.
 
 /***/ },
 /* 1 */
@@ -3825,7 +3806,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         
             /**
              * This function handles the document click. It looks for annotations under the click point.
-             * If there are more than one annotation, a modal window pops up and the user can select, which one he/she wanted to click
+             * If there are more than one annotation, a modal window pops up and the user can select, which one he/she wanted to click.
              * @param {type} e the event object of the click
              * @param {type} commid 
              * @returns {undefined}
@@ -3835,140 +3816,140 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 if (tar.hasClass('moodle-dialogue') || tar.parents('.moodle-dialogue').length > 0) {
                     return; //Dialog (for example from atto-editor) was clicked.
                 }
-               //the last parameter is true to get an array instead of the first annotation found.
+                //the last parameter is true to get an array instead of the first annotation found.
                 var target=(0,_utils.findAnnotationAtPoint)(e.clientX,e.clientY,true);
 
-                if(target != null && Object.prototype.toString.call( target ) === '[object Array]' && target.length>1){
-                        //creats a modal window to select which one of the overlapping annotation should be selected
-                        var modal = document.createElement('div');
-                        modal.id= "myModal";
-                        modal.className = "modal hide fade";
-                        modal.setAttribute('tabindex', -1);
-                        modal.setAttribute('role', "dialog");
-                        modal.setAttribute('aria-labelledby', "myModalLabel");
-                        modal.setAttribute('aria-hidden', "true");
-                        var modaldialog = document.createElement('div');
-                        modaldialog.className = "modal-dialog";
-                        var modalcontent = document.createElement('div');
-                        modalcontent.className = "modal-content";
-                        var modalheader = document.createElement('div');
-                        modalheader.className = "modal-header";
-                        var headerClose = document.createElement('button');
-                        headerClose.setAttribute('type', "button");
-                        headerClose.className = "close";
-                        headerClose.setAttribute('data-dismiss', "modal");
-                        headerClose.setAttribute('aria-hidden', "true");
-                        headerClose.innerHTML = "x";
-                        
-                        headerClose.addEventListener("click",function(){   
-                                    $('body').removeClass('modal-open');
-                                    $('#myModal').remove();
-                                });
-                                
-                        var headertitle = document.createElement('h3');
-                        headertitle.id = "myModalLabel";
-                        headertitle.innerHTML = M.util.get_string('decision','pdfannotator');
-                        headertitle.style.display = "inline-block";
-                        modalheader.appendChild(headertitle);
-                        modalheader.appendChild(headerClose);   
+                if (target != null && Object.prototype.toString.call( target ) === '[object Array]' && target.length>1) {
+                    //creats a modal window to select which one of the overlapping annotation should be selected.
+                    var modal = document.createElement('div');
+                    modal.id= "myModal";
+                    modal.className = "modal hide fade";
+                    modal.setAttribute('tabindex', -1);
+                    modal.setAttribute('role', "dialog");
+                    modal.setAttribute('aria-labelledby', "myModalLabel");
+                    modal.setAttribute('aria-hidden', "true");
+                    var modaldialog = document.createElement('div');
+                    modaldialog.className = "modal-dialog";
+                    var modalcontent = document.createElement('div');
+                    modalcontent.className = "modal-content";
+                    var modalheader = document.createElement('div');
+                    modalheader.className = "modal-header";
+                    var headerClose = document.createElement('button');
+                    headerClose.setAttribute('type', "button");
+                    headerClose.className = "close";
+                    headerClose.setAttribute('data-dismiss', "modal");
+                    headerClose.setAttribute('aria-hidden', "true");
+                    headerClose.innerHTML = "x";
+                    
+                    headerClose.addEventListener("click",function(){   
+                                $('body').removeClass('modal-open');
+                                $('#myModal').remove();
+                            });
+                            
+                    var headertitle = document.createElement('h3');
+                    headertitle.id = "myModalLabel";
+                    headertitle.innerHTML = M.util.get_string('decision','pdfannotator');
+                    headertitle.style.display = "inline-block";
+                    modalheader.appendChild(headertitle);
+                    modalheader.appendChild(headerClose);   
 
 
-                        var modalbody = document.createElement('div');
-                        modalbody.className = "modal-body";
-                        var bodytext = document.createElement('p');
-                        bodytext.innerHTML = M.util.get_string('decision:overlappingAnnotation','pdfannotator');
-                        modalbody.appendChild(bodytext);
+                    var modalbody = document.createElement('div');
+                    modalbody.className = "modal-body";
+                    var bodytext = document.createElement('p');
+                    bodytext.innerHTML = M.util.get_string('decision:overlappingAnnotation','pdfannotator');
+                    modalbody.appendChild(bodytext);
 
-                        modalcontent.appendChild(modalheader);
-                        modalcontent.appendChild(modalbody);
-                        
-                        modaldialog.appendChild(modalcontent);
-                        modal.appendChild(modaldialog);
+                    modalcontent.appendChild(modalheader);
+                    modalcontent.appendChild(modalbody);
+                    
+                    modaldialog.appendChild(modalcontent);
+                    modal.appendChild(modaldialog);
 
-                        $('#body-wrapper').append(modal);
-                        $('#myModal').modal({backdrop:false});
-                        for(var i=0;i<target.length;i++){
-                            (function(innerI){
-                                var elemUse = document.createElement('button');
-                                var elemType = target[innerI].getAttribute('data-pdf-annotate-type');
-                                var elemImg = document.createElement('img');
-                                elemImg.setAttribute('style','pointer-events:none;');
-                                switch(elemType){
-                                    case 'point':
-                                        elemImg.alt = M.util.get_string('point','pdfannotator');
-                                        elemImg.title = M.util.get_string('point','pdfannotator');
-                                        elemImg.src = M.util.image_url('pinbild','pdfannotator');
-                                        break;
-                                    case 'area':
-                                        elemImg.alt = M.util.get_string('rectangle','pdfannotator');
-                                        elemImg.title = M.util.get_string('rectangle','pdfannotator');
-                                        elemImg.src = M.util.image_url('i/completion-manual-n','core');
-                                        break;
-                                    case 'highlight':
-                                        elemImg.alt = M.util.get_string('highlight','pdfannotator');
-                                        elemImg.title = M.util.get_string('highlight','pdfannotator');
-                                        elemImg.src = M.util.image_url('text_highlight_picker','pdfannotator');
-                                        break;
-                                    case 'strikeout':
-                                        elemImg.alt = M.util.get_string('strikeout','pdfannotator');
-                                        elemImg.title = M.util.get_string('strikeout','pdfannotator');
-                                        elemImg.src = M.util.image_url('strikethrough','pdfannotator');
-                                        break;
-                                    case 'textbox':
-                                        elemImg.alt = M.util.get_string('textbox','pdfannotator');
-                                        elemImg.title = M.util.get_string('textbox','pdfannotator');
-                                        elemImg.src = M.util.image_url('text_color_picker','pdfannotator');
-                                        break;
-                                    case 'drawing':
-                                        elemImg.alt = M.util.get_string('drawing','pdfannotator');
-                                        elemImg.title = M.util.get_string('drawing','pdfannotator');
-                                        elemImg.src = M.util.image_url('editstring','pdfannotator');
-                                        break;
-                                    case 'default':
-                                        elemImg.alt = 'undefined';
-                                        elemImg.title = 'undefined';
-                                        elemImg.src = '';   
-                                }
-                                
-                                elemUse.appendChild(elemImg);
-                                
-                                elemUse.addEventListener("click",function(){
-                                    // Emit annotation:blur if clickNode is no longer clicked
-                                    if(clickNode&&clickNode!==target[innerI]){
-                                        emitter.emit('annotation:blur',clickNode);
-                                    }// Emit annotation:click if target was clicked
-                                    if(target[innerI]){
-                                        emitter.emit('annotation:click',target[innerI]);
-                                    }
-                                    clickNode=target[innerI];
-                                    $('body').removeClass('modal-open');
-                                    $('#myModal').remove();
-                                });
-                                elemUse.addEventListener("mouseover",function(){
-                                    _editoverlay.createEditOverlay(target[innerI]);
-                                });
-                                elemUse.addEventListener("mouseout",function(){
-                                    _editoverlay.destroyEditOverlay(target[innerI]);
-                                });
-                                modalbody.appendChild(elemUse);
-                            })(i);
-
-                        }
-                    }else{
-                        // Emit annotation:blur if clickNode is no longer clicked, but not if another node is clicked
-                        if(clickNode && !target){
-                            emitter.emit('annotation:blur',clickNode);
-                        }// Emit annotation:click if target was clicked
-                        if(target){
-                            if(commid !== null){
-                                target.markCommentid = commid; 
+                    $('#body-wrapper').append(modal);
+                    $('#myModal').modal({backdrop:false});
+                    for(var i=0;i<target.length;i++){
+                        (function(innerI){
+                            var elemUse = document.createElement('button');
+                            var elemType = target[innerI].getAttribute('data-pdf-annotate-type');
+                            var elemImg = document.createElement('img');
+                            elemImg.setAttribute('style','pointer-events:none;');
+                            switch(elemType){
+                                case 'point':
+                                    elemImg.alt = M.util.get_string('point','pdfannotator');
+                                    elemImg.title = M.util.get_string('point','pdfannotator');
+                                    elemImg.src = M.util.image_url('pinbild','pdfannotator');
+                                    break;
+                                case 'area':
+                                    elemImg.alt = M.util.get_string('rectangle','pdfannotator');
+                                    elemImg.title = M.util.get_string('rectangle','pdfannotator');
+                                    elemImg.src = M.util.image_url('i/completion-manual-n','core');
+                                    break;
+                                case 'highlight':
+                                    elemImg.alt = M.util.get_string('highlight','pdfannotator');
+                                    elemImg.title = M.util.get_string('highlight','pdfannotator');
+                                    elemImg.src = M.util.image_url('text_highlight_picker','pdfannotator');
+                                    break;
+                                case 'strikeout':
+                                    elemImg.alt = M.util.get_string('strikeout','pdfannotator');
+                                    elemImg.title = M.util.get_string('strikeout','pdfannotator');
+                                    elemImg.src = M.util.image_url('strikethrough','pdfannotator');
+                                    break;
+                                case 'textbox':
+                                    elemImg.alt = M.util.get_string('textbox','pdfannotator');
+                                    elemImg.title = M.util.get_string('textbox','pdfannotator');
+                                    elemImg.src = M.util.image_url('text_color_picker','pdfannotator');
+                                    break;
+                                case 'drawing':
+                                    elemImg.alt = M.util.get_string('drawing','pdfannotator');
+                                    elemImg.title = M.util.get_string('drawing','pdfannotator');
+                                    elemImg.src = M.util.image_url('editstring','pdfannotator');
+                                    break;
+                                case 'default':
+                                    elemImg.alt = 'undefined';
+                                    elemImg.title = 'undefined';
+                                    elemImg.src = '';   
                             }
-                            emitter.emit('annotation:click',target);
-                        }
-                        clickNode=target;
+                            
+                            elemUse.appendChild(elemImg);
+                            
+                            elemUse.addEventListener("click",function(){
+                                // Emit annotation:blur if clickNode is no longer clicked
+                                if(clickNode&&clickNode!==target[innerI]){
+                                    emitter.emit('annotation:blur',clickNode);
+                                }// Emit annotation:click if target was clicked
+                                if(target[innerI]){
+                                    emitter.emit('annotation:click',target[innerI]);
+                                }
+                                clickNode=target[innerI];
+                                $('body').removeClass('modal-open');
+                                $('#myModal').remove();
+                            });
+                            elemUse.addEventListener("mouseover",function(){
+                                _editoverlay.createEditOverlay(target[innerI]);
+                            });
+                            elemUse.addEventListener("mouseout",function(){
+                                _editoverlay.destroyEditOverlay(target[innerI]);
+                            });
+                            modalbody.appendChild(elemUse);
+                        })(i);
                     }
+                }else{
+                    // Emit annotation:blur if clickNode is no longer clicked, but not if another node is clicked.
+                    if(clickNode && !target){
+                        emitter.emit('annotation:blur',clickNode);
+                    }
+                    // Emit annotation:click if target was clicked.
+                    if(target){
+                        if(commid !== null){
+                            target.markCommentid = commid; 
+                        }
+                        emitter.emit('annotation:click',target);
+                    }
+                    clickNode=target;
+                }
 
-                    return;
+                return;
             }
             
             document.addEventListener('click',function handleDocumentClick(e){
@@ -5798,9 +5779,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 documentId=_getMetadata.documentId;
                 pageNumber=_getMetadata.pageNumber;
                 deleteUndefinedPin();
-                [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
-                renderPin();
-                _commentWrapper.loadEditor('content');
+                var fn = () => {
+                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
+                    renderPin();
+                }
+                _commentWrapper.loadEditor('content', 'add', 0, fn);
             }
             
             // Reset dragging to false.
@@ -5863,7 +5846,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
             }
             function handleSubmitBlur(){
-                disablePoint();textarea = void 0;(0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);}
+                disablePoint();
+                textarea = void 0;
+                (0,_commentWrapper.closeComment)(documentId,pageNumber,handleSubmitClick,handleCancelClick,null,false);
+            }
             /**
             * Handle input.blur event
             */function handleInputBlur(){/*disablePoint();*/savePoint();}/**
@@ -6179,13 +6165,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
                     renderRect(_type,[{top:parseInt(overlay.style.top,10)+rect.top,left:parseInt(overlay.style.left,10)+rect.left,width:parseInt(overlay.style.width,10),height:parseInt(overlay.style.height,10)}],null);
                     
-                    _commentWrapper.loadEditor('content');
-                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    let fn = () => {
+                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    }
+                    _commentWrapper.loadEditor('content', 'add', 0, fn);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
                     
-                    _commentWrapper.loadEditor('content');
-                    [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    let fn = () => {
+                        [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
+                    }
+                    _commentWrapper.loadEditor('content', 'add', 0, fn);
                 }else{
                     enableRect(_type);
                     //Do nothing!
@@ -6955,73 +6945,73 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 
             /**
              * 
-             * @param {type} section is a part of class name of editor input: pdfannotator_${section}_editoritemid, pdfannotator_${section}_editorFormat. It could be
+             * @param {type} section is a part of class name of editor input: pdfannotator_${section}_editoritemid, pdfannotator_${section}_editorFormat.
+             * @param {type} action can be add or edit
+             * @param {int} uuid
+             * @param {Function} fn a callback funtion. It will be called after the Promises in this funktion finish.
+             *
+             *  
              */
-            function loadEditor(section, action='add', uuid=0){
-                _ajaxloader.showLoader('.editor-loader-placeholder');
-                let addCommentEditor = document.querySelectorAll('#add_comment_editor_wrapper').length;
+            function loadEditor(section, action='add', uuid=0, fn=null, fnParams=null){
+                _ajaxloader.showLoader(`.editor-loader-placeholder-${action}`);
+                
+                // search the placeholder for editor.
+                let addCommentEditor = document.querySelectorAll('#add_comment_editor_wrapper');
                 let editCommentEditor = document.querySelectorAll('#edit_comment_editor_wrapper').length;
-                // If one of the Moodle Editor is active, then remove it from DOM and reappend the textarea for editor needs and the input fields.
-                if(addCommentEditor > 0 && action === "add") {                    
-                    templates.render('mod_pdfannotator/add_comment_editor')
+
+                if (action === "add") {
+                    // remove old editor and old input values of draftitemid and editorformat, if exists.
+                    if (addCommentEditor.length > 0) {
+                        $('div').remove('#add_comment_editor_wrapper');
+                    }
+                    $('input').remove('[name="input_value_editor"]');
+                    let data = {};
+                    templates.render('mod_pdfannotator/add_comment_editor_placeholder', data)
                     .then(function(html, js) {
-                        let commentListForm = document.querySelectorAll('#comment-list-form')[0];
-                        commentListForm.appendChild(html);
-                        return html;
+                        let commentListForm = document.getElementById('comment-list-form');
+                        templates.prependNodeContents(commentListForm, html, js);
                     })
-                    .catch(notification.exception)
-                    .then(function(html) {
-                        $('input').remove('[name="input_value_editor"]');
+                    .then(function() {
                         let args = {'section': section, 'cmid': _cm.id};
-                        Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
+                        Fragment.loadFragment('mod_pdfannotator', 'open_add_comment_editor', _contextId, args)
                         .done(function(html, js) {
-                            _ajaxloader.hideLoader('.editor-loader-placeholder');              
+                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}`);              
                             if (!html) {
                                 throw new TypeError("Invalid HMTL Input");
                             }
                             templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
-                            return html;
-                        }.bind(this))
-                        .catch(notification.exception);
-                    });
+                            if (fn instanceof Function) {
+                                (0,fn)(fnParams);
+                            }
+                            return true;
+                        });
+                    })
+                    .catch(notification.exception);
                 } else if(editCommentEditor > 0 && action === "edit") {
-                    templates.render('mod_pdfannotator/edit_comment_editor')
+                    let data = {'uuid': uuid};
+                    templates.render('mod_pdfannotator/edit_comment_editor_placeholder', data)
                     .then(function(html, js) {
                         let editForm = document.querySelectorAll(`edit${uuid}`)[0];
                         editForm.appendChild(html);
                         return html;
                     })
-                    .catch(notification.exception)
                     .then(function() {
                         $('input').remove('[name="input_value_editor"]');
                         let args = {'section': section, 'cmid': _cm.id};
-                        Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
-                        .done(function(html, js) {
-                            _ajaxloader.hideLoader('.editor-loader-placeholder');              
+                        Fragment.loadFragment('mod_pdfannotator', 'open_edit_comment_editor', _contextId, args)
+                        .then(function(html, js) {
+                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}`);              
                             if (!html) {
                                 throw new TypeError("Invalid HMTL Input");
                             }
                             templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
                             return html;
-                        }.bind(this))
-                        .catch(notification.exception);
-                    });
+                        });
+                    })
+                    .catch(notification.exception);
                 } else {
                     // nothing to do.
                 }
-                
-                /* $('input').remove('[name="input_value_editor"]');
-                let args = {'section': section, 'cmid': _cm.id};
-                Fragment.loadFragment('mod_pdfannotator', 'open_editor', _contextId, args)
-                .done(function(html, js) {
-                    _ajaxloader.hideLoader('.editor-loader-placeholder');              
-                    if (!html) {
-                        throw new TypeError("Invalid HMTL Input");
-                    }
-                    templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
-                    return html;
-                }.bind(this))
-                .catch(notification.exception) */
             }
             
     /***/},
@@ -7041,7 +7031,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             function hideLoader(selector='.comment-list-container'){
                 let loader = document.querySelector('#ajaxLoaderCreation');
                 if(loader !== null){
-                    let commentContainer = document.querySelector(`${selector}`);
+                    let commentContainer = document.querySelectorAll(`${selector}`)[0];
                     commentContainer.removeChild(loader);
                 }
             }

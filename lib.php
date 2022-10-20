@@ -769,7 +769,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
  * @param type $args
  * @return string
  */
-function mod_pdfannotator_output_fragment_edit_comment_form($args) {
+function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
     global $DB;
     $context = context_module::instance($args['cmid']);
     $html = '';
@@ -782,7 +782,7 @@ function mod_pdfannotator_output_fragment_edit_comment_form($args) {
     return $html;
 }
 
-function mod_pdfannotator_output_fragment_open_editor($args) {
+function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
     global $DB;
     $context = context_module::instance($args['cmid']);
 
