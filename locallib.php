@@ -64,7 +64,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00029"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00030"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00005"));
 
     // Pass parameters from PHP to JavaScript.
@@ -167,6 +167,25 @@ function pdfannotator_extract_images($contentarr, $itemid, $context=null) {
 }
 
 function pdfannotator_split_content_image($content, $res, $itemid, $context=null) {
+
+    // Gets all files in the comment with id itemid.
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'post', $itemid);
+    $fileinfo = [];
+    foreach($files as $file) {
+        if ($file->is_directory() and $file->get_filepath() === '/') {
+            continue;
+        }
+        $info = [];
+        $info['fileid'] = $file->get_id();
+        $info['filename'] = $file->get_filename();
+        $info['filepath'] = $file->get_filepath();
+        $info['filecontent'] = $file->get_content();
+        $info['filesize'] = $file->get_filesize();
+        $info['filemimetype'] = $file->get_mimetype();
+        $fileinfo[] = $info;
+    }
+
     $imgmatch = [];
     $firststr = '';
     $data = [];
@@ -190,26 +209,23 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
             $format[0] = 'jpeg';
         }
 
-        $data['format'] = strtoupper($format[0]);
-
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'post', $itemid);
-        $fileinfo = [];
-        foreach($files as $file) {
-            if ($file->is_directory() and $file->get_filepath() === '/') {
-                continue;
+        $tempinfo = [];
+        foreach($fileinfo as $file) {
+            $count = substr_count($imgstr, $file['filename']);
+            if($count) {
+                $tempinfo = $file;
+                break;
             }
-            //$fileinfo['fileid'] = $file->file_record['id'];
-            $fileinfo['filename'] = $file->get_filename();
-            $fileinfo['filepath'] = $file->get_filepath();
-            $fileinfo['filecontent'] = $file->get_content();
-            $fileinfo['filesize'] = $file->get_filesize();
         }
-        //$imagedata = file_get_contents($fileinfo['filecontent']);
-        $imagedata = 'data:image/' . strtolower($data['format']) . ';base64,' .  base64_encode($fileinfo['filecontent']);
-        $data['image'] = $imagedata;
 
-        //$data['image'] = $url[0];
+        $imagedata = 'data:' . $tempinfo['filemimetype'] . ';base64,' .  base64_encode($tempinfo['filecontent']);
+        $data['image'] = $imagedata;
+        $data['format'] = $tempinfo['filemimetype'];
+        $data['fileid'] = $tempinfo['fileid'];
+        $data['filename'] = $tempinfo['filename'];
+        $data['filepath'] = $tempinfo['filepath'];
+        $data['filesize'] = $tempinfo['filesize'];
+
         preg_match('/height=[0-9]+/', $imgstr, $height);
         $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
         preg_match('/width=[0-9]+/', $imgstr, $width);
@@ -220,6 +236,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         $content = $laststr;      
     }
     $res[] = $content;
+
     return $res;
 }
 
