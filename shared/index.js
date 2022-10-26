@@ -831,7 +831,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         text = text.replace(/<br \/>/g, "\n");
                                         // Remove all other HTML-Tags.
                                         text = $("<div>").html(text).text();
-                                        
+
                                         var stringarray = doc.splitTextToSize(text, characters);
                                         var textbit;
                                         for (var j = 0; j < stringarray.length; j++) {
@@ -1777,7 +1777,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             let defaultPTag = editAreaEditable.querySelector('p');
                             if(defaultPTag) {
                                 // No text and no images in default p tag of editor.
-                                if (defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                                if (defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0 && editAreaEditable.childNodes.length === 0) {
                                     isEmptyContent = true;
                                 }
                             }
@@ -1956,7 +1956,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
                                 var temp = commentContentElements.querySelectorAll('p')[0];
                                 if(temp) {
-                                    if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) || innerContent === '') {
+                                    if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && innerContent === '') {
                                         isEmptyContent = true;
                                     }
                                 }
