@@ -809,16 +809,16 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                      * it contains latex formulae images or not and place its text and/or images on the pdf
                                      */
                                     function breakLines(author=null, timemodified=null, post, characters = 130) {
-                                        if (typeof post === "string") { // Answer contains text only.
-                                            printTextblock(author, timemodified, post, characters);        
-                                        }
-
-                                        if (typeof post === "object") { // Answer is an array of text (optional) and a png image of a latex formula.
-                                            // 1. print the author right away
-                                            printAuthor(author, timemodified);
-                                            // 2. Print text and - if present - images (latex formulae).
-                                            post.forEach(printItem);
-                                        }
+                                        // 1. print the author right away
+                                        printAuthor(author, timemodified);
+                                        post.forEach(function(subContent) {
+                                            // Answer contains text only or any object such as array.
+                                            if (typeof subContent === "string") { 
+                                                printTextblock(author, timemodified, subContent, characters);
+                                            } else if (typeof subContent === "object") {
+                                                printItem(subContent);
+                                            }
+                                        });
                                     }
                                     /**
                                      * Take a text block, split it into pieces no larger than 130 characters
@@ -831,9 +831,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         text = text.replace(/<br \/>/g, "\n");
                                         // Remove all other HTML-Tags.
                                         text = $("<div>").html(text).text();
-                                        if (author !== null) {
-                                            printAuthor(author, timemodified);
-                                        }
+                                        
                                         var stringarray = doc.splitTextToSize(text, characters);
                                         var textbit;
                                         for (var j = 0; j < stringarray.length; j++) {
