@@ -61,7 +61,7 @@ class pdfannotator_comment {
         $datarecord->id = $commentuuid;
         
         // Get the draftitemid and prepare the draft area.
-        $draftitemid = required_param('pdfannotator_content_editoritemid', PARAM_INT);
+        $draftitemid = required_param('pdfannotator_addcomment_editoritemid', PARAM_INT);
         $options = pdfannotator_get_editor_options($context);
 
         $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentuuid, $options, $datarecord->content, true);

@@ -269,11 +269,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @returns {unresolved}
              */
             addComment(documentId, annotationId, content, visibility = "public", isquestion = 0) {
-                var pdfannotator_content_editoritemid = document.querySelectorAll('.pdfannotator_content_editoritemid')[0].value;  
+                var pdfannotator_addcomment_editoritemid = document.querySelectorAll('.pdfannotator_addcomment_editoritemid')[0].value;  
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
-                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, "pdfannotator_content_editoritemid": pdfannotator_content_editoritemid, sesskey: M.cfg.sesskey}
+                    data: { "documentId": documentId, "annotationId": annotationId, "content": content, "visibility": visibility, "action": 'addComment', "isquestion": isquestion, "cmid":_cm.id, "pdfannotator_addcomment_editoritemid": pdfannotator_addcomment_editoritemid, sesskey: M.cfg.sesskey}
                 }).then(function(data){
                     data = data.substring(data.indexOf('{'),data.length);    
                     //TODO compare to data before data.substring
@@ -866,9 +866,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         }
                                     }
                                     function printImage(data) {
+                                        // var url = data['image'];
+                                        // var imageElement = document.createElement("img");
+                                        // imageElement.src = url;
                                         var url = data['image'];
-                                        var imageElement = document.createElement("img");
-                                        imageElement.src = url;
                                         var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
 
                                         // Reduce height and witdh if its size more than a4height.
@@ -883,7 +884,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             doc.addPage();
                                             count = contentTopBottomMargin;
                                         }
-                                        doc.addImage(imageElement, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
+                                        doc.addImage(url, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
                                         count += (5 + height);
                                     }
                                     /**
@@ -1756,31 +1757,29 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @returns {undefined}
              */
             function createEditFormHandler(comment) {
-                var editorExists = false;
-                var editForm;
-                var editArea;
-                // If there is no editor in the comment already, we will insert it and than call this function.
-                var handleClickIfEditorExists = function() { 
-                    editForm = document.getElementById("edit"+comment.uuid);
-                    editArea = document.getElementById("editarea"+comment.uuid);
-                    var editAreaEditable = document.getElementById("editarea"+comment.uuid+"editable");
-                    var text = document.getElementById("chatmessage"+comment.uuid);
-                        if (editForm.style.display === "none") {
-                            editForm.style.display = "block";
-                            text.innerHTML = "";
-                        
-                        var isEmptyContent = false;
+                // Create an element for click.
+                var editButton = $('#editButton'+comment.uuid);
+                // Add an event handler to the click element that opens a textarea and fills it with the current comment.
+                editButton.click(function(e) {
+                    UI.loadEditor('edit', comment.uuid, handleClickIfEditorExists);
+                    function handleClickIfEditorExists() { 
                         // Add an event handler to the form for submitting any changes to the database.
+                        let editForm = document.getElementById(`edit${comment.uuid}`);
                         editForm.onsubmit = function (e) {
-                            let newContent = editArea.value.trim();
-                            var commentEditContentElements = document.querySelectorAll(`#editarea${comment.uuid}editable`)[0];
-                            var imgContents = commentEditContentElements.querySelectorAll('img');
-                            if(commentEditContentElements.innerText.replace('/\n/g', '').trim() === '') {
+                            let editTextarea =  document.getElementById(`editarea${comment.uuid}`);
+                            let editAreaEditable = document.getElementById(`editarea${comment.uuid}editable`);
+                            let chatMessage = document.getElementById(`chatmessage${comment.uuid}`);
+                            
+                            let newContent = editTextarea.value.trim();
+                            let imgContents = editAreaEditable.querySelectorAll('img');
+                            let isEmptyContent = false;
+                            if(editAreaEditable.innerText.replace('/\n/g', '').trim() === '') {
                                 isEmptyContent = true;
                             }
-                            var temp = commentEditContentElements.querySelectorAll('p')[0];
-                            if(temp) {
-                                if (temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
+                            let defaultPTag = editAreaEditable.querySelector('p');
+                            if(defaultPTag) {
+                                // No text and no images in default p tag of editor.
+                                if (defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) {
                                     isEmptyContent = true;
                                 }
                             }
@@ -1790,25 +1789,27 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     message: M.util.get_string('min0Chars','pdfannotator'),
                                     type: "error"
                                 });
-                            } else if(newContent === comment.content) { // No changes.
+                            } else if(newContent === comment.displaycontent) { // No changes.
                                 editForm.style.display = "none";
-                                text.innerHTML = comment.displaycontent;
-                                renderMathJax(text);
+                                chatMessage.innerHTML = comment.displaycontent;
+                                renderMathJax(chatMessage);
                             } else { // Save changes.
                                 _2.default.getStoreAdapter().editComment(documentId, comment.uuid, newContent, editForm)
                                     .then(function(data){
                                         if (data.status === "success") {
                                             editForm.style.display = "none";
+                                            $(`edit_comment_editor_wrapper_${comment.uuid}`).remove();
                                             if (data.modifiedby) {
                                                 $('#comment_' + comment.uuid + ' .edited').html(M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified + " " + M.util.get_string('modifiedby', 'pdfannotator') + " " + data.modifiedby);
                                             } else {
                                                 $('#comment_' + comment.uuid + ' .edited').html( M.util.get_string('editedComment', 'pdfannotator') + " " + data.timemodified);
                                             }
                                             newContent = data.newContent;
-                                            text.innerHTML = newContent;
+                                            chatMessage.innerHTML = newContent;
                                             comment.content = newContent;
-                                            editArea = newContent;
-                                            renderMathJax(text);
+                                            comment.displaycontent = newContent;
+                                            editTextarea = newContent;
+                                            renderMathJax(chatMessage);
                                             notification.addNotification({
                                                 message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                                 type: "success"
@@ -1827,31 +1828,24 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     notificationpanel.removeChild(notificationpanel.firstChild);
                                 }
                             }, 4000);
-
+    
                             return false; // Prevents normal POST and page reload in favour of an asynchronous load.
                         };
-                            
-                        $('#comment_' + comment.uuid + ' #commentCancel').click(function(e){
+    
+                        let cancelBtn = $('#comment_' + comment.uuid + ' #commentCancel');
+                        cancelBtn.click(function(e){
+                            let editTextarea =  document.getElementById(`editarea${comment.uuid}`);
+                            let editAreaEditable = document.getElementById(`editarea${comment.uuid}editable`);
+                            let chatMessage = document.getElementById(`chatmessage${comment.uuid}`);
                             editForm.style.display = "none";
-                            editArea.innerHTML = '';
-                            editArea.innerHTML = comment.displaycontent;
+                            editTextarea.innerHTML = '';
+                            editTextarea.innerHTML = comment.displaycontent;
                             editAreaEditable.innerHTML = '';
                             editAreaEditable.innerHTML = comment.displaycontent;
-                            text.innerHTML = comment.displaycontent;
-                            renderMathJax(text);
+                            chatMessage.innerHTML = comment.displaycontent;
+                            renderMathJax(chatMessage);
                         });
-                    } else {
-                        editForm.style.display = "none";
-                        text.innerHTML = comment.displaycontent;
-                        renderMathJax(text);
-                    } 
-                }
-                // Create an element for click.
-                var editButton = $('#editButton'+comment.uuid);
-                // Add an event handler to the click element that opens a textarea and fills it with the current comment.
-                editButton.click(function(e) {
-                    UI.loadEditor('editcomment', 'edit', comment.uuid);
-                    handleClickIfEditorExists();
+                    }
                 });               
             }
             
@@ -1981,7 +1975,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
                                 .then(function (response) {
                                     var fn = (response) => insertComments(response);
-                                    UI.loadEditor('content', 'add', 0, fn, response);
+                                    UI.loadEditor('add', 0, fn, response);
                                 })
                                 .then(function (success) {
                                     if (!success) {
@@ -2007,7 +2001,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 //render comments   
                                 insertComments(comments, markCommentid);
                             }
-                            UI.loadEditor('content', 'add', 0, fn, params);
+                            UI.loadEditor('add', 0, fn, params);
                                 
                         })
                         .catch(function (err){
@@ -5783,7 +5777,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,'pin');
                     renderPin();
                 }
-                _commentWrapper.loadEditor('content', 'add', 0, fn);
+                _commentWrapper.loadEditor('add', 0, fn);
             }
             
             // Reset dragging to false.
@@ -6168,14 +6162,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     let fn = () => {
                         [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                     }
-                    _commentWrapper.loadEditor('content', 'add', 0, fn);
+                    _commentWrapper.loadEditor('add', 0, fn);
                 }else if((rectsSelection=getSelectionRects()) && _type!=='area'){
                     renderRect(_type,[].concat(_toConsumableArray(rectsSelection)).map(function(r){return{top:r.top,left:r.left,width:r.width,height:r.height};}),null);
                     
                     let fn = () => {
                         [textarea,data] = (0,_commentWrapper.openComment)(e,handleCancelClick,handleSubmitClick,handleToolbarClick,handleSubmitBlur,_type);
                     }
-                    _commentWrapper.loadEditor('content', 'add', 0, fn);
+                    _commentWrapper.loadEditor('add', 0, fn);
                 }else{
                     enableRect(_type);
                     //Do nothing!
@@ -6386,8 +6380,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 document.querySelector('.toolbar').removeEventListener('click',handleToolbarClick);
                                 //simulate an click on cursor
                                 document.querySelector('button.cursor').click();
-                                (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);                                
-                                //_commentWrapper.loadEditor('content');
+                                (0,_commentWrapper.showCommentsAfterCreation)(annotation.uuid);
                             })
                             .catch(function(){
                                 //if there is an error in addComment, the annotation should be deleted!
@@ -6945,26 +6938,25 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 
             /**
              * 
-             * @param {type} section is a part of class name of editor input: pdfannotator_${section}_editoritemid, pdfannotator_${section}_editorFormat.
-             * @param {type} action can be add or edit
+             * @param {type} action can be add for adding comments. Or edit for editing comments.
              * @param {int} uuid
              * @param {Function} fn a callback funtion. It will be called after the Promises in this funktion finish.
              *
              *  
              */
-            function loadEditor(section, action='add', uuid=0, fn=null, fnParams=null){
-                _ajaxloader.showLoader(`.editor-loader-placeholder-${action}`);
-                
+            function loadEditor(action='add', uuid=0, fn=null, fnParams=null){                
                 // search the placeholder for editor.
                 let addCommentEditor = document.querySelectorAll('#add_comment_editor_wrapper');
-                let editCommentEditor = document.querySelectorAll('#edit_comment_editor_wrapper').length;
+                let editCommentEditor = document.querySelectorAll (`#edit_comment_editor_wrapper_${uuid}`);
 
                 if (action === "add") {
+                    _ajaxloader.showLoader(`.editor-loader-placeholder-${action}`);
+
                     // remove old editor and old input values of draftitemid and editorformat, if exists.
                     if (addCommentEditor.length > 0) {
-                        $('div').remove('#add_comment_editor_wrapper');
+                        addCommentEditor[0].remove();
                     }
-                    $('input').remove('[name="input_value_editor"]');
+
                     let data = {};
                     templates.render('mod_pdfannotator/add_comment_editor_placeholder', data)
                     .then(function(html, js) {
@@ -6972,10 +6964,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         templates.prependNodeContents(commentListForm, html, js);
                     })
                     .then(function() {
-                        let args = {'section': section, 'cmid': _cm.id};
+                        let args = {'action': action, 'cmid': _cm.id};
                         Fragment.loadFragment('mod_pdfannotator', 'open_add_comment_editor', _contextId, args)
                         .done(function(html, js) {
-                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}`);              
                             if (!html) {
                                 throw new TypeError("Invalid HMTL Input");
                             }
@@ -6983,29 +6974,68 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             if (fn instanceof Function) {
                                 (0,fn)(fnParams);
                             }
+                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}`);
                             return true;
+                        })
+                        .then(function() {                            
+                            let commentText = document.getElementById('id_pdfannotator_contenteditable');
+                            if(commentText) {
+                                commentText.focus();
+                            }
                         });
                     })
                     .catch(notification.exception);
-                } else if(editCommentEditor > 0 && action === "edit") {
+                } else if(action === "edit") {
+                    _ajaxloader.showLoader(`.editor-loader-placeholder-${action}-${uuid}`);
+
+                    // remove old editor and old input values of draftitemid and editorformat, if exists.
+                    if (editCommentEditor.length > 0) {
+                        editCommentEditor[0].remove();
+                    }
+
                     let data = {'uuid': uuid};
+                    let editTextarea;
                     templates.render('mod_pdfannotator/edit_comment_editor_placeholder', data)
                     .then(function(html, js) {
-                        let editForm = document.querySelectorAll(`edit${uuid}`)[0];
-                        editForm.appendChild(html);
-                        return html;
+                        let editForm = document.getElementById(`edit${uuid}`);
+                        templates.prependNodeContents(editForm, html, js);
+                        editTextarea =  document.getElementById(`editarea${uuid}`);
+                        editTextarea.style.display = "none";
+                        return true;
                     })
                     .then(function() {
-                        $('input').remove('[name="input_value_editor"]');
-                        let args = {'section': section, 'cmid': _cm.id};
+                        let args = {'action': action, 'cmid': _cm.id, 'uuid': uuid};
                         Fragment.loadFragment('mod_pdfannotator', 'open_edit_comment_editor', _contextId, args)
                         .then(function(html, js) {
-                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}`);              
                             if (!html) {
                                 throw new TypeError("Invalid HMTL Input");
                             }
-                            templates.replaceNode(document.getElementById('editor-commentlist-inputs'), html, js);
-                            return html;
+                            //templates.runTemplateJS(js);
+                            let editCommentEditorElement = document.getElementById(`edit_comment_editor_wrapper_${uuid}`);
+                            html = html.split('displaycontent:');
+                            let isreplaced = templates.appendNodeContents(editCommentEditorElement, html[0], js);
+                            editTextarea.innerText = html[1];
+    
+                            _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}-${uuid}`);
+
+                            let editForm = document.getElementById(`edit${uuid}`)
+                            let chatMessage = document.getElementById(`chatmessage${uuid}`);
+                            let editAreaEditable = document.getElementById(`editarea${uuid}editable`);
+                            editAreaEditable.innerHTML = editTextarea.value;
+                            if(editForm.style.display === "none") {
+                                editForm.style.cssText += ';display:block;';
+                                chatMessage.innerHTML = "";
+                            }
+                            return true;
+                        })
+                        .then(function() {                            
+                            let commentText = document.getElementById(`editarea${uuid}`);
+                            if(commentText) {
+                                commentText.focus();
+                            }
+                            if (fn instanceof Function) {
+                                (0,fn)(fnParams);
+                            }
                         });
                     })
                     .catch(notification.exception);

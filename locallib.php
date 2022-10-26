@@ -128,7 +128,7 @@ function pdfannotator_get_editor_options($context) {
         'return_types' => 15,
         'enable_filemanagement' => true, 
         'removeorphaneddrafts' => false, 
-        'autosave' => true,
+        'autosave' => false,
         'noclean' => false, 
         'trusttext' => 0,
         'subdirs' => true,
@@ -147,7 +147,7 @@ function pdfannotator_get_relativelink($content, $commentid, $context) {
     return $content;
 }
 
-function pdfannotator_extract_images($contentarr) {
+function pdfannotator_extract_images($contentarr, $itemid, $context=null) {
     // Remove quotes here, in case if there is no math form.
     if (gettype($contentarr) === 'string') {
         $str = preg_replace('/[\"]/', "", $contentarr);
@@ -161,12 +161,12 @@ function pdfannotator_extract_images($contentarr) {
             $res[] = $content;
             continue;
         }
-        $res = pdfannotator_split_content_image($content, $res);
+        $res = pdfannotator_split_content_image($content, $res, $itemid, $context);
     }
     return $res;
 }
 
-function pdfannotator_split_content_image($content, $res) {
+function pdfannotator_split_content_image($content, $res, $itemid, $context=null) {
     $imgmatch = [];
     $firststr = '';
     $data = [];
@@ -190,11 +190,26 @@ function pdfannotator_split_content_image($content, $res) {
             $format[0] = 'jpeg';
         }
 
-        $imagedata = file_get_contents($url[0]);
-        $data['image'] = $url[0];
+        $data['format'] = strtoupper($format[0]);
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'post', $itemid);
+        $fileinfo = [];
+        foreach($files as $file) {
+            if ($file->is_directory() and $file->get_filepath() === '/') {
+                continue;
+            }
+            //$fileinfo['fileid'] = $file->file_record['id'];
+            $fileinfo['filename'] = $file->get_filename();
+            $fileinfo['filepath'] = $file->get_filepath();
+            $fileinfo['filecontent'] = $file->get_content();
+            $fileinfo['filesize'] = $file->get_filesize();
+        }
+        //$imagedata = file_get_contents($fileinfo['filecontent']);
+        $imagedata = 'data:image/' . strtolower($data['format']) . ';base64,' .  base64_encode($fileinfo['filecontent']);
+        $data['image'] = $imagedata;
 
         //$data['image'] = $url[0];
-        $data['format'] = strtoupper($format[0]);
         preg_match('/height=[0-9]+/', $imgstr, $height);
         $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
         preg_match('/width=[0-9]+/', $imgstr, $width);
@@ -208,7 +223,7 @@ function pdfannotator_split_content_image($content, $res) {
     return $res;
 }
 
-function pdfannotator_data_preprocessing($context, $textarea, $classname, $draftitemid = 0) {
+function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) {
     global $PAGE;
 
     $options = pdfannotator_get_editor_options($context);
@@ -240,6 +255,8 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
         $args->env = 'filepicker';
         // advimage plugin
         $image_options = (object)initialise_filepicker($args);
+        $image_options->context = $context;
+        $image_options->client_id = uniqid();
         $image_options->maxbytes = get_config('mod_pdfannotator', 'maxbytes');
         $image_options->maxfiles = PDFANNOTATOR_EDITOR_UNLIMITED_FILES;
         $image_options->autosave = false;
@@ -256,7 +273,7 @@ function pdfannotator_data_preprocessing($context, $textarea, $classname, $draft
 
     //$PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
     
-    return ['draftItemId' => $draftitemid, 'editorFormat' => $editorformat, 'className' => $classname];
+    return ['draftItemId' => $draftitemid, 'editorFormat' => $editorformat];
 }
 
 /**

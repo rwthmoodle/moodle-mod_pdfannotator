@@ -57,6 +57,7 @@
                 {{#displayhidden}}<span id="taghidden{{uuid}}" class="tag tag-info">{{# str }} hiddenforparticipants, pdfannotator {{/ str }}</span>{{/displayhidden}}
 
                 <form id="edit{{ uuid }}" class="edit-comment-form" style="display:none;">
+                    <div class="editor-loader-placeholder-edit-{{ uuid }}"></div>
                     <input id="commentSubmit" class="owner btn btn-primary mb-1" type="submit" value="{{# str }} editButton, pdfannotator {{/ str }}">
                     <input id="commentCancel" class="owner btn btn-secondary mb-1" type="reset" value="{{# str }} cancelButton, pdfannotator {{/ str }}" >
                 </form>
