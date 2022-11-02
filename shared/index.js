@@ -238,9 +238,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     if(data.status === "success") {
                         if(deletionInfo) {
                             notification.addNotification({
-                                        message: M.util.get_string('annotationDeleted', 'pdfannotator'),
-                                        type: "success"
+                                message: M.util.get_string('annotationDeleted', 'pdfannotator'),
+                                type: "success"
                             });
+                            setTimeoutNotification();
                         }                            
                         var node = document.querySelector('[data-pdf-annotate-id="'+data.deleteannotation+'"]');
                         if(node){
@@ -251,8 +252,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         }
                     } else if (data.status === 'error') {
                             notification.addNotification({                                   
-                                        message: M.util.get_string('deletionForbidden', 'pdfannotator') + data.reason,
-                                        type: "error"
+                                message: M.util.get_string('deletionForbidden', 'pdfannotator') + data.reason,
+                                type: "error"
                             });
                     }
 
@@ -360,6 +361,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 message: M.util.get_string('commentDeleted', 'pdfannotator'),
                                 type: "success"
                             });
+                            setTimeoutNotification();
 
                             // If the predecessor comment was marked as deleted, remove it from DOM as well
                             // (This is currently irrelevant, because we jump back to overview after deletion, but I'd prefer to stay in the thread.)
@@ -413,18 +415,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             message: M.util.get_string('successfullyHidden', 'pdfannotator'),
                             type: "success"
                         });
+                        setTimeoutNotification();
                     } else {
                         notification.addNotification({
                             message: M.util.get_string('error:hideComment','pdfannotator'),
                             type: "error"
                         });                                        
                     }
-                    setTimeout(function(){
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        }
-                    }, 5000);
                 });
             },
             /**
@@ -450,18 +447,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             message: M.util.get_string('successfullyRedisplayed', 'pdfannotator'),
                             type: "success"
                         });
+                        setTimeoutNotification();
                     } else {
                         notification.addNotification({
                             message: M.util.get_string('error:redisplayComment','pdfannotator'),
                             type: "error"
                         });                                        
                     }
-                    setTimeout(function(){
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        }
-                    }, 5000);
                 });
 
             },
@@ -593,12 +585,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             message: message,
                             type: "info"
                         });
-                        setTimeout(function(){
-                            let notificationpanel = document.getElementById("user-notifications");
-                            while (notificationpanel.hasChildNodes()) {  
-                                notificationpanel.removeChild(notificationpanel.firstChild);
-                            } 
-                        }, 3000);
                     }
                 });  
             },
@@ -951,24 +937,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         message: M.util.get_string('infonocomments','pdfannotator'),
                                         type: "info"
                                     });
-                                    setTimeout(function(){
-                                        let notificationpanel = document.getElementById("user-notifications");
-                                        while (notificationpanel.hasChildNodes()) {  
-                                            notificationpanel.removeChild(notificationpanel.firstChild);
-                                        } 
-                                    }, 3000);
-
                                 } else if(data.status === 'error') {
                                     notification.addNotification({
                                         message: M.util.get_string('error:printcomments','pdfannotator'),
                                         type: "error"
                                     });
-                                    setTimeout(function(){
-                                        let notificationpanel = document.getElementById("user-notifications");
-                                        while (notificationpanel.hasChildNodes()) {  
-                                            notificationpanel.removeChild(notificationpanel.firstChild);
-                                        } 
-                                    }, 3000);
                                 } 
                             });  
                     } // end of function openCommentsCallback
@@ -1639,6 +1612,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         message: M.util.get_string('successfullyUnsubscribed', 'pdfannotator'),
                                         type: "success"
                                 });
+                                setTimeoutNotification()
                             } else if(data.status == 'error') {
                                 notification.addNotification({
                                     message: M.util.get_string('error:unsubscribe','pdfannotator'),
@@ -1651,11 +1625,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 } else {
                     _2.default.getStoreAdapter().subscribeQuestion(RENDER_OPTIONS.documentId, comment.annotation)
                         .then(function(data){
-                                if(data.status === "success") {
+                            if(data.status === "success") {
                                 notification.addNotification({
                                         message: M.util.get_string('successfullySubscribed', 'pdfannotator'),
                                         type: "success"
                                 });
+                                setTimeoutNotification();
                             } else if(data.status == 'error') {
                                 notification.addNotification({
                                     message: M.util.get_string('error:subscribe','pdfannotator'),
@@ -1669,12 +1644,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 comment.issubscribed = !comment.issubscribed;
                 i.toggleClass("fa-bell");
                 i.toggleClass("fa-bell-slash");
-                setTimeout(function () {
-                        let notificationpanel = document.getElementById("user-notifications");
-                        while (notificationpanel.hasChildNodes()) {
-                            notificationpanel.removeChild(notificationpanel.firstChild);
-                        }
-                }, 3000);
             });            
             }
             
@@ -1812,6 +1781,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                                 message: M.util.get_string('successfullyEdited', 'pdfannotator'),
                                                 type: "success"
                                             });
+                                            setTimeoutNotification();
                                         } else {
                                             notification.addNotification({
                                                 message: M.util.get_string('error:editComment','pdfannotator'),
@@ -2013,13 +1983,6 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 message: M.util.get_string('error:getComments','pdfannotator'),
                                 type: "error"
                             });
-
-                            setTimeout(function(){
-                                let notificationpanel = document.getElementById("user-notifications");
-                                while (notificationpanel.hasChildNodes()) {
-                                    notificationpanel.removeChild(notificationpanel.firstChild);
-                                }
-                            }, 4000);
                         });
                     })();
                 }else{      

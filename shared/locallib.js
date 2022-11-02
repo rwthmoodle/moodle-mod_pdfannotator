@@ -225,3 +225,12 @@ function checkOnlyOneCheckbox( Y ) {
         });
     }
 }
+
+function setTimeoutNotification(){
+    setTimeout(function(){
+        let notificationpanel = document.getElementById("user-notifications");
+        while (notificationpanel.hasChildNodes()) {  
+            notificationpanel.removeChild(notificationpanel.firstChild);
+        } 
+    }, 10000);
+}
