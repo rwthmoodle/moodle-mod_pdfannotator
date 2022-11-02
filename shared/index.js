@@ -6024,11 +6024,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             var rectObj;
             var _svg=void 0;
             var rect=void 0;
+
             /**
             * Get the current window selection as rects
             *
             * @return {Array} An Array of rects
-            */function getSelectionRects(){
+            */
+            function getSelectionRects(){
                 try{
                     var selection=window.getSelection();
                     try{
@@ -6048,11 +6050,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
 
                 }
                 return null;
-            }/**
+            }
+        /**
         * Handle document.mousedown event
         *
         * @param {Event} e The DOM event to handle
-        */function handleDocumentMousedown(e){
+        */
+        function handleDocumentMousedown(e){
             if(!(_svg=(0,_utils.findSVGAtPoint)(e.clientX,e.clientY))|| _type!=='area'){
                 return;
             }
@@ -6105,12 +6109,12 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
             (0,_utils.disableUserSelect)();
         }
 
-
         /**
         * Handle document.mousemove event
         *
         * @param {Event} e The DOM event to handle
-        */function handleDocumentMousemove(e){
+        */
+        function handleDocumentMousemove(e){
             if(originX+(e.clientX-originX)<rect.right){
                 overlay.style.width=e.clientX-originX+'px';
             }
@@ -6143,7 +6147,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         * Handle document.mouseup event
         * concerns area,highlight and strikeout
         * @param {Event} e The DOM event to handle
-        */function handleDocumentMouseup(e){
+        */
+        function handleDocumentMouseup(e){
             //if the cursor is clicked nothing should happen!
             if((typeof e.target.getAttribute('className')!='string') &&  e.target.className.indexOf('cursor') === -1){
                 document.removeEventListener('mousemove',handleDocumentMousemove);
@@ -6280,7 +6285,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         * Handle document.keyup event
         *
         * @param {Event} e The DOM event to handle
-        */function handleDocumentKeyup(e){// Cancel rect if Esc is pressed
+        */
+        function handleDocumentKeyup(e){// Cancel rect if Esc is pressed
             if(e.keyCode===27){var selection=window.getSelection();selection.removeAllRanges();if(overlay&&overlay.parentNode){overlay.parentNode.removeChild(overlay);overlay=null;document.removeEventListener('mousemove',handleDocumentMousemove);}}
         }
         
@@ -6403,28 +6409,31 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
         }
         /**
         * Enable rect behavior
-        */function enableRect(type){
-           _type=type;
-           if(_enabled){return;}
-           
-           if(_type === 'area'){
-               document.getElementById('content-wrapper').classList.add('cursor-area');
-           }else if(_type === 'highlight'){
-               document.getElementById('content-wrapper').classList.add('cursor-highlight');
-           }else if(_type === 'strikeout'){
-               document.getElementById('content-wrapper').classList.add('cursor-strikeout');
-           }
-           
-           _enabled=true;
-           document.addEventListener('mouseup',handleDocumentMouseup);
-           document.addEventListener('mousedown',handleDocumentMousedown);
-           document.addEventListener('keyup',handleDocumentKeyup);
+        */
+        function enableRect(type){
+            _type=type;
+            if(_enabled){return;}
+            
+            if(_type === 'area'){
+                document.getElementById('content-wrapper').classList.add('cursor-area');
+            }else if(_type === 'highlight'){
+                document.getElementById('content-wrapper').classList.add('cursor-highlight');
+            }else if(_type === 'strikeout'){
+                document.getElementById('content-wrapper').classList.add('cursor-strikeout');
+            }
+            
+            _enabled=true;
+            document.addEventListener('mouseup',handleDocumentMouseup);
+            document.addEventListener('mousedown',handleDocumentMousedown);
+            document.addEventListener('keyup',handleDocumentKeyup);
 
-           document.addEventListener('touchstart', handleDocumentTouchstart);
-           document.addEventListener('touchend', handleDocumentTouchend);
-       }/**
+            document.addEventListener('touchstart', handleDocumentTouchstart);
+            document.addEventListener('touchend', handleDocumentTouchend);
+        }
+        /**
         * Disable rect behavior
-        */function disableRect(){
+        */
+        function disableRect(){
             if(!_enabled){return;}
             _enabled=false;
             if(_type === 'area'){
