@@ -109,6 +109,7 @@ $string['error:getAnnotation'] = 'An error has occured while getting the annotat
 $string['error:getAnnotations'] = 'An error has occured while getting all annotations.';
 $string['error:getComments'] = 'An error has occured while getting the comments.';
 $string['error:getQuestions'] = 'An error has occured while getting the questions for this page.';
+$string['error:printComments'] = 'Error with data from server.';
 $string['error:hideComment'] = "An error has occured while trying to hide the comment from participants' view.";
 $string['error:markasread'] = 'The item could not be marked as read.';
 $string['error:markasunread'] = 'The item could not be marked as unread.';

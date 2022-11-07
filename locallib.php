@@ -64,7 +64,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00033"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00034"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00005"));
 
     // Pass parameters from PHP to JavaScript.
@@ -167,7 +167,7 @@ function pdfannotator_extract_images($contentarr, $itemid, $context=null) {
 }
 
 function pdfannotator_split_content_image($content, $res, $itemid, $context=null) {
-
+    global $CFG;
     // Gets all files in the comment with id itemid.
     $fs = get_file_storage();
     $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'post', $itemid);
@@ -226,6 +226,15 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
             $data['filename'] = $tempinfo['filename'];
             $data['filepath'] = $tempinfo['filepath'];
             $data['filesize'] = $tempinfo['filesize'];
+            $data['imagestorage'] = 'intern';
+        } else if (!str_contains($CFG->wwwroot, $url[0])){
+            $data['imagestorage'] = 'extern';
+            $data['format'] =  $format[0];
+            $data['image'] = 'data:image/' . $format[0] . ";base64," . base64_encode(file_get_contents($url[0]));
+            // $data['image'] = $url[0];
+        } else {
+            $data['success'] = "error";
+            $data['message'] = "cannot load image";
         }
 
         preg_match('/height=[0-9]+/', $imgstr, $height);

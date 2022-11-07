@@ -597,6 +597,11 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     data: { "documentId": documentId, "action": 'getCommentsToPrint', sesskey: M.cfg.sesskey}
                     }).then(function(data){
                         return JSON.parse(data);
+                    }).catch(function(err) {
+                        notification.addNotification({
+                            message: M.util.get_string('error:printComments','pdfannotator'),
+                            type: "error"
+                        });
                     });
                 }
             },
@@ -850,12 +855,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         }
                                     }
                                     function printImage(data) {
-                                        // var url = data['image'];
-                                        // var imageElement = document.createElement("img");
-                                        // imageElement.src = url;
-                                        var url = data['image'];
-                                        var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
-
+                                        var url;
+                                        var image;
+                                        // if (data['imagestorage'] === 'extern') {
+                                        //     url = data['image'];
+                                        //     image = document.createElement("img");
+                                        //     image.setAttribute('crossOrigin', 'anonymous');
+                                        //     image.src = url;
+                                        // } else {
+                                            image = data['image'];
+                                            var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
+                                        // }
                                         // Reduce height and witdh if its size more than a4height.
                                         while ( height > (a4height-(2*contentTopBottomMargin) )) {
                                             height = height - (height*0.1);
@@ -868,7 +878,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             doc.addPage();
                                             count = contentTopBottomMargin;
                                         }
-                                        doc.addImage(url, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
+                                        doc.addImage(image, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
                                         count += (5 + height);
                                     }
                                     /**
@@ -1739,17 +1749,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             
                             let newContent = editTextarea.value.trim();
                             let imgContents = editAreaEditable.querySelectorAll('img');
-                            let isEmptyContent = false;
-                            if(editAreaEditable.innerText.replace('/\n/g', '').trim() === '') {
-                                isEmptyContent = true;
-                            }
+                            let isEmptyContent = editAreaEditable.innerText.replace('/\n/g', '').trim() === '';
                             let defaultPTag = editAreaEditable.querySelector('p');
-                            if(defaultPTag) {
-                                // No text and no images in default p tag of editor.
-                                if (defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0 && editAreaEditable.childNodes.length === 0) {
-                                    isEmptyContent = true;
-                                }
-                            }
+                            isEmptyContent = (defaultPTag && defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && editAreaEditable.childNodes.length === 0;
                             if(isEmptyContent && imgContents.length === 0){
                                 // Should be more than one character, otherwise it should not be saved.
                                 notification.addNotification({
@@ -1915,21 +1917,17 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             button1.style.display = 'inline';
                             var button2 = document.getElementById('questionsOnThisPage'); // to be found in index template
                             button2.style.display = 'inline';
-                            let isEmptyContent = false;
-
+                            
                             commentForm.onsubmit = function (e) {
                                 document.querySelector('#commentSubmit').disabled = true;
                                 var commentVisibility= read_visibility_of_checkbox();
                                 var isquestion = 0; // this is a normal comment, so it is not a question
                                 var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
                                 var imgContents = commentContentElements.querySelectorAll('img');
+
                                 var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
                                 var temp = commentContentElements.querySelectorAll('p')[0];
-                                if(temp) {
-                                    if ((temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && innerContent === '') {
-                                        isEmptyContent = true;
-                                    }
-                                }
+                                let isEmptyContent = (temp && temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && innerContent === '';
                                 if(isEmptyContent && imgContents.length === 0){
                                     //should be more than one character, otherwise it should not be saved.
                                     notification.addNotification({
