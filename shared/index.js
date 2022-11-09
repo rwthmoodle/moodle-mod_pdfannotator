@@ -815,7 +815,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                      * Take a text block, split it into pieces no larger than 130 characters
                                      * and print one piece per line                                      
                                      */
-                                    function printTextblock(author=null, timemodified=null, text, characters) {
+                                    function printTextblock(author=null, timemodified=null, text, characters = 130) {
                                         // In the comments linebreaks are represented by <br \>-Tags. Sometimes there is an additional \n
                                         // jsPDF needs \n-linebreaks so we replace <br \> with \n. But first we remove all \n that already exist.
                                         text = text.replace(/\n/g, "");
@@ -858,7 +858,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         var url;
                                         var image;
                                         
-                                        if (data['success'] !== 'error') {
+                                        if (data['image'] !== 'error') {
                                             image = data['image'];
                                             var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
                                             // Reduce height and witdh if its size more than a4height.

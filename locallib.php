@@ -64,7 +64,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00035"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00036"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00006"));
 
     // Pass parameters from PHP to JavaScript.
@@ -210,42 +210,65 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         }
 
         $tempinfo = [];
+        $encodedurl = urldecode($url[0]);
         foreach($fileinfo as $file) {
-            $count = substr_count(urldecode($url[0]), $file['filename']);
+            $count = substr_count($encodedurl, $file['filename']);
             if($count) {
                 $tempinfo = $file;
                 break;
             }
         }
 
-        if($tempinfo) {
-            $imagedata = 'data:' . $tempinfo['filemimetype'] . ';base64,' .  base64_encode($tempinfo['filecontent']);
-            $data['image'] = $imagedata;
-            $data['format'] = $tempinfo['filemimetype'];
-            $data['fileid'] = $tempinfo['fileid'];
-            $data['filename'] = $tempinfo['filename'];
-            $data['filepath'] = $tempinfo['filepath'];
-            $data['filesize'] = $tempinfo['filesize'];
-            $data['imagestorage'] = 'intern';
+        try {
+            if($tempinfo) {
+                $imagedata = 'data:' . $tempinfo['filemimetype'] . ';base64,' .  base64_encode($tempinfo['filecontent']);
+                $data['image'] = $imagedata;
+                $data['format'] = $tempinfo['filemimetype'];
+                $data['fileid'] = $tempinfo['fileid'];
+                $data['filename'] = $tempinfo['filename'];
+                $data['filepath'] = $tempinfo['filepath'];
+                $data['filesize'] = $tempinfo['filesize'];
+                $data['imagestorage'] = 'intern';
+            } else if (!str_contains($CFG->wwwroot, $url[0])){
+                $data['imagestorage'] = 'extern';
+                $data['format'] =  $format[0];
+                $imgcontent = @file_get_contents($url[0]);
+                if ($imgcontent) {
+                    $data['image'] = 'data:image/' . $format[0] . ";base64," . base64_encode($imgcontent);
+                } else {
+                    throw new Exception(get_string('error:findimage', 'pdfannotator', $encodedurl));
+                }
+            } else {
+                throw new Exception(get_string('error:findimage', 'pdfannotator', $encodedurl));
+            }
+    
             preg_match('/height=[0-9]+/', $imgstr, $height);
-            $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
+            if ($height) {
+                $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
+            } else if (!$height && $data['imagestorage'] === 'extern') {
+                $imagemetadata = getimagesize($url[0]);
+                $data['imageheight'] = $imagemetadata[1];
+            } else {
+                throw new Exception(get_string('error:getimageheight', 'pdfannotator', $encodedurl));
+            }
             preg_match('/width=[0-9]+/', $imgstr, $width);
-            $data['imagewidth'] = str_replace("\"", "", explode('=', $width[0])[1]);
-        } else if (!str_contains($CFG->wwwroot, $url[0])){
-            $data['imagestorage'] = 'extern';
-            $data['format'] =  $format[0];
-            $imagemetadata = getimagesize($url[0]);
-            $data['image'] = 'data:image/' . $format[0] . ";base64," . base64_encode(file_get_contents($url[0]));
-            $data['imagewidth'] = $imagemetadata[0];
-            $data['imageheight'] = $imagemetadata[1];
-        } else {
-            $data['success'] = "error";
-            $data['message'] = "cannot load image";
+            if ($width) {
+                $data['imagewidth'] = str_replace("\"", "", explode('=', $width[0])[1]);
+            } else if (!$width && $data['imagestorage'] === 'extern') {
+                $imagemetadata = getimagesize($url[0]);
+                $data['imagewidth'] = $imagemetadata[0];
+            } else {
+                throw new Exception(get_string('error:getimagewidth', 'pdfannotator', $encodedurl));
+            }
+        } catch (Exception $ex) {
+            $data['image'] = "error";
+            $data['message'] = $ex->getMessage();
+        } finally {
+            $res[] = $firststr;
+            $res[] = $data;
+            $content = $laststr;      
         }
 
-        $res[] = $firststr;
-        $res[] = $data;
-        $content = $laststr;      
     }
     $res[] = $content;
 
