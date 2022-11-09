@@ -642,7 +642,6 @@ if ($action === 'getCommentsToPrint') {
         $newdata = $templatable->export_for_template($myrenderer);// Viewcontroller takes model's data and arranges it for display.
 
         echo json_encode(['status' => 'success', 'pdfannotatorid' => $documentid, 'newdata' => $newdata]);
-
     }
 
 }

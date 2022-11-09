@@ -857,29 +857,28 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     function printImage(data) {
                                         var url;
                                         var image;
-                                        // if (data['imagestorage'] === 'extern') {
-                                        //     url = data['image'];
-                                        //     image = document.createElement("img");
-                                        //     image.setAttribute('crossOrigin', 'anonymous');
-                                        //     image.src = url;
-                                        // } else {
+                                        
+                                        if (data['success'] !== 'error') {
                                             image = data['image'];
                                             var height = data['imageheight'] * 0.264583333333334; // Convert pixel into mm.
-                                        // }
-                                        // Reduce height and witdh if its size more than a4height.
-                                        while ( height > (a4height-(2*contentTopBottomMargin) )) {
-                                            height = height - (height*0.1);
+                                            // Reduce height and witdh if its size more than a4height.
+                                            while ( height > (a4height-(2*contentTopBottomMargin) )) {
+                                                height = height - (height*0.1);
+                                            }
+                                            var width = data['imagewidth'] * 0.264583333333334;
+                                            while ( width > (a4width-(contentLeftMargin+contentRightMargin)) ) {
+                                                width = width - (width*0.1);
+                                            }
+                                            if ( (count+height) >= a4height ) {
+                                                doc.addPage();
+                                                count = contentTopBottomMargin;
+                                            }
+                                            doc.addImage(image, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
+                                            count += (5 + height);
+                                        } else {
+                                            let item = `<p>${data['message']}</p>`;
+                                            printTextblock(null, null, item);
                                         }
-                                        var width = data['imagewidth'] * 0.264583333333334;
-                                        while ( width > (a4width-(contentLeftMargin+contentRightMargin)) ) {
-                                            width = width - (width*0.1);
-                                        }
-                                        if ( (count+height) >= a4height ) {
-                                            doc.addPage();
-                                            count = contentTopBottomMargin;
-                                        }
-                                        doc.addImage(image, data['format'], contentRightMargin, count, width, height); // image data, format, offset to the left, offset to the top, width, height
-                                        count += (5 + height);
                                     }
                                     /**
                                      * Take an image, calculate its height in millimeters and print it on the pdf

@@ -64,7 +64,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00034"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00035"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00005"));
 
     // Pass parameters from PHP to JavaScript.
@@ -227,20 +227,21 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
             $data['filepath'] = $tempinfo['filepath'];
             $data['filesize'] = $tempinfo['filesize'];
             $data['imagestorage'] = 'intern';
+            preg_match('/height=[0-9]+/', $imgstr, $height);
+            $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
+            preg_match('/width=[0-9]+/', $imgstr, $width);
+            $data['imagewidth'] = str_replace("\"", "", explode('=', $width[0])[1]);
         } else if (!str_contains($CFG->wwwroot, $url[0])){
             $data['imagestorage'] = 'extern';
             $data['format'] =  $format[0];
+            $imagemetadata = getimagesize($url[0]);
             $data['image'] = 'data:image/' . $format[0] . ";base64," . base64_encode(file_get_contents($url[0]));
-            // $data['image'] = $url[0];
+            $data['imagewidth'] = $imagemetadata[0];
+            $data['imageheight'] = $imagemetadata[1];
         } else {
             $data['success'] = "error";
             $data['message'] = "cannot load image";
         }
-
-        preg_match('/height=[0-9]+/', $imgstr, $height);
-        $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
-        preg_match('/width=[0-9]+/', $imgstr, $width);
-        $data['imagewidth'] = str_replace("\"", "", explode('=', $width[0])[1]);
 
         $res[] = $firststr;
         $res[] = $data;
