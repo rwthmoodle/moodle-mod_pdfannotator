@@ -1,9 +1,0 @@
-include:
-  - project: 'moodle_l2p/moodle-ci'
-    file: '/build-package.gitlab-ci.yml'
-
-variables:
-  PACKAGE_NAME:         moodle-rwth-pdfannotator
-  PACKAGE_CAPABILITIES: moodle-rwth-rwth_pdfannotator
-  PACKAGE_SUMMARY:      RWTH plugin that allows students to make annotations and ask questions via comments regarding PDFs provided by teachers.
-  PACKAGE_DESCRIPTION:  Package to install the Moodle Plugin pdfannotator.
