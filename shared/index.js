@@ -760,14 +760,14 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             // Add page number each time it changes.
                                             if (page !== post['page']) {
                                                 page = post['page'];
-                                                doc.setFontType("bold");
+                                                doc.setFont(undefined, "bold");
                                                 doc.setTextColor(0,84,159);
                                                 if (count >= a4height) {
                                                     doc.addPage();
                                                     count = contentTopBottomMargin;
                                                 }
                                                 doc.text(15, count, M.util.get_string('page', 'pdfannotator') + " " + page);
-                                                doc.setFontType("normal");
+                                                doc.setFont(undefined, "normal");
                                                 count += 5;
                                             };
                                             // Add icon to each question depending on its annotation type and increment count by 5 or 7.
@@ -826,8 +826,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                         var stringarray = doc.splitTextToSize(text, characters);
                                         var textbit;
                                         for (var j = 0; j < stringarray.length; j++) {
-                                            doc.setFont('NotoSans');
-                                            doc.setFontType("normal");
+                                            //doc.setFont('NotoSans');
+                                            doc.setFont(undefined, "normal");
                                             textbit = stringarray[j];
                                             if (count >= a4height) {
                                                 doc.addPage();
@@ -899,7 +899,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                      * @returns {undefined}
                                      */
                                     function printAuthor(author, timemodified=null) {
-                                        doc.setFontType("bold");
+                                        doc.setFont(undefined, "bold");
                                         if (timemodified !== null) {
                                             doc.text(120, count, timemodified);
                                         }
@@ -907,7 +907,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                             count += 5;
                                         }
                                         doc.text(contentRightMargin, count, author);
-                                        doc.setFontType("normal");
+                                        doc.setFont(undefined, "normal");
                                         count += 5;
                                     }
                                     /**
