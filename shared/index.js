@@ -599,7 +599,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         return JSON.parse(data);
                     }).catch(function(err) {
                         notification.addNotification({
-                            message: M.util.get_string('error:printComments','pdfannotator'),
+                            message: M.util.get_string('error:printcommentsdata','pdfannotator'),
                             type: "error"
                         });
                     });

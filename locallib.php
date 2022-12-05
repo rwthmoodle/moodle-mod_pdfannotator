@@ -64,7 +64,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     // Load and execute the javascript files.
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/pdf.js?ver=00002"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/textclipper.js"));
-    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00037"));
+    $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/index.js?ver=00038"));
     $PAGE->requires->js(new moodle_url("/mod/pdfannotator/shared/locallib.js?ver=00006"));
 
     // Pass parameters from PHP to JavaScript.
@@ -202,7 +202,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         preg_match('/(https...{1,}[.]((gif)|(jpe)g*|(jpg)|(png)|(svg)|(svgz)))/i', $imgstr, $url);
         preg_match('/(gif)|(jpe)g*|(jpg)|(png)|(svg)|(svgz)/i', $url[0], $format);
         if (!$format) {
-            throw new \moodle_exception('error:unsupportedextention', 'pdfannotator');
+            throw new \moodle_exception('error:unsupportedextension', 'pdfannotator');
         }
         if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format) 
         || in_array('JPG', $format) || in_array('JPEG', $format) || in_array('JPE', $format)) {
