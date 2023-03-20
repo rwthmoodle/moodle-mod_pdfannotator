@@ -865,6 +865,7 @@ body {
     max-width: 100%;
     width: 100%;
     max-height: 100%;
+    overflow-x: auto;
 }
 
 .path-mod-pdfannotator.fullscreenWrapper #nav-drawer {
@@ -890,6 +891,20 @@ body {
 .path-mod-pdfannotator.fullscreenWrapper #page-footer {
     display: none;
     visibility: hidden;
+}
+
+.path-mod-pdfannotator.fullscreenWrapper #footnote {
+    display: none;
+    visibility: hidden;
+}
+
+.path-mod-pdfannotator.fullscreenWrapper .drawer-toggler {
+    display: none;
+    visibility: hidden;
+}
+
+.path-mod-pdfannotator.fullscreenWrapper #region-main{
+    padding-bottom: 50px;
 }
 
 .path-mod-pdfannotator.fullscreenWrapper .m-t-2.m-b-1,
