@@ -38,11 +38,24 @@ function pdfannotator_supports($feature) {
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return true;
+        case FEATURE_GRADE_HAS_GRADE:
+            return false;
+        case FEATURE_GRADE_OUTCOMES:
+            return false;
         case FEATURE_BACKUP_MOODLE2:
             return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
-
+        case FEATURE_ADVANCED_GRADING:
+            return false;
+        case FEATURE_PLAGIARISM:
+            return true;
+        case FEATURE_COMMENT:
+            return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COMMUNICATION;
         default:
             return null;
     }
