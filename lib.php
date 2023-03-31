@@ -376,13 +376,13 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         return false;
     }
 
-    $commentid = 0;
-    foreach ($args as $param) {
-        if ($DB->record_exists('pdfannotator_comments', ['id' => $param])) {
-            $commentid = $param;
-            break;
-        }
-    }
+    // $commentid = 0;
+    // foreach ($args as $param) {
+    //     if ($DB->record_exists('pdfannotator_comments', ['id' => $param])) {
+    //         $commentid = $param;
+    //         break;
+    //     }
+    // }
     array_shift($args); // Ignore revision - designed to prevent caching problems only.
 
     $fs = get_file_storage();
@@ -423,6 +423,14 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
     }
 
     if ($filearea === 'post') {
+        $commentid = 0;
+        foreach ($args as $param) {
+            if ($DB->record_exists('pdfannotator_comments', ['id' => $param])) {
+                $commentid = $param;
+                break;
+            }
+        }
+           
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
         if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
             //Annotations from other documents might have another contextid.
