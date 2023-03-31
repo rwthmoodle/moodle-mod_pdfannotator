@@ -483,7 +483,7 @@ class provider implements \core_privacy\local\metadata\provider,
                 FROM {course_modules} cm
                 JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
                 JOIN {pdfannotator} a ON a.id = cm.instance
-                JOIN {pdfannotator_annotations} ar ON ats.pdfannotatorid = a.id
+                JOIN {pdfannotator_annotations} ats ON ats.pdfannotatorid = a.id
             WHERE cm.id = :contextid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -502,7 +502,7 @@ class provider implements \core_privacy\local\metadata\provider,
                 FROM {course_modules} cm
                 JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
                 JOIN {pdfannotator} a ON a.id = cm.instance
-                JOIN {pdfannotator_annotations} ar ON ats.pdfannotatorid = a.id
+                JOIN {pdfannotator_annotations} ats ON ats.pdfannotatorid = a.id
                 JOIN {pdfannotator_subscriptions} asub ON a.id = asub.annotationid
             WHERE cm.id = :contextid";
         $userlist->add_from_sql('userid', $sql, $params);
