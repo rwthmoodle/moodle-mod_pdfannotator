@@ -45,7 +45,7 @@ function pdfannotator_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
         case FEATURE_COMPLETION_HAS_RULES:
-            return true;
+            return false;
         case FEATURE_GRADE_HAS_GRADE:
             return false;
         case FEATURE_GRADE_OUTCOMES:
@@ -57,9 +57,9 @@ function pdfannotator_supports($feature) {
         case FEATURE_ADVANCED_GRADING:
             return false;
         case FEATURE_PLAGIARISM:
-            return true;
+            return false;
         case FEATURE_COMMENT:
-            return true;
+            return false;
         default:
             return null;
     }
