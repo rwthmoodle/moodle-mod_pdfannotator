@@ -37,12 +37,6 @@ if (!defined('MOD_PURPOSE_COMMUNICATION')) {
  * @return mixed True if module supports feature, false if not, null if doesn't know
  */
 function pdfannotator_supports($feature) {
-    if (defined('FEATURE_MOD_PURPOSE')) {
-        // Only defined in M4.0+.
-        if ($feature === FEATURE_MOD_PURPOSE) {
-            return MOD_PURPOSE_COMMUNICATION;
-        }
-    }
     switch($feature) {
         case FEATURE_GROUPS:
             return true;
@@ -68,6 +62,8 @@ function pdfannotator_supports($feature) {
             return false;
         case FEATURE_COMMENT:
             return false;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COMMUNICATION;
         default:
             return null;
     }
