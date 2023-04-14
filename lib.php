@@ -23,6 +23,14 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 
+// Ugly hack to make 3.11 and 4.0 work seamlessly.
+if (!defined('FEATURE_MOD_PURPOSE')) {
+    define('FEATURE_MOD_PURPOSE', 'mod_purpose');
+}
+if (!defined('MOD_PURPOSE_COMMUNICATION')) {
+    define('MOD_PURPOSE_COMMUNICATION', 'communication');
+}
+
 /**
  * List of features supported in pdfannotator module
  * @param string $feature FEATURE_xx constant for requested feature
@@ -38,11 +46,24 @@ function pdfannotator_supports($feature) {
             return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return false;
+        case FEATURE_GRADE_HAS_GRADE:
+            return false;
+        case FEATURE_GRADE_OUTCOMES:
+            return false;
         case FEATURE_BACKUP_MOODLE2:
             return true;
         case FEATURE_SHOW_DESCRIPTION:
             return true;
-
+        case FEATURE_ADVANCED_GRADING:
+            return false;
+        case FEATURE_PLAGIARISM:
+            return false;
+        case FEATURE_COMMENT:
+            return false;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_COMMUNICATION;
         default:
             return null;
     }
