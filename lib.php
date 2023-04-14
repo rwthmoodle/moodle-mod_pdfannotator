@@ -396,19 +396,10 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         // Intro is handled automatically in pluginfile.php.
         return false;
     }
-
-    $commentid = 0;
-    foreach ($args as $param) {
-        if ($DB->record_exists('pdfannotator_comments', ['id' => $param])) {
-            $commentid = $param;
-            break;
-        }
-    }
-    array_shift($args); // Ignore revision - designed to prevent caching problems only.
-
     $fs = get_file_storage();
-    $relativepath = implode('/', $args);
     if ($filearea === 'content') {
+        array_shift($args); // Ignore revision - designed to prevent caching problems only.
+        $relativepath = implode('/', $args);
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/0/$relativepath", '/');
         do {
             if (!$file = $fs->get_file_by_hash(sha1($fullpath))) {
@@ -444,6 +435,15 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
     }
 
     if ($filearea === 'post') {
+        $commentid = 0;
+        foreach ($args as $param) {
+            if (filter_var($param, FILTER_VALIDATE_INT) && $DB->record_exists('pdfannotator_comments', ['id' => $param])) {
+                $commentid = $param;
+                break;
+            }
+        }
+        array_shift($args);
+        $relativepath = implode('/', $args);
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
         if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
             //Annotations from other documents might have another contextid.
