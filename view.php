@@ -76,11 +76,15 @@ $PAGE->set_heading($course->fullname);
 
 // Display course name, navigation bar at the very top and "Dashboard->...->..." bar.
 echo $OUTPUT->header();
+
 // Render the activity information.
-$modinfo = get_fast_modinfo($course);
-$cminfo = $modinfo->get_cm($cm->id);
-$completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
-$activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
+if ($CFG->version < 2022041900) { 
+    $modinfo = get_fast_modinfo($course);
+    $cminfo = $modinfo->get_cm($cm->id);
+    $completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
+    $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);    
+    echo $OUTPUT->activity_information($cminfo, $completiondetails, $activitydates);
+}
 
 require_once($CFG->dirroot . '/mod/pdfannotator/controller.php');
 
