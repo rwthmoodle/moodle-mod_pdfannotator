@@ -508,7 +508,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      * Deletes data for users in given userlist's context.
      * @param approved_userlist $userlist
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
+    public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist) {
         global $DB;
 
         $context = $userlist->get_context();
