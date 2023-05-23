@@ -17,10 +17,9 @@
 namespace mod_pdfannotator\privacy;
 
 use mod_pdfannotator\privacy\provider;
-use core_privacy\local\request\transform;
-use core_privacy\local\request\writer;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\approved_userlist;
+use core_privacy\tests\provider_testcase;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,7 +36,7 @@ require_once(__DIR__ . '/../fixtures/test_target_course_users.php');
  * @copyright IT Center RWTH Aachen University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider_test extends \core_privacy\tests\provider_testcase {
+class provider_test extends provider_testcase {
 
     protected $course;
     protected $cmcontext;
@@ -171,5 +170,7 @@ class provider_test extends \core_privacy\tests\provider_testcase {
         $userlist = new approved_userlist($systemcontext, $component, $this->user->id);
         // Delete using delete_data_for_user.
         provider::delete_data_for_users($userlist);
+
+        
     }
 }

@@ -28,11 +28,10 @@ namespace mod_pdfannotator\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\deletion_criteria;
 use \core_privacy\local\request\writer;
-use \core_privacy\local\request\helper as request_helper;
 use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\transform;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\userlist;
 
 /**
  * Description of provider
@@ -329,27 +328,41 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
 
             // 1. Delete all reports this user made in this annotator.
-            $DB->delete_records('pdfannotator_reports', ['pdfannotatorid' => $instanceid, 'userid' => $userid]);
+            $DB->delete_records(
+                'pdfannotator_reports', 
+                ['pdfannotatorid' => $instanceid, 'userid' => $userid]
+            );
 
             // 2. Delete all votes this user made in this annotator.
-            $sql = "SELECT v.id FROM {pdfannotator_votes} v WHERE v.userid = ? AND v.commentid IN (SELECT c.id FROM {pdfannotator_comments} c WHERE c.pdfannotatorid = ?)";
+            $sql = "SELECT v.id 
+                    FROM {pdfannotator_votes} v 
+                    WHERE v.userid = ? AND v.commentid IN 
+                        (SELECT c.id 
+                        FROM {pdfannotator_comments} c 
+                        WHERE c.pdfannotatorid = ?)";
             $votes = $DB->get_records_sql($sql , array($userid, $instanceid));
             foreach ($votes as $vote) {
                 $DB->delete_records('pdfannotator_votes', array("id" => $vote->id));
             }
 
             // 3. Delete all subscriptions this user made in this annotator.
-            $sql = "SELECT s.id FROM {pdfannotator_subscriptions} s WHERE s.userid = ? AND s.annotationid IN "
-                    . "(SELECT a.id FROM {pdfannotator_annotations} a WHERE a.pdfannotatorid = ?)";
+            $sql = "SELECT s.id
+                    FROM {pdfannotator_subscriptions} s
+                    WHERE s.userid = ? AND s.annotationid IN
+                        (SELECT a.id 
+                        FROM {pdfannotator_annotations} a 
+                        WHERE a.pdfannotatorid = ?)";
             $subscriptions = $DB->get_records_sql($sql, array($userid, $instanceid));
             foreach ($subscriptions as $subscription) {
                 $DB->delete_records('pdfannotator_subscriptions', array("id" => $subscription->id));
             }
 
             // 4. Select all comments this user made in this annotator.
-            $comments = $DB->get_records_sql("SELECT c.* FROM {pdfannotator_comments} c WHERE c.pdfannotatorid = ? AND c.userid = ?", array($instanceid, $userid));
+            $sql = "SELECT c.*
+                    FROM {pdfannotator_comments} c
+                    WHERE c.pdfannotatorid = ? AND c.userid = ?";
+            $comments = $DB->get_records_sql($sql, array($instanceid, $userid));
             foreach ($comments as $comment) {
-
                 // Delete question comments, their underlying annotation as well as all answers and subscriptions.
                 if ($comment->isquestion) {
                     self::delete_annotation($comment->annotationid);
@@ -389,6 +402,8 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
             // 1.2 Delete any votes for these comments.
             $DB->delete_records('pdfannotator_votes', array("commentid" => $comment->id));
 
+            // Delete any pictures of the comment.
+            $DB->delete_records('files', array("component" => "mod_pdfannotator", "filearea" => "post", "itemid" => $comment->id));
         }
 
         // 1.3 Now delete all comments.
@@ -508,7 +523,7 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
      * Deletes data for users in given userlist's context.
      * @param approved_userlist $userlist
      */
-    public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist) {
+    public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
 
         $context = $userlist->get_context();
@@ -551,5 +566,13 @@ class provider implements \core_privacy\local\metadata\provider, \core_privacy\l
         $DB->delete_records_select('pdfannotator_annotations', $sql, $params);
         $DB->delete_records_select('pdfannotator_reports', $sql, $params);
         $DB->delete_records_select('pdfannotator_comments', $sql, $params);
+
+        // Delete pictures in comments.
+        $DB->execute("DELETE FORM {files} imgs
+                        WHERE imgs.component = 'mod_pdfannotator'
+                        AND imgs.filearea = 'post'
+                        AND imgs.userid {$userinsql}
+                        AND imgs.itemid {$commentinsql}",
+                        array_merge($userinparams, $commentinparams));
     }
 }
