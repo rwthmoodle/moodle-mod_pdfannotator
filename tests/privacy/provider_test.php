@@ -24,10 +24,10 @@ use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once(__DIR__ . '/../fixtures/test_indicator_max.php');
-require_once(__DIR__ . '/../fixtures/test_indicator_min.php');
-require_once(__DIR__ . '/../fixtures/test_target_site_users.php');
-require_once(__DIR__ . '/../fixtures/test_target_course_users.php');
+require_once(__DIR__ . '/../../../analytics/tests/fixtures/test_indicator_max.php');
+require_once(__DIR__ . '/../../../analytics/tests/fixtures/test_indicator_min.php');
+require_once(__DIR__ . '/../../../analytics/tests/fixtures/test_target_site_users.php');
+require_once(__DIR__ . '/../../../analytics/tests/fixtures/test_target_course_users.php');
 
 /**
  * Unit tests for privacy.
@@ -212,7 +212,7 @@ class provider_test extends provider_testcase {
 
         // Count annotations, reports, and comments.
         $count_annotations = count($DB->get_records_select('pdfannotator_annotations', $sql, $params));
-        $this->assertCount(0,  $count_annotations); 
+        $this->assertCount(0,  $count_annotations);
         $count_reports = count($DB->get_records_select('pdfannotator_reports', $sql, $params));
         $this->assertCount(0,  $count_reports);
         $count_comments = count($DB->get_records_select('pdfannotator_comments', $sql, $params));
@@ -226,6 +226,6 @@ class provider_test extends provider_testcase {
                         AND imgs.userid {$userinsql}
                         AND imgs.itemid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
-        $this->assertCount(0,  $count_pics);       
+        $this->assertCount(0,  $count_pics);
     }
 }
