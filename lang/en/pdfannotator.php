@@ -453,7 +453,20 @@ $string['subscribe'] = 'Subscribe to this Annotations';
 $string['subscribed'] = 'Subscribed';
 $string['subscribedanswers'] = 'to my subscribed questions';
 $string['subscribeQuestion'] = 'Subscribe';
-$string['subtitleforreportcommentform'] = 'Your message for the course manager';
+$string['subscription'] = 'Subscription';
+$string['subscriptionauto'] = 'Auto subscription';
+$string['subscriptiondisabled'] = 'Subscription disabled';
+$string['subscriptionforced'] = 'Forced subscription';
+$string['subscriptionmode'] = 'Subscription mode';
+$string['subscriptionmode_help'] = 'When a participant is subscribed to a question it means they will receive notifications for questions. There are 4 subscription 
+mode options:
+* Auto subscription - Everyone is subscribed initially to notifications for questions but can choose to unsubscribe at any time
+* Optional subscription - Participants can choose whether notifications for questions are subscribed
+* Forced subscription - Everyone is subscribed to notifications for questions and cannot unsubscribe
+* Subscription disabled - Subscriptions to notifications for questions are not allowed';
+$string['subscriptionoptional'] = 'Optional subscription';
+$string['subtitleforreportcommentform'] = 'Your message for the course 
+manager';
 $string['successfullyEdited'] = 'Changes saved';
 $string['successfullyHidden'] = 'Participants now see this comment as hidden.';
 $string['successfullymarkedasread'] = 'The report was marked as read.';

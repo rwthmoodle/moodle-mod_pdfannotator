@@ -21,6 +21,11 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+define('PDFANNOTATOR_CHOOSESUBSCRIBE', 0);
+define('PDFANNOTATOR_FORCESUBSCRIBE', 1);
+define('PDFANNOTATOR_INITIALSUBSCRIBE', 2);
+define('PDFANNOTATOR_DISALLOWSUBSCRIBE',3);
+
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 
 // Ugly hack to make 3.11 and 4.0 work seamlessly.
@@ -829,3 +834,19 @@ function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
 
     return $out;
 }
+
+/**
+ * List the options for pdfannotator subscription modes.
+ * This is used by the settings page and by the mod_form page.
+ *
+ * @return array
+ */
+function pdfannotator_get_subscriptionmode_options() {
+    $options = array();
+    $options[PDFANNOTATOR_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'pdfannotator');
+    $options[PDFANNOTATOR_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'pdfannotator');
+    $options[PDFANNOTATOR_FORCESUBSCRIBE] = get_string('subscriptionforced', 'pdfannotator');
+    $options[PDFANNOTATOR_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled', 'pdfannotator');
+    return $options;
+}
+

@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
+ * The pdfannotator module form
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -94,20 +96,20 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->setDefault('useprint', $config->useprint);
         $mform->addHelpButton('useprint', 'setting_useprint_document', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'useprintcomments', get_string('setting_useprint_comments', 'pdfannotator'),
-            get_string('useprint_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->addElement('advcheckbox', 'useprintcomments', get_string('setting_useprint_comments',
+            'pdfannotator'), get_string('useprint_comments', 'pdfannotator'), null, array(0, 1));
         $mform->setType('useprintcomments', PARAM_BOOL);
         $mform->setDefault('useprintcomments', $config->useprintcomments);
         $mform->addHelpButton('useprintcomments', 'setting_useprint_comments', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'useprivatecomments', get_string('setting_use_private_comments', 'pdfannotator'),
-            get_string('use_private_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->addElement('advcheckbox', 'useprivatecomments', get_string('setting_use_private_comments',
+            'pdfannotator'), get_string('use_private_comments', 'pdfannotator'), null, array(0, 1));
         $mform->setType('useprivatecomments', PARAM_BOOL);
         $mform->setDefault('useprivatecomments', $config->use_private_comments);
         $mform->addHelpButton('useprivatecomments', 'setting_use_private_comments', 'pdfannotator');
 
-        $mform->addElement('advcheckbox', 'useprotectedcomments', get_string('setting_use_protected_comments', 'pdfannotator'),
-            get_string('use_protected_comments', 'pdfannotator'), null, array(0, 1));
+        $mform->addElement('advcheckbox', 'useprotectedcomments', get_string('setting_use_protected_comments',
+            'pdfannotator'), get_string('use_protected_comments', 'pdfannotator'), null, array(0, 1));
         $mform->setType('useprotectedcomments', PARAM_BOOL);
         $mform->setDefault('useprotectedcomments', $config->use_protected_comments);
         $mform->addHelpButton('useprotectedcomments', 'setting_use_protected_comments', 'pdfannotator');
@@ -118,6 +120,20 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
                 RESOURCELIB_LEGACYFILES_ACTIVE => get_string('legacyfilesactive', 'pdfannotator'));
             $mform->addElement('select', 'legacyfiles', get_string('legacyfiles', 'pdfannotator'), $options);
         }
+
+
+        // Subscription and tracking.
+        $mform->addElement('header', 'subscriptionandtrackinghdr', get_string('subscription', 'pdfannotator'));
+
+        $options = pdfannotator_get_subscriptionmode_options();
+        $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'pdfannotator'), $options);
+        $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'pdfannotator');
+        if (isset($CFG->pdfannotator_subscription)) {
+            $defaultpdfannotatorsubscription = $CFG->pdfannotator_subscription;
+        } else {
+            $defaultpdfannotatorsubscription = PDFANNOTATOR_INITIALSUBSCRIBE;
+        }
+        $mform->setDefault('forcesubscribe', $defaultpdfannotatorsubscription);
 
         $this->standard_coursemodule_elements();
 
