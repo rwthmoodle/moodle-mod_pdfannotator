@@ -690,6 +690,12 @@ body {
     bottom: 0;
     padding: 10px;
 }
+
+.path-mod-pdfannotator #comment-wrapper .comment-list-form .tox.tox-tinymce,
+.path-mod-pdfannotator .edit-comment-form .tox.tox-tinymce {
+    min-height: 350px;
+}
+
 .path-mod-pdfannotator #comment-wrapper .editor_atto { /* Editor in fullscreen must be over the toolbar and annotations. */
     z-index: 60;
 }

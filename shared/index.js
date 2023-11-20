@@ -270,7 +270,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
              * @returns {unresolved}
              */
             addComment(documentId, annotationId, content, visibility = "public", isquestion = 0) {
-                var pdfannotator_addcomment_editoritemid = document.querySelectorAll('.pdfannotator_addcomment_editoritemid')[0].value;  
+                var pdfannotator_addcomment_editoritemid = document.querySelectorAll('.pdfannotator_addcomment_editoritemid')[0].value;
                 return $.ajax({
                     type: "POST",
                     url: "action.php",
@@ -1746,12 +1746,13 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             let editAreaEditable = document.getElementById(`editarea${comment.uuid}editable`);
                             let chatMessage = document.getElementById(`chatmessage${comment.uuid}`);
                             
-                            let newContent = editTextarea.value.trim();
-                            let imgContents = editAreaEditable.querySelectorAll('img');
-                            let isEmptyContent = editAreaEditable.innerText.replace('/\n/g', '').trim() === '';
-                            let defaultPTag = editAreaEditable.querySelector('p');
-                            isEmptyContent = (defaultPTag && defaultPTag.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && editAreaEditable.childNodes.length === 0;
-                            if(isEmptyContent && imgContents.length === 0){
+                            let newContent = editTextarea.value.trim(); // If atto editor is used.
+                            var iframe = document.getElementById("myarea_ifr"); // If tinymce editor is used.
+                            if (iframe) {
+                                let editorArea = iframe.contentWindow.document.getElementById("tinymce");
+                                newContent = editorArea.innerHTML;
+                            }
+                            if (newContent.length === 0) {    
                                 // Should be more than one character, otherwise it should not be saved.
                                 notification.addNotification({
                                     message: M.util.get_string('min0Chars','pdfannotator'),
@@ -1809,8 +1810,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             editForm.style.display = "none";
                             editTextarea.innerHTML = '';
                             editTextarea.innerHTML = comment.displaycontent;
-                            editAreaEditable.innerHTML = '';
-                            editAreaEditable.innerHTML = comment.displaycontent;
+                            if (editAreaEditable) { // Only exists for atto editor, not tinymce.
+                                editAreaEditable.innerHTML = '';
+                                editAreaEditable.innerHTML = comment.displaycontent;
+                            }
                             chatMessage.innerHTML = comment.displaycontent;
                             renderMathJax(chatMessage);
                         });
@@ -1921,13 +1924,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                 document.querySelector('#commentSubmit').disabled = true;
                                 var commentVisibility= read_visibility_of_checkbox();
                                 var isquestion = 0; // this is a normal comment, so it is not a question
-                                var commentContentElements = document.querySelectorAll('#id_pdfannotator_contenteditable')[0];
-                                var imgContents = commentContentElements.querySelectorAll('img');
-
-                                var innerContent = commentContentElements.innerText.replace('/\n/g', '').trim();
-                                var temp = commentContentElements.querySelectorAll('p')[0];
-                                let isEmptyContent = (temp && temp.innerText.replace('/\n/g', '').trim() === '' && imgContents.length === 0) && innerContent === '';
-                                if(isEmptyContent && imgContents.length === 0){
+                                var textarea = document.getElementById('id_pdfannotator_content');
+                                var commentContentElements=textarea.value.trim();
+                                if (commentContentElements.length === 0) {
                                     //should be more than one character, otherwise it should not be saved.
                                     notification.addNotification({
                                         message: M.util.get_string('min0Chars','pdfannotator'),
@@ -1937,7 +1936,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                                     return false;
                                 }
 
-                                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements.innerHTML, commentVisibility, isquestion)
+                                _2.default.getStoreAdapter().addComment(documentId, annotationId, commentContentElements, commentVisibility, isquestion)
                                 .then(function (response) {
                                     var fn = (response) => insertComments(response);
                                     UI.loadEditor('add', 0, fn, response);
@@ -6929,6 +6928,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     .then(function(html, js) {
                         let commentListForm = document.getElementById('comment-list-form');
                         templates.prependNodeContents(commentListForm, html, js);
+                        if (_editorSettings.active_editor === 'textarea') {
+                            document.getElementById('id_pdfannotator_content').setAttribute('style', 'display:unset !important');
+                        }
                     })
                     .then(function() {
                         let args = {'action': action, 'cmid': _cm.id};
@@ -6961,13 +6963,10 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     }
 
                     let data = {'uuid': uuid};
-                    let editTextarea;
                     templates.render('mod_pdfannotator/edit_comment_editor_placeholder', data)
                     .then(function(html, js) {
                         let editForm = document.getElementById(`edit${uuid}`);
-                        templates.prependNodeContents(editForm, html, js);
-                        editTextarea =  document.getElementById(`editarea${uuid}`);
-                        editTextarea.style.display = "none";
+                        templates.prependNodeContents(editForm, html, js);     
                         return true;
                     })
                     .then(function() {
@@ -6981,6 +6980,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             let editCommentEditorElement = document.getElementById(`edit_comment_editor_wrapper_${uuid}`);
                             html = html.split('displaycontent:');
                             let isreplaced = templates.appendNodeContents(editCommentEditorElement, html[0], js);
+                            let editTextarea =  document.getElementById(`editarea${uuid}`);
                             editTextarea.innerText = html[1];
     
                             _ajaxloader.hideLoader(`.editor-loader-placeholder-${action}-${uuid}`);
@@ -6988,7 +6988,9 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                             let editForm = document.getElementById(`edit${uuid}`)
                             let chatMessage = document.getElementById(`chatmessage${uuid}`);
                             let editAreaEditable = document.getElementById(`editarea${uuid}editable`);
-                            editAreaEditable.innerHTML = editTextarea.value;
+                            if (editAreaEditable) { // Does not exist for tinymce editor.
+                                editAreaEditable.innerHTML = editTextarea.value;
+                            }
                             if(editForm.style.display === "none") {
                                 editForm.style.cssText += ';display:block;';
                                 chatMessage.innerHTML = "";
