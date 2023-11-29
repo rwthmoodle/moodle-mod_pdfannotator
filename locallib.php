@@ -90,7 +90,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $capabilities->useprintcomments = has_capability('mod/pdfannotator:printcomments', $context);
     // 3. Comment editor setting.
     $editorsettings = new stdClass();
-    $editorsettings->active_editor = explode(',', get_config('core', 'texteditors'))[0];
+    $editorsettings->active_editor = get_class(editors_get_preferred_editor(FORMAT_HTML));
 
     $params = [$cm, $documentobject, $context->id, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid, $editorsettings];
     $PAGE->requires->js_init_call('adjustPdfannotatorNavbar', null, true);

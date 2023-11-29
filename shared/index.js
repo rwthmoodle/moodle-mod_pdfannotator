@@ -6928,7 +6928,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                     .then(function(html, js) {
                         let commentListForm = document.getElementById('comment-list-form');
                         templates.prependNodeContents(commentListForm, html, js);
-                        if (_editorSettings.active_editor === 'textarea') {
+                        if (_editorSettings.active_editor === 'textarea_texteditor') {
                             document.getElementById('id_pdfannotator_content').setAttribute('style', 'display:unset !important');
                         }
                     })
