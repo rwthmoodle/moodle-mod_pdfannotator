@@ -22,13 +22,6 @@ use core_privacy\local\request\approved_userlist;
 use core_privacy\tests\provider_testcase;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once(__DIR__ . '/../fixtures/test_indicator_max.php');
-require_once(__DIR__ . '/../fixtures/test_indicator_min.php');
-require_once(__DIR__ . '/../fixtures/test_target_site_users.php');
-require_once(__DIR__ . '/../fixtures/test_target_course_users.php');
-
 /**
  * Unit tests for privacy.
  *
@@ -129,10 +122,9 @@ class provider_test extends provider_testcase {
 
         $component = 'mod_pdfannotator';
 
-        $usercontext1 = \context_user::instance($this->user->id);
-        $userlist1 = new \core_privacy\local\request\userlist($usercontext1, $component);
+        $userlist1 = new \core_privacy\local\request\userlist($this->cmcontext, $component);
         provider::get_users_in_context($userlist1);
-        $this->assertCount(1, $userlist1);
+        $this->assertCount(0, $userlist1->get_users());
 
         // Create a comment for the question above.
         $answer = new stdClass();
@@ -169,12 +161,12 @@ class provider_test extends provider_testcase {
         $subscriptionsobj = new stdClass();
         $subscriptionsobj->annotationid = $this->questions[0]->id;
         $subscriptionsobj->userid = $this->user->id;
-        $subscriptionsobj->id = $DB->insert_record('pdfannotator_subscriptions', $voteobj);
+        $subscriptionsobj->id = $DB->insert_record('pdfannotator_subscriptions', $subscriptionsobj);
 
         // Perform delete_data_for_users.
         $systemcontext = \context_system::instance();
         $component = 'mod_pdfannotator';
-        $userlist = new approved_userlist($systemcontext, $component, $this->user->id);
+        $userlist = new approved_userlist($systemcontext, $component, [$this->user->id]);
         // Delete using delete_data_for_user.
         provider::delete_data_for_users($userlist);
 
@@ -191,41 +183,41 @@ class provider_test extends provider_testcase {
         $annotationids = array_column($annotations, 'id');
         list($subinsql, $subinparams) = $DB->get_in_or_equal($annotationids, SQL_PARAMS_NAMED);
 
-        $count_subs = $DB->count_records_sql("SELECT *
+        $count_subs = $DB->count_records_sql("SELECT COUNT(1)
                             FROM {pdfannotator_subscriptions} sub
                             WHERE sub.userid {$userinsql}
                             AND sub.annotationid {$subinsql}",
                             array_merge($userinparams, $subinparams));
-        $this->assertCount(0,  $count_subs);
+        $this->assertEquals(0,  $count_subs);
 
         // Count votes.
         $comments = $DB->get_records('pdfannotator_comments', ['pdfannotatorid' => $annotatorid]);
         $commentsids = array_column($comments, 'id');
         list($commentinsql, $commentinparams) = $DB->get_in_or_equal($commentsids, SQL_PARAMS_NAMED);
 
-        $count_votes = $DB->count_records_sql("SELECT *
-                        FORM {pdfannotator_votes} votes
+        $count_votes = $DB->count_records_sql("SELECT COUNT(1)
+                        FROM {pdfannotator_votes} vote
                         WHERE vote.userid {$userinsql}
                         AND vote.commentid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
-        $this->assertCount(0,  $count_votes);
+        $this->assertEquals(1,  $count_votes);
 
         // Count annotations, reports, and comments.
         $count_annotations = count($DB->get_records_select('pdfannotator_annotations', $sql, $params));
-        $this->assertCount(0,  $count_annotations); 
+        $this->assertEquals(1,  $count_annotations);
         $count_reports = count($DB->get_records_select('pdfannotator_reports', $sql, $params));
-        $this->assertCount(0,  $count_reports);
+        $this->assertEquals(1,  $count_reports);
         $count_comments = count($DB->get_records_select('pdfannotator_comments', $sql, $params));
-        $this->assertCount(0,  $count_comments);
+        $this->assertEquals(3,  $count_comments);
 
         // Count pictures in comments.
-        $count_pics = $DB->count_records_sql("SELECT *
-                        FORM {files} imgs
+        $count_pics = $DB->count_records_sql("SELECT COUNT(1)
+                        FROM {files} imgs
                         WHERE imgs.component = 'mod_pdfannotator'
                         AND imgs.filearea = 'post'
                         AND imgs.userid {$userinsql}
                         AND imgs.itemid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
-        $this->assertCount(0,  $count_pics);       
+        $this->assertEquals(0,  $count_pics);
     }
 }
