@@ -68,14 +68,7 @@ function pdfannotator_supports($feature) {
             return null;
     }
 }
-/**
- * Function currently unused.
- *
- * @return string
- */
-function mod_pdfannotator_before_standard_html_head() {
 
-}
 /**
  * Returns all other caps used in module
  * @return array
@@ -83,6 +76,7 @@ function mod_pdfannotator_before_standard_html_head() {
 function pdfannotator_get_extra_capabilities() {
     return array('moodle/site:accessallgroups');
 }
+
 /**
  * This function is used by the reset_course_userdata function in moodlelib.
  * @param $data the data submitted from the reset course.
