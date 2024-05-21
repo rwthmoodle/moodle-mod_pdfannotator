@@ -288,19 +288,6 @@ function pdfannotator_get_coursemodule_info($coursemodule) {
 }
 
 /**
- * Called when viewing course page. Shows extra details after the link if
- * enabled.
- *
- * @param cm_info $cm Course module information
- */
-function pdfannotator_cm_info_view(cm_info $cm) {
-    global $CFG;
-    require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
-    $cm->set_after_link(' ' . html_writer::tag('span', '', // Use this to show details.
-                    array('class' => 'pdfannotatorlinkdetails')));
-}
-
-/**
  * Lists all browsable file areas
  *
  * @package  mod_pdfannotator
