@@ -644,5 +644,19 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2022110200, 'pdfannotator');
     }
 
+    if ($oldversion < 2023112901) {
+
+        // Define field forcesubscribe to be added to pdfannotator.
+        $table = new xmldb_table('pdfannotator');
+        $field = new xmldb_field('forcesubscribe', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'useprotectedcomments');
+
+        // Conditionally launch add field forcesubscribe.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pdfannotator savepoint reached.
+        upgrade_mod_savepoint(true, 2023112901, 'pdfannotator');
+    }
     return true;
 }
