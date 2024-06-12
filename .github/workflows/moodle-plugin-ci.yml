@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres:14
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -17,7 +17,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
       mariadb:
-        image: mariadb:10
+        image: mariadb:10.6
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -32,6 +32,13 @@ jobs:
       matrix:
         include:
           - php: 8.3
+            moodle-branch: MOODLE_405_STABLE
+            database: pgsql
+          - php: 8.3
+            moodle-branch: MOODLE_405_STABLE
+            database: mariadb
+
+          - php: 8.3
             moodle-branch: MOODLE_404_STABLE
             database: pgsql
           - php: 8.3
@@ -59,32 +66,11 @@ jobs:
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
 
-          - php: 8.0
-            moodle-branch: MOODLE_400_STABLE
-            database: pgsql
-          - php: 8.0
-            moodle-branch: MOODLE_400_STABLE
-            database: mariadb
-
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
-            database: mariadb
-
-          - php: 7.4
-            moodle-branch: MOODLE_400_STABLE
-            database: pgsql
-          - php: 7.4
-            moodle-branch: MOODLE_400_STABLE
-            database: mariadb
-
-          - php: 7.4
-            moodle-branch: MOODLE_311_STABLE
-            database: pgsql
-          - php: 7.4
-            moodle-branch: MOODLE_311_STABLE
             database: mariadb
 
     steps:
@@ -175,3 +161,4 @@ jobs:
       - name: Mark cancelled jobs as failed.
         if: ${{ cancelled() }}
         run: exit 1
+
