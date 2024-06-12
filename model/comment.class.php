@@ -59,7 +59,7 @@ class pdfannotator_comment {
         // Create a new record in the table named 'comments' and return its id, which is created by autoincrement.
         $commentuuid = $DB->insert_record('pdfannotator_comments', $datarecord, true);
         $datarecord->id = $commentuuid;
-        
+
         // Get the draftitemid and prepare the draft area.
         $draftitemid = required_param('pdfannotator_addcomment_editoritemid', PARAM_INT);
         $options = pdfannotator_get_editor_options($context);
@@ -71,7 +71,7 @@ class pdfannotator_comment {
 
         $datarecord->uuid = $commentuuid;
         self::set_username($datarecord);
-        
+
         $datarecord->displaycontent = pdfannotator_get_relativelink($datarecord->content, $datarecord->id, $context);
         $datarecord->displaycontent = format_text($datarecord->displaycontent, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
         $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
@@ -108,7 +108,11 @@ class pdfannotator_comment {
                 }
             }
         } else if ($visibility != 'private') {
-            self::insert_subscription($annotationid, $context);
+            if (!((pdfannotator_get_subscriptionmode($cm->instance) == PDFANNOTATOR_CHOOSESUBSCRIBE) ||
+                (pdfannotator_get_subscriptionmode($cm->instance) == PDFANNOTATOR_DISALLOWSUBSCRIBE))) {
+                // Don't insert if subscription mode is Optional subscription or Subscription disabled
+                self::insert_subscription($annotationid, $context);
+            }
 
             // Notify all users, that there is a new question.
             $recipients = get_enrolled_users($context, 'mod/pdfannotator:recievenewquestionnotifications');

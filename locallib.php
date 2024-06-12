@@ -90,7 +90,7 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $capabilities->useprintcomments = has_capability('mod/pdfannotator:printcomments', $context);
     // 3. Comment editor setting.
     $editorsettings = new stdClass();
-    $editorsettings->active_editor = get_class(editors_get_preferred_editor(FORMAT_HTML));
+    $editorsettings->active_editor = explode(',', get_config('core', 'texteditors'))[0];
 
     $params = [$cm, $documentobject, $context->id, $USER->id, $capabilities, $toolbarsettings, $page, $annoid, $commid, $editorsettings];
     $PAGE->requires->js_init_call('adjustPdfannotatorNavbar', null, true);
@@ -126,10 +126,10 @@ function pdfannotator_get_editor_options($context) {
         'maxbytes' => get_config('mod_pdfannotator', 'maxbytes'),
         'maxfiles' => PDFANNOTATOR_EDITOR_UNLIMITED_FILES,
         'return_types' => 15,
-        'enable_filemanagement' => true, 
-        'removeorphaneddrafts' => false, 
+        'enable_filemanagement' => true,
+        'removeorphaneddrafts' => false,
         'autosave' => false,
-        'noclean' => false, 
+        'noclean' => false,
         'trusttext' => 0,
         'subdirs' => true,
         'forcehttps' => false,
@@ -191,8 +191,8 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
     $data = [];
     while (preg_match_all('/<img/', $content, $imgmatch)) {
         $offsetlength = strlen($content);
-        
-        $imgpos_start = strpos($content, '<img');                
+
+        $imgpos_start = strpos($content, '<img');
         $imgpos_end = strpos($content, '>', $imgpos_start);
 
         $firststr = substr($content, 0, $imgpos_start);
@@ -204,7 +204,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         if (!$format) {
             throw new \moodle_exception('error:unsupportedextension', 'pdfannotator');
         }
-        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format) 
+        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format)
         || in_array('JPG', $format) || in_array('JPEG', $format) || in_array('JPE', $format)) {
             $format[0] = 'jpeg';
         }
@@ -241,7 +241,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
             } else {
                 throw new Exception(get_string('error:findimage', 'pdfannotator', $encodedurl));
             }
-    
+
             preg_match('/height=[0-9]+/', $imgstr, $height);
             if ($height) {
                 $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
@@ -266,7 +266,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         } finally {
             $res[] = $firststr;
             $res[] = $data;
-            $content = $laststr;      
+            $content = $laststr;
         }
 
     }
@@ -299,8 +299,8 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
         $editor->use_editor($textarea, $options);
     } else {
         // initialize Filepicker if image button is active.
-        $args = new \stdClass();    
-        // need these three to filter repositories list.    
+        $args = new \stdClass();
+        // need these three to filter repositories list.
         $args->accepted_types = ['web_image'];
         $args->return_types = 15;
         $args->context = $context;
@@ -324,7 +324,7 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
     $editorformat = editors_get_preferred_format(FORMAT_HTML);
 
     //$PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
-    
+
     return ['draftItemId' => $draftitemid, 'editorFormat' => $editorformat];
 }
 
@@ -1963,7 +1963,7 @@ function pdfannotator_userspoststable_add_row($table, $post) {
  */
 function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage, $context) {
     global $CFG, $PAGE, $DB;
-    
+
     $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
     $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
     $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
@@ -2117,4 +2117,17 @@ function pdfannotator_count_answers($annotationid, $context) {
         $count++;
     }
     return $count;
+}
+
+/**
+ * Returns the subscription mode for a given pdfannotator
+ *
+ * @param $id The pdfannotator id
+ * @return false|int
+ * @throws dml_exception
+ */
+function pdfannotator_get_subscriptionmode($id) {
+    global $DB;
+    $subscriptionmode = $DB->get_field('pdfannotator', 'forcesubscribe', array('id' => $id), $strictness = MUST_EXIST);
+    return $subscriptionmode;
 }
