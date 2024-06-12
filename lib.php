@@ -68,14 +68,7 @@ function pdfannotator_supports($feature) {
             return null;
     }
 }
-/**
- * Function currently unused.
- *
- * @return string
- */
-function mod_pdfannotator_before_standard_html_head() {
 
-}
 /**
  * Returns all other caps used in module
  * @return array
