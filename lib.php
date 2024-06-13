@@ -21,6 +21,11 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+define('PDFANNOTATOR_CHOOSESUBSCRIBE', 0);
+define('PDFANNOTATOR_FORCESUBSCRIBE', 1);
+define('PDFANNOTATOR_INITIALSUBSCRIBE', 2);
+define('PDFANNOTATOR_DISALLOWSUBSCRIBE',3);
+
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 
 // Ugly hack to make 3.11 and 4.0 work seamlessly.
@@ -68,14 +73,7 @@ function pdfannotator_supports($feature) {
             return null;
     }
 }
-/**
- * Function currently unused.
- *
- * @return string
- */
-function mod_pdfannotator_before_standard_html_head() {
 
-}
 /**
  * Returns all other caps used in module
  * @return array
@@ -795,7 +793,7 @@ function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
     $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
     $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
     $out .= 'displaycontent:' . $displaycontent;
-    
+
     return $out;
 }
 
@@ -809,10 +807,24 @@ function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
 
     $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', 0);
     $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
-    
+
     $out = '';
     $out = html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
     $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
 
     return $out;
+}
+/**
+ * List the options for pdfannotator subscription modes.
+ * This is used by the settings page and by the mod_form page.
+ *
+ * @return array
+ */
+function pdfannotator_get_subscriptionmode_options() {
+    $options = [];
+    $options[PDFANNOTATOR_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'pdfannotator');
+    $options[PDFANNOTATOR_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'pdfannotator');
+    $options[PDFANNOTATOR_FORCESUBSCRIBE] = get_string('subscriptionforced', 'pdfannotator');
+    $options[PDFANNOTATOR_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled', 'pdfannotator');
+    return $options;
 }
