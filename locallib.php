@@ -1095,7 +1095,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
         }
 
         $question->content = pdfannotator_get_relativelink($question->content, $question->commentid, $context);
-        $question->content = format_text($question->content, $options = ['filter' => true]);
+        $question->content = format_text($question->content, FORMAT_MOODLE, $options = ['filter' => true]);
         $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $question->cmid,
             'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();
 
@@ -1172,7 +1172,7 @@ function pdfannotator_get_posts_by_this_user($courseid, $context) {
         $params = array('id' => $post->cmid, 'page' => $post->page, 'annoid' => $post->annotationid, 'commid' => $post->commid);
         $post->link = (new moodle_url('/mod/pdfannotator/view.php', $params))->out();
         $post->content = pdfannotator_get_relativelink($post->content, $post->commid, $context);
-        $post->content = format_text($post->content, $options = ['filter' => true]);
+        $post->content = format_text($post->content, FORMAT_MOODLE, $options = ['filter' => true]);
     }
     return $posts;
 }
@@ -1330,10 +1330,10 @@ function pdfannotator_get_reports($courseid, $context, $reportfilter = 0) {
         $report->link = (new moodle_url('/mod/pdfannotator/view.php',
             array('id' => $report->cmid, 'page' => $report->page, 'annoid' => $report->annotationid, 'commid' => $report->commentid)))->out();
         $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
-        $report->reportedcomment = format_text($report->reportedcomment, $options = ['filter' => true]);
+        $report->reportedcomment = format_text($report->reportedcomment, FORMAT_MOODLE, $options = ['filter' => true]);
         $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
         $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
-        $report->report = format_text($report->report, $options = ['filter' => true]);
+        $report->report = format_text($report->report, FORMAT_MOODLE, $options = ['filter' => true]);
     }
     return $reports;
 }
@@ -1887,9 +1887,9 @@ function pdfannotator_answerstable_add_row($thiscourse, $table, $answer, $cmid, 
     global $CFG, $PAGE;
 
     $answer->answer = pdfannotator_get_relativelink($answer->answer, $answer->answerid, $context);
-    $answer->answer = format_text($answer->answer, $options = ['filter' => true]);
+    $answer->answer = format_text($answer->answer, FORMAT_MOODLE, $options = ['filter' => true]);
     $answer->answeredquestion = pdfannotator_get_relativelink($answer->answeredquestion, $answer->questionid, $context);
-    $answer->answeredquestion = format_text($answer->answeredquestion, $options = ['filter' => true]);
+    $answer->answeredquestion = format_text($answer->answeredquestion, FORMAT_MOODLE, $options = ['filter' => true]);
 
 
     if (isset($answer->displayquestionhidden)) {
