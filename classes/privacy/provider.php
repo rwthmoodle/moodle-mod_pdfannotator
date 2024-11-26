@@ -38,7 +38,10 @@ use core_privacy\local\request\userlist;
  *
  * @author Admin
  */
-class provider implements \core_privacy\local\metadata\provider, \core_privacy\local\request\plugin\provider {
+class provider implements
+        \core_privacy\local\metadata\provider,
+        \core_privacy\local\request\plugin\provider,
+        \core_privacy\local\request\core_userlist_provider {
 
     /**
      * This function implements the \core_privacy\local\metadata\provider interface.
