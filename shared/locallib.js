@@ -68,18 +68,18 @@ function addDropdownNavigation(Y, __capabilities, __cmid) {
     overviewtab.addEventListener("mouseleave", function () {
         setTimeout(function () {
             if (!mouseOverDropdownContent) {
-                $('#pdfannotator_dropdownnav').removeClass('show');
+                document.getElementById('pdfannotator_dropdownnav').classList.remove('show');
             }
         }, 0);
     });
 
-    $('#pdfannotator_dropdownnav').mouseenter(function () {
+    document.getElementById('pdfannotator_dropdownnav').onmouseenter = function(){
         mouseOverDropdownContent = true;
-    });
-    $('#pdfannotator_dropdownnav').mouseleave(function () {
-        $('#pdfannotator_dropdownnav').removeClass('show');
+    };
+    document.getElementById('pdfannotator_dropdownnav').onmouseleave = function(){
+        document.getElementById('pdfannotator_dropdownnav').classList.remove('show');
         mouseOverDropdownContent = false;
-    });
+    };
 
 }
 
