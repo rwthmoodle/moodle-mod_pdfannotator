@@ -1095,7 +1095,7 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
         }
 
         $question->content = pdfannotator_get_relativelink($question->content, $question->commentid, $context);
-        $question->content = format_text($question->content, $options = ['filter' => true]);
+        $question->content = format_text($question->content, FORMAT_MOODLE);
         $question->link = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $question->cmid,
             'page' => $question->page, 'annoid' => $question->annoid, 'commid' => $question->commentid)))->out();
 
