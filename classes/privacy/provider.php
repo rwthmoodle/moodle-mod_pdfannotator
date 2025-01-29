@@ -560,7 +560,7 @@ class provider implements
         $commentsids = array_column($comments, 'id');
         list($commentinsql, $commentinparams) = $DB->get_in_or_equal($commentsids, SQL_PARAMS_NAMED);
 
-        $DB->execute("DELETE FORM {pdfannotator_votes} votes
+        $DB->execute("DELETE FROM {pdfannotator_votes} votes
                         WHERE vote.userid {$userinsql}
                         AND vote.commentid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
@@ -571,7 +571,7 @@ class provider implements
         $DB->delete_records_select('pdfannotator_comments', $sql, $params);
 
         // Delete pictures in comments.
-        $DB->execute("DELETE FORM {files} imgs
+        $DB->execute("DELETE FROM {files} imgs
                         WHERE imgs.component = 'mod_pdfannotator'
                         AND imgs.filearea = 'post'
                         AND imgs.userid {$userinsql}
