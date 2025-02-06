@@ -119,6 +119,19 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
             $mform->addElement('select', 'legacyfiles', get_string('legacyfiles', 'pdfannotator'), $options);
         }
 
+        // Subscription and tracking.
+        $mform->addElement('header', 'subscriptionandtrackinghdr', get_string('subscription', 'pdfannotator'));
+
+        $options = pdfannotator_get_subscriptionmode_options();
+        $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'pdfannotator'), $options);
+        $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'pdfannotator');
+        if (isset($CFG->pdfannotator_subscription)) {
+            $defaultpdfannotatorsubscription = $CFG->pdfannotator_subscription;
+        } else {
+            $defaultpdfannotatorsubscription = PDFANNOTATOR_INITIALSUBSCRIBE;
+        }
+        $mform->setDefault('forcesubscribe', $defaultpdfannotatorsubscription);
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();

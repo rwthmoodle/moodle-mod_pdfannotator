@@ -55,7 +55,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         // 2. Define each element separately.
         $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
             'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing',
-            'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified'));
+            'useprivatecomments', 'useprotectedcomments', 'forcesubscribe', 'timecreated', 'timemodified'));
 
             $annotations = new backup_nested_element('annotations');
             $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid',

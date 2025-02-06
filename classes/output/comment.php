@@ -83,7 +83,7 @@ class comment implements \renderable, \templatable {
             $this->addeditbutton($comment, $editanypost);
             $this->addhidebutton($comment, $seehiddencomments, $hidecomments);
             $this->adddeletebutton($comment, $deleteown, $deleteany);
-            $this->addsubscribebutton($comment, $subscribe);
+            $this->addsubscribebutton($comment, $subscribe, $cm);
             $this->addforwardbutton($comment, $forwardquestions, $cm);
             $this->addmarksolvedbutton($comment, $solve);
 
@@ -270,15 +270,26 @@ class comment implements \renderable, \templatable {
         }
     }
 
-    private function addsubscribebutton($comment, $subscribe) {
+    /**
+     * Add a subscribe button
+     *
+     * @param object $comment
+     * @param bool $subscribe
+     * @param stdClass $cm course module object
+     * @throws \coding_exception
+     */
+    private function addsubscribebutton($comment, $subscribe, $cm) {
         if (!isset($comment->type) && $comment->isquestion && $subscribe && $comment->visibility != 'private') {
-            // Only set for textbox and drawing.
-            if (!empty($comment->issubscribed)) {
-                $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell-slash"],
-                    "text" => get_string('unsubscribeQuestion', 'pdfannotator')];
-            } else {
-                $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell"],
-                    "text" => get_string('subscribeQuestion', 'pdfannotator')];
+            // Only set for textbox and drawing, and only if subscription mode is not disabled or forced.
+            if ((pdfannotator_get_subscriptionmode($cm->instance) == PDFANNOTATOR_CHOOSESUBSCRIBE) ||
+                (pdfannotator_get_subscriptionmode($cm->instance) == PDFANNOTATOR_INITIALSUBSCRIBE)) {
+                if (!empty($comment->issubscribed)) {
+                    $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell-slash"],
+                        "text" => get_string('unsubscribeQuestion', 'pdfannotator')];
+                } else {
+                    $comment->buttons[] = ["classes" => "comment-subscribe-a", "faicon" => ["class" => "fa-bell"],
+                        "text" => get_string('subscribeQuestion', 'pdfannotator')];
+                }
             }
         }
     }
