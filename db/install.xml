@@ -31,7 +31,7 @@
         <FIELD NAME="allowanonymous" TYPE="binary" NOTNULL="false" SEQUENCE="false" COMMENT="allowing anonymous posting"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for pdfannotator_default_setting"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="pdfannotator_comments" COMMENT="Saves the comments to each annotation">
@@ -52,7 +52,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="annotationid" TYPE="foreign" FIELDS="annotationid" REFTABLE="annotations" REFFIELDS="id" COMMENT="Foreign Key for annotationid to annotations table"/>
+        <KEY NAME="annotationid" TYPE="foreign" FIELDS="annotationid" REFTABLE="pdfannotator_annotations" REFFIELDS="id" COMMENT="Foreign Key for annotationid to annotations table"/>
         <KEY NAME="pdfannotatorid" TYPE="foreign" FIELDS="pdfannotatorid" REFTABLE="pdfannotator" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
@@ -125,7 +125,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="annotationid" TYPE="foreign" FIELDS="annotationid" REFTABLE="annotationsneu" REFFIELDS="id"/>
+        <KEY NAME="annotationid" TYPE="foreign" FIELDS="annotationid" REFTABLE="pdfannotator_annotations" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>
