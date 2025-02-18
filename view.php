@@ -35,12 +35,12 @@ $commid = optional_param('commid', null, PARAM_INT);
 
 if ($r) {
     if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $r))) {
-        print_error('invalidaccessparameter');
+        throw new moodle_exception('invalidaccessparameter');
     }
     $cm = get_coursemodule_from_instance('pdfannotator', $pdfannotator->id, $pdfannotator->course, false, MUST_EXIST);
 } else {
     if (!$cm = get_coursemodule_from_id('pdfannotator', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), '*', MUST_EXIST);
 }
