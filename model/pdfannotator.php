@@ -35,6 +35,7 @@ class pdfannotator_instance {
     private $answers; // Questions asked by the current users.
     private $unsolvedquestions;
     private $reports;
+    private $userposts;
     private $hiddenanswers;
     private $hiddenreports;
 
