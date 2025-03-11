@@ -329,7 +329,7 @@ function pdfannotator_get_file_info($browser, $areas, $course, $cm, $context, $f
 
         $urlbase = $CFG->wwwroot . '/pluginfile.php';
         if (!$storedfile = $fs->get_file($context->id, 'mod_pdfannotator', 'content', 0, $filepath, $filename)) {
-            if ($filepath === '/' and $filename === '.') {
+            if ($filepath === '/' && $filename === '.') {
                 $storedfile = new virtual_root_file($context->id, 'mod_pdfannotator', 'content', 0);
             } else {
                 // Not found.
@@ -425,15 +425,15 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         array_shift($args);
         $relativepath = implode('/', $args);
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
-        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-            //Annotations from other documents might have another contextid.
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+            // Annotations from other documents might have another contextid.
             $pdfid = $DB->get_record('pdfannotator_comments', ['id' => $commentid], 'pdfannotatorid');
             if ($pdfid) {
                 $pdfannotator = $DB->get_record('pdfannotator', ['id' => $pdfid->pdfannotatorid], '*', MUST_EXIST);
                 $cm = get_coursemodule_from_instance('pdfannotator', $pdfid->pdfannotatorid, $pdfannotator->course, false, MUST_EXIST);
                 $context2 = context_module::instance($cm->id);
                 $fullpath = rtrim("/$context2->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
-                if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+                if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
                     return false;
                 }
                 send_stored_file($file, null, 0, true, $options);
@@ -633,9 +633,9 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     }
     if (class_exists('\core_user\fields')) {
         $allnames = \core_user\fields::for_name()->get_sql('u', true);
-     } else {
+    } else {
          $allnames = get_all_user_name_fields(true, 'u');
-     }
+    }
      
     if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
                                               $allnames, u.email, u.picture, u.imagealt, u.email, a.page
@@ -710,7 +710,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
         'border-top' => '0',
         'cellpadding' => '3',
         'cellspacing' => '0',
-        'class' => ''
+        'class' => '',
     ];
     $output = html_writer::start_tag('table', $tableoptions);
     $output .= html_writer::start_tag('tr');
@@ -719,7 +719,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
 
     // Show user picture if author should not be hidden.
     $pictureoptions = [
-        'courseid' => $courseid
+        'courseid' => $courseid,
     ];
     if (!$authorhidden) {
         $picture = $OUTPUT->user_picture($activity->user, $pictureoptions);
