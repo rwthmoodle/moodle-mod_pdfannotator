@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Defining plugin specific functions
  * @package   mod_pdfannotator
@@ -100,7 +101,6 @@ function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 
     $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
     echo $myrenderer->render_index(new index($pdfannotator, $capabilities, $file));
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
-    //pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', "editor-commentlist-inputs");
     $PAGE->requires->js_init_call('checkOnlyOneCheckbox', null, true);
 
     pdfannotator_print_intro($pdfannotator, $cm, $course);
@@ -128,9 +128,9 @@ function pdfannotator_get_editor_options($context) {
         'maxfiles' => PDFANNOTATOR_EDITOR_UNLIMITED_FILES,
         'return_types' => 15,
         'enable_filemanagement' => true, 
-        'removeorphaneddrafts' => false, 
+        'removeorphaneddrafts' => false,
         'autosave' => false,
-        'noclean' => false, 
+        'noclean' => false,
         'trusttext' => 0,
         'subdirs' => true,
         'forcehttps' => false,
@@ -141,7 +141,7 @@ function pdfannotator_get_editor_options($context) {
 
 function pdfannotator_get_relativelink($content, $commentid, $context) {
     preg_match('/@@PLUGINFILE@@/', $content, $matches);
-    if($matches) {
+    if ($matches) {
         $relativelink = file_rewrite_pluginfile_urls($content, 'pluginfile.php', $context->id, 'mod_pdfannotator', 'post', $commentid);
         return $relativelink;
     }
@@ -173,8 +173,8 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
     $fs = get_file_storage();
     $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'post', $itemid);
     $fileinfo = [];
-    foreach($files as $file) {
-        if ($file->is_directory() and $file->get_filepath() === '/') {
+    foreach ($files as $file) {
+        if ($file->is_directory() && $file->get_filepath() === '/') {
             continue;
         }
         $info = [];
@@ -193,7 +193,7 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
     while (preg_match_all('/<img/', $content, $imgmatch)) {
         $offsetlength = strlen($content);
         
-        $imgpos_start = strpos($content, '<img');                
+        $imgpos_start = strpos($content, '<img');
         $imgpos_end = strpos($content, '>', $imgpos_start);
 
         $firststr = substr($content, 0, $imgpos_start);
@@ -205,23 +205,23 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
         if (!$format) {
             throw new \moodle_exception('error:unsupportedextension', 'pdfannotator');
         }
-        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format) 
+        if (in_array('jpg', $format) || in_array('jpeg', $format) || in_array('jpe', $format)
         || in_array('JPG', $format) || in_array('JPEG', $format) || in_array('JPE', $format)) {
             $format[0] = 'jpeg';
         }
 
         $tempinfo = [];
         $encodedurl = urldecode($url[0]);
-        foreach($fileinfo as $file) {
+        foreach ($fileinfo as $file) {
             $count = substr_count($encodedurl, $file['filename']);
-            if($count) {
+            if ($count) {
                 $tempinfo = $file;
                 break;
             }
         }
 
         try {
-            if($tempinfo) {
+            if ($tempinfo) {
                 $imagedata = 'data:' . $tempinfo['filemimetype'] . ';base64,' .  base64_encode($tempinfo['filecontent']);
                 $data['image'] = $imagedata;
                 $data['format'] = $tempinfo['filemimetype'];
@@ -230,9 +230,9 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
                 $data['filepath'] = $tempinfo['filepath'];
                 $data['filesize'] = $tempinfo['filesize'];
                 $data['imagestorage'] = 'intern';
-            } else if (!str_contains($CFG->wwwroot, $url[0])){
+            } else if (!str_contains($CFG->wwwroot, $url[0])) {
                 $data['imagestorage'] = 'extern';
-                $data['format'] =  $format[0];
+                $data['format'] = $format[0];
                 $imgcontent = @file_get_contents($url[0]);
                 if ($imgcontent) {
                     $data['image'] = 'data:image/' . $format[0] . ";base64," . base64_encode($imgcontent);
@@ -242,7 +242,6 @@ function pdfannotator_split_content_image($content, $res, $itemid, $context=null
             } else {
                 throw new Exception(get_string('error:findimage', 'pdfannotator', $encodedurl));
             }
-    
             preg_match('/height=[0-9]+/', $imgstr, $height);
             if ($height) {
                 $data['imageheight'] = str_replace("\"", "", explode('=', $height[0])[1]);
@@ -296,11 +295,11 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
         }
     }
     $editor = editors_get_preferred_editor(FORMAT_HTML);
-    if(!$imagebtn) {
+    if (!$imagebtn) {
         $editor->use_editor($textarea, $options);
     } else {
         // initialize Filepicker if image button is active.
-        $args = new \stdClass();    
+        $args = new \stdClass();
         // need these three to filter repositories list.    
         $args->accepted_types = ['web_image'];
         $args->return_types = 15;
@@ -323,8 +322,6 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
 
     // Add draftitemid and editorformat into input-tags.
     $editorformat = editors_get_preferred_format(FORMAT_HTML);
-
-    //$PAGE->requires->js_init_call('inputDraftItemID', [$draftitemid, (int)$editorformat, $classname]);
     
     return ['draftItemId' => $draftitemid, 'editorFormat' => $editorformat];
 }
@@ -347,15 +344,15 @@ function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $compon
     $usercontext = \context_user::instance($USER->id);
     $fs = get_file_storage();
 
-    $file_record = ['contextid'=>$usercontext->id, 'component'=>'user', 'filearea'=>'draft', 'itemid'=>$draftitemid];
-    if (!is_null($itemid) and $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
+    $file_record = ['contextid'=> $usercontext->id, 'component'=> 'user', 'filearea'=> 'draft', 'itemid'=> $draftitemid];
+    if (!is_null($itemid) && $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
         foreach ($files as $file) {
-            if ($file->is_directory() and $file->get_filepath() === '/') {
+            if ($file->is_directory() && $file->get_filepath() === '/') {
                 // we need a way to mark the age of each draft area,
                 // by not copying the root dir we force it to be created automatically with current timestamp
                 continue;
             }
-            if (!$options['subdirs'] and ($file->is_directory() or $file->get_filepath() !== '/')) {
+            if (!$options['subdirs'] && ($file->is_directory() || $file->get_filepath() !== '/')) {
                 continue;
             }
 
@@ -843,14 +840,14 @@ function pdfannotator_get_datetime_of_last_modification($annotatorid) {
 class pdfannotator_content_file_info extends file_info_stored {
 
     public function get_parent() {
-        if ($this->lf->get_filepath() === '/' and $this->lf->get_filename() === '.') {
+        if ($this->lf->get_filepath() === '/' && $this->lf->get_filename() === '.') {
             return $this->browser->get_file_info($this->context);
         }
         return parent::get_parent();
     }
 
     public function get_visible_name() {
-        if ($this->lf->get_filepath() === '/' and $this->lf->get_filename() === '.') {
+        if ($this->lf->get_filepath() === '/' && $this->lf->get_filename() === '.') {
             return $this->topvisiblename;
         }
         return parent::get_visible_name();

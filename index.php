@@ -34,7 +34,7 @@ require_course_login($course, true);
 $PAGE->set_pagelayout('incourse');
 
 $params = array(
-    'context' => context_course::instance($course->id)
+    'context' => context_course::instance($course->id),
 );
 $context = $params['context'];
 $event = \mod_pdfannotator\event\course_module_instance_list_viewed::create($params);
@@ -114,19 +114,20 @@ foreach ($pdfannotators as $pdfannotator) {
         $actions['edit'] = array(
             'url' => new \moodle_url('/course/modedit.php', array('update' => $cm->id)),
             'icon' => new \pix_icon('t/edit', new \lang_string('edit')),
-            'string' => new \lang_string('edit')
+            'string' => new \lang_string('edit'),
         );
         // Show/Hide.
         if ($visible) {
             $actions['hide'] = array(
                 'url' => new \moodle_url($manageurl, array('hide' => $cm->id)),
                 'icon' => new \pix_icon('t/hide', new \lang_string('hide')),
-                'string' => new \lang_string('hide'));
+                'string' => new \lang_string('hide'),
+            );
         } else {
             $actions['show'] = array(
                 'url' => new \moodle_url($manageurl, array('show' => $cm->id)),
                 'icon' => new \pix_icon('t/show', new \lang_string('show')),
-                'string' => new \lang_string('show')
+                'string' => new \lang_string('show'),
             );
         }
     }
