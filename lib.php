@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Defining general functions for the plugin
  * @package   mod_pdfannotator
@@ -538,7 +539,7 @@ function pdfannotator_view($pdfannotator, $course, $cm, $context) {
     // Trigger course_module_viewed event.
     $params = array(
         'context' => $context,
-        'objectid' => $pdfannotator->id
+        'objectid' => $pdfannotator->id,
     );
 
     $event = \mod_pdfannotator\event\course_module_viewed::create($params);

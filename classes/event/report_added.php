@@ -17,40 +17,47 @@
 /**
  * The report_added event.
  *
- * @package    pdfannotator
+ * @package    mod_pdfannotator
  * @copyright  2014 CIL
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace mod_pdfannotator\event;
 defined('MOODLE_INTERNAL') || die();
 /**
- * The report_added event class.
  *
- * @property-read array $other {
- *      Extra information about event.
+ * The mod_pdfannotator report_added event class.
  *
- *      - PUT INFO HERE
- * }
- *
- * @since     Moodle 3.3
- * @copyright 2014 CIL
+ * @package   mod_pdfannotator
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Rabea de Groot, Anna Heynkes, Friederike Schwager, Amrita Deb Dutta
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- **/
+ */
 class report_added extends \core\event\base {
+    /**
+     * the initialising function
+     */
     protected function init() {
         $this->data['crud'] = 'c'; // ... c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'pdfannotator_reports';
     }
-
+     /**
+      * the get event name function
+      */
     public static function get_name() {
         return get_string('eventreport_added', 'pdfannotator');
     }
 
+     /**
+      * the event description function
+      */
     public function get_description() {
         return "The user with id {$this->userid} created an report with id {$this->objectid}.";
     }
 
+     /**
+      * the url fetch function
+      */
     public function get_url() {
         return new \moodle_url('/mod/pdfannotator/view.php', array('id' => $this->other['cmid'], 'action' => 'overview'));
     }
