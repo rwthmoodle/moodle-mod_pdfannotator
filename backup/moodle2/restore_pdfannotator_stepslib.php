@@ -39,6 +39,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class restore_pdfannotator_activity_structure_step extends restore_activity_structure_step {
 
+    /**
+     * Defines the structure to be restored.
+     *
+     * @return restore_path_element[].
+     */
     protected function define_structure() {
 
         $paths = array();
@@ -48,24 +53,29 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $paths[] = new restore_path_element('pdfannotator',
             '/activity/pdfannotator');
 
-        if($userinfo) {
-	        $paths[] = new restore_path_element('pdfannotator_annotation',
-	            '/activity/pdfannotator/annotations/annotation');
+        if ($userinfo) {
+            $paths[] = new restore_path_element('pdfannotator_annotation',
+                '/activity/pdfannotator/annotations/annotation');
 
-	        $paths[] = new restore_path_element('pdfannotator_subscription',
-	            '/activity/pdfannotator/annotations/annotation/subscriptions/subscription');
-	        $paths[] = new restore_path_element('pdfannotator_comment',
-	            '/activity/pdfannotator/annotations/annotation/comments/comment');
+            $paths[] = new restore_path_element('pdfannotator_subscription',
+                '/activity/pdfannotator/annotations/annotation/subscriptions/subscription');
+            $paths[] = new restore_path_element('pdfannotator_comment',
+                '/activity/pdfannotator/annotations/annotation/comments/comment');
 
-	        $paths[] = new restore_path_element('pdfannotator_vote',
-	            '/activity/pdfannotator/annotations/annotation/comments/comment/votes/vote');
-	        $paths[] = new restore_path_element('pdfannotator_report',
-	            '/activity/pdfannotator/annotations/annotation/comments/comment/reports/report');
+            $paths[] = new restore_path_element('pdfannotator_vote',
+                '/activity/pdfannotator/annotations/annotation/comments/comment/votes/vote');
+            $paths[] = new restore_path_element('pdfannotator_report',
+                '/activity/pdfannotator/annotations/annotation/comments/comment/reports/report');
         }
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restore pdfannotator.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator($data) {
 
         global $DB;
@@ -81,6 +91,11 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $this->apply_activity_instance($newitemid); // Immediately after inserting "activity" record, call this.
     }
 
+    /**
+     * Restore annotation.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator_annotation($data) {
 
         global $DB;
@@ -96,6 +111,11 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
 
     }
 
+    /**
+     * Restore subscription.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator_subscription($data) {
 
         global $DB;
@@ -111,6 +131,11 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
 
     }
 
+    /**
+     * Restore comment.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator_comment($data) {
         global $DB;
 
@@ -126,6 +151,11 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $this->set_mapping('pdfannotator_comment', $oldid, $newitemid, true);
     }
 
+    /**
+     * Restore vote.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator_vote($data) {
         global $DB;
 
@@ -139,6 +169,11 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $this->set_mapping('pdfannotator_vote', $oldid, $newitemid);
     }
 
+    /**
+     * Restore report.
+     *
+     * @param object $data data.
+     */
     protected function process_pdfannotator_report($data) {
         global $DB;
 
@@ -158,6 +193,9 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $this->set_mapping('pdfannotator_report', $oldid, $newitemid);
     }
 
+    /**
+     * Defines post-execution actions like restoring files.
+     */
     protected function after_execute() {
         // Add pdfannotator related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_pdfannotator', 'intro', null);

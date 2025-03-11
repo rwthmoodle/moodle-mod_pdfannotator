@@ -18,6 +18,14 @@ namespace mod_pdfannotator\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * The mod_pdfannotator instance list viewed event class.
+ *
+ * @package   mod_pdfannotator
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author    Rabea de Groot, Anna Heynkes, Friederike Schwager, Amrita Deb Dutta
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
     // No need for any code here as everything is handled by the parent class.
 }
