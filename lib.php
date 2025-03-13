@@ -70,7 +70,6 @@ function pdfannotator_supports($feature) {
             return null;
     }
 }
-
 /**
  * Returns all other caps used in module
  * @return array
@@ -408,7 +407,7 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
                 $DB->update_record('pdfannotator', $pdfannotator);
             }
         } while (false);
-    
+
         // Should we apply filters?
         // $mimetype = $file->get_mimetype();
         $filter = 0;
@@ -633,12 +632,13 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     } else {
         $groupselect = "";
     }
+
     if (class_exists('\core_user\fields')) {
         $allnames = \core_user\fields::for_name()->get_sql('u', true);
     } else {
          $allnames = get_all_user_name_fields(true, 'u');
     }
-     
+
     if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
                                               $allnames, u.email, u.picture, u.imagealt, u.email, a.page
                                          FROM {pdfannotator} p
@@ -787,15 +787,17 @@ function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
     $displaycontent = pdfannotator_file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post',
     $args['uuid'], pdfannotator_get_editor_options($context), $comment->content);
 
-    /* $params = ['draftitemid' => $data['draftItemId'], 'editorformat' => $data['editorFormat'], $args['action'], 'targetId' => 'editor-editcomment-inputs-' . $args['uuid'], $args['uuid']];
-    $PAGE->requires->js_init_call('loadEditorInputFields', $params); */
-
     // Input fields.
     $out = '';
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['editorFormat']]);
     $out .= 'displaycontent:' . $displaycontent;
-    
     return $out;
 }
 
@@ -809,10 +811,14 @@ function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
 
     $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', 0);
     $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
-    
     $out = '';
-    $out = html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
-
+    $out = html_writer::empty_tag('input', ['type' => 'hidden',
+                                            'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid',
+                                            'name' => 'input_value_editor',
+                                            'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['editorFormat']]);
     return $out;
 }
