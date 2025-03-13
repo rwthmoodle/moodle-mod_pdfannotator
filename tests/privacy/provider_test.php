@@ -172,7 +172,7 @@ class provider_test extends provider_testcase {
 
         list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
 
-        $annotatorid =  $this->pdffile->id;
+        $annotatorid = $this->pdffile->id;
 
         // Combine instance + user sql.
         $params = array_merge(['pdfannotatorid' => $annotatorid], $userinparams);
@@ -183,41 +183,41 @@ class provider_test extends provider_testcase {
         $annotationids = array_column($annotations, 'id');
         list($subinsql, $subinparams) = $DB->get_in_or_equal($annotationids, SQL_PARAMS_NAMED);
 
-        $count_subs = $DB->count_records_sql("SELECT COUNT(1)
+        $countsubs = $DB->count_records_sql("SELECT COUNT(1)
                             FROM {pdfannotator_subscriptions} sub
                             WHERE sub.userid {$userinsql}
                             AND sub.annotationid {$subinsql}",
                             array_merge($userinparams, $subinparams));
-        $this->assertEquals(0,  $count_subs);
+        $this->assertEquals(0,  $countsubs);
 
         // Count votes.
         $comments = $DB->get_records('pdfannotator_comments', ['pdfannotatorid' => $annotatorid]);
         $commentsids = array_column($comments, 'id');
         list($commentinsql, $commentinparams) = $DB->get_in_or_equal($commentsids, SQL_PARAMS_NAMED);
 
-        $count_votes = $DB->count_records_sql("SELECT COUNT(1)
+        $countvotes = $DB->count_records_sql("SELECT COUNT(1)
                         FROM {pdfannotator_votes} vote
                         WHERE vote.userid {$userinsql}
                         AND vote.commentid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
-        $this->assertEquals(1,  $count_votes);
+        $this->assertEquals(1,  $countvotes);
 
         // Count annotations, reports, and comments.
-        $count_annotations = count($DB->get_records_select('pdfannotator_annotations', $sql, $params));
-        $this->assertEquals(1,  $count_annotations);
-        $count_reports = count($DB->get_records_select('pdfannotator_reports', $sql, $params));
-        $this->assertEquals(1,  $count_reports);
-        $count_comments = count($DB->get_records_select('pdfannotator_comments', $sql, $params));
-        $this->assertEquals(3,  $count_comments);
+        $countannotations = count($DB->get_records_select('pdfannotator_annotations', $sql, $params));
+        $this->assertEquals(1,  $countannotations);
+        $countreports = count($DB->get_records_select('pdfannotator_reports', $sql, $params));
+        $this->assertEquals(1,  $countreports);
+        $countcomments = count($DB->get_records_select('pdfannotator_comments', $sql, $params));
+        $this->assertEquals(3,  $countcomments);
 
         // Count pictures in comments.
-        $count_pics = $DB->count_records_sql("SELECT COUNT(1)
+        $countpics = $DB->count_records_sql("SELECT COUNT(1)
                         FROM {files} imgs
                         WHERE imgs.component = 'mod_pdfannotator'
                         AND imgs.filearea = 'post'
                         AND imgs.userid {$userinsql}
                         AND imgs.itemid {$commentinsql}",
                         array_merge($userinparams, $commentinparams));
-        $this->assertEquals(0,  $count_pics);
+        $this->assertEquals(0,  $countpics);
     }
 }
