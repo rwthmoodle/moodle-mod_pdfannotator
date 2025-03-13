@@ -1955,7 +1955,6 @@ function pdfannotator_userspoststable_add_row($table, $post) {
  */
 function pdfannotator_reportstable_add_row($thiscourse, $table, $report, $cmid, $itemsperpage, $reportfilter, $currentpage, $context) {
     global $CFG, $PAGE, $DB;
-    
     $questionid = $DB->get_record('pdfannotator_comments', ['annotationid' => $report->annotationid, 'isquestion' => 1], 'id');
     $report->report = pdfannotator_get_relativelink($report->report, $questionid, $context);
     $report->reportedcomment = pdfannotator_get_relativelink($report->reportedcomment, $report->commentid, $context);
