@@ -116,19 +116,19 @@ function setCharts(Y, names, otherquestions, myquestions, otheranswers, myanswer
                     position: 'bottom'
                 },
                 scales: {
-                    xAxes: [{
+                    x: {
                             stacked: true,
                             ticks: {
-                                autoSkip: false
-                            }
-                        }],
-                    yAxes: [{
+                                autoSkip: false,
+                            },
+                        },
+                    y: {
                             ticks: {
                                 beginAtZero: true,
                                 precision: 0,
-                                max: maxValue + 2
-                            }
-                        }]
+                                max: maxValue + 2,
+                            },
+                        },
                 },
                 tooltips: {
                     mode: 'x'

@@ -13,7 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Defining elements of the creation form for plugin
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -113,7 +115,7 @@ class mod_pdfannotator_mod_form extends moodleform_mod {
         $mform->addHelpButton('useprotectedcomments', 'setting_use_protected_comments', 'pdfannotator');
 
         // Add legacy files flag only if used.
-        if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
+        if (isset($this->current->legacyfiles) && $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
             $options = array(RESOURCELIB_LEGACYFILES_DONE => get_string('legacyfilesdone', 'pdfannotator'),
                 RESOURCELIB_LEGACYFILES_ACTIVE => get_string('legacyfilesactive', 'pdfannotator'));
             $mform->addElement('select', 'legacyfiles', get_string('legacyfiles', 'pdfannotator'), $options);
