@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/pdfannotator/lib.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once('model/annotation.class.php');
-require_once('model/pdfannotator.php');
+require_once($CFG->dirroot . 'model/annotation.class.php');
+require_once($CFG->dirroot . 'model/pdfannotator.php');
 
 class pdfannotator_comment {
 
