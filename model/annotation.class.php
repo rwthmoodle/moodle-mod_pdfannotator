@@ -153,9 +153,7 @@ class pdfannotator_annotation {
         $result = [];
 
         // If user has admin rights with regard to annotations/comments: Allow deletion.
-        if (!$cm = get_coursemodule_from_id('pdfannotator', $cmid)) {
-            error("Course module ID was incorrect");
-        }
+        $cm = get_coursemodule_from_id('pdfannotator', $cmid, 0, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
         $deleteany = has_capability('mod/pdfannotator:deleteany', $context);
         $deleteown = has_capability('mod/pdfannotator:deleteown', $context);
