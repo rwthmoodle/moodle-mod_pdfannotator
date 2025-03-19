@@ -1636,7 +1636,7 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                         .then(function(data){
                             if(data.status === "success") {
                                 notification.addNotification({
-                                        message: M.util.get_string('successfullySubscribed', 'pdfannotator'),
+                                        message: M.util.get_string('successfullySubscribednotify', 'pdfannotator'),
                                         type: "success"
                                 });
                                 setTimeoutNotification();
@@ -7046,7 +7046,8 @@ function startIndex(Y,_cm,_documentObject,_contextId, _userid,_capabilities, _to
                 img.id = "ajaxLoaderCreation";
                 img.src = M.util.image_url('i/loading');
                 img.alt = M.util.get_string('loading','pdfannotator');
-                img.style = "display: block;margin-left: auto;margin-right: auto;";
+                img.classList.add('icon');
+                img.style = 'display: block; margin-left: auto;margin-right: auto;';
                 commentContainer.appendChild(img);
             }
         },

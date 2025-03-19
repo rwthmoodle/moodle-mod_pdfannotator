@@ -31,62 +31,62 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: 8.3
-            moodle-branch: MOODLE_404_STABLE
-            database: pgsql
-          - php: 8.3
-            moodle-branch: MOODLE_404_STABLE
-            database: mariadb
-
           - php: 8.2
             moodle-branch: MOODLE_403_STABLE
             database: pgsql
           - php: 8.2
             moodle-branch: MOODLE_403_STABLE
             database: mariadb
+          - php: 8.1
+            moodle-branch: MOODLE_403_STABLE
+            database: pgsql
+          - php: 8.1
+            moodle-branch: MOODLE_403_STABLE
+            database: mariadb
+          - php: 8.0
+            moodle-branch: MOODLE_403_STABLE
+            database: pgsql
+          - php: 8.0
+            moodle-branch: MOODLE_403_STABLE
+            database: mariadb
 
+          - php: 8.2
+            moodle-branch: MOODLE_402_STABLE
+            database: pgsql
+          - php: 8.2
+            moodle-branch: MOODLE_402_STABLE
+            database: mariadb
           - php: 8.1
             moodle-branch: MOODLE_402_STABLE
             database: pgsql
           - php: 8.1
             moodle-branch: MOODLE_402_STABLE
             database: mariadb
+          - php: 8.0
+            moodle-branch: MOODLE_402_STABLE
+            database: pgsql
+          - php: 8.0
+            moodle-branch: MOODLE_402_STABLE
+            database: mariadb
 
+          - php: 8.1
+            moodle-branch: MOODLE_401_STABLE
+            database: pgsql
+          - php: 8.1
+            moodle-branch: MOODLE_401_STABLE
+            database: mariadb
           - php: 8.0
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
           - php: 8.0
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
-
-          - php: 8.0
-            moodle-branch: MOODLE_400_STABLE
-            database: pgsql
-          - php: 8.0
-            moodle-branch: MOODLE_400_STABLE
-            database: mariadb
-
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
-
-          - php: 7.4
-            moodle-branch: MOODLE_400_STABLE
-            database: pgsql
-          - php: 7.4
-            moodle-branch: MOODLE_400_STABLE
-            database: mariadb
-
-          - php: 7.4
-            moodle-branch: MOODLE_311_STABLE
-            database: pgsql
-          - php: 7.4
-            moodle-branch: MOODLE_311_STABLE
-            database: mariadb
-
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4

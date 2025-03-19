@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * Privacy class for requesting user data.
  *
@@ -27,9 +28,9 @@ namespace mod_pdfannotator\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\writer;
-use \core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\writer;
+use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\userlist;
 
@@ -332,16 +333,16 @@ class provider implements
 
             // 1. Delete all reports this user made in this annotator.
             $DB->delete_records(
-                'pdfannotator_reports', 
+                'pdfannotator_reports',
                 ['pdfannotatorid' => $instanceid, 'userid' => $userid]
             );
 
             // 2. Delete all votes this user made in this annotator.
-            $sql = "SELECT v.id 
-                    FROM {pdfannotator_votes} v 
-                    WHERE v.userid = ? AND v.commentid IN 
-                        (SELECT c.id 
-                        FROM {pdfannotator_comments} c 
+            $sql = "SELECT v.id
+                    FROM {pdfannotator_votes} v
+                    WHERE v.userid = ? AND v.commentid IN
+                        (SELECT c.id
+                        FROM {pdfannotator_comments} c
                         WHERE c.pdfannotatorid = ?)";
             $votes = $DB->get_records_sql($sql , array($userid, $instanceid));
             foreach ($votes as $vote) {
@@ -352,8 +353,8 @@ class provider implements
             $sql = "SELECT s.id
                     FROM {pdfannotator_subscriptions} s
                     WHERE s.userid = ? AND s.annotationid IN
-                        (SELECT a.id 
-                        FROM {pdfannotator_annotations} a 
+                        (SELECT a.id
+                        FROM {pdfannotator_annotations} a
                         WHERE a.pdfannotatorid = ?)";
             $subscriptions = $DB->get_records_sql($sql, array($userid, $instanceid));
             foreach ($subscriptions as $subscription) {

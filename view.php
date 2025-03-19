@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
@@ -35,12 +36,12 @@ $commid = optional_param('commid', null, PARAM_INT);
 
 if ($r) {
     if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $r))) {
-        print_error('invalidaccessparameter');
+        throw new moodle_exception('invalidaccessparameter');
     }
     $cm = get_coursemodule_from_instance('pdfannotator', $pdfannotator->id, $pdfannotator->course, false, MUST_EXIST);
 } else {
     if (!$cm = get_coursemodule_from_id('pdfannotator', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
     $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), '*', MUST_EXIST);
 }
@@ -78,11 +79,11 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 // Render the activity information.
-if ($CFG->version < 2022041900) { 
+if ($CFG->version < 2022041900) {
     $modinfo = get_fast_modinfo($course);
     $cminfo = $modinfo->get_cm($cm->id);
     $completiondetails = \core_completion\cm_completion_details::get_instance($cminfo, $USER->id);
-    $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);    
+    $activitydates = \core\activity_dates::get_dates_for_module($cminfo, $USER->id);
     echo $OUTPUT->activity_information($cminfo, $completiondetails, $activitydates);
 }
 

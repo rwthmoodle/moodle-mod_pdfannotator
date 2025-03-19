@@ -13,7 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Defining general functions for the plugin
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Ahmad Obeid, Rabea de Groot, Anna Heynkes
@@ -68,7 +70,6 @@ function pdfannotator_supports($feature) {
             return null;
     }
 }
-
 /**
  * Returns all other caps used in module
  * @return array
@@ -329,7 +330,7 @@ function pdfannotator_get_file_info($browser, $areas, $course, $cm, $context, $f
 
         $urlbase = $CFG->wwwroot . '/pluginfile.php';
         if (!$storedfile = $fs->get_file($context->id, 'mod_pdfannotator', 'content', 0, $filepath, $filename)) {
-            if ($filepath === '/' and $filename === '.') {
+            if ($filepath === '/' && $filename === '.') {
                 $storedfile = new virtual_root_file($context->id, 'mod_pdfannotator', 'content', 0);
             } else {
                 // Not found.
@@ -406,7 +407,7 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
                 $DB->update_record('pdfannotator', $pdfannotator);
             }
         } while (false);
-    
+
         // Should we apply filters?
         // $mimetype = $file->get_mimetype();
         $filter = 0;
@@ -425,15 +426,15 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         array_shift($args);
         $relativepath = implode('/', $args);
         $fullpath = rtrim("/$context->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
-        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-            //Annotations from other documents might have another contextid.
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+            // Annotations from other documents might have another contextid.
             $pdfid = $DB->get_record('pdfannotator_comments', ['id' => $commentid], 'pdfannotatorid');
             if ($pdfid) {
                 $pdfannotator = $DB->get_record('pdfannotator', ['id' => $pdfid->pdfannotatorid], '*', MUST_EXIST);
                 $cm = get_coursemodule_from_instance('pdfannotator', $pdfid->pdfannotatorid, $pdfannotator->course, false, MUST_EXIST);
                 $context2 = context_module::instance($cm->id);
                 $fullpath = rtrim("/$context2->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
-                if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+                if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
                     return false;
                 }
                 send_stored_file($file, null, 0, true, $options);
@@ -537,7 +538,7 @@ function pdfannotator_view($pdfannotator, $course, $cm, $context) {
     // Trigger course_module_viewed event.
     $params = array(
         'context' => $context,
-        'objectid' => $pdfannotator->id
+        'objectid' => $pdfannotator->id,
     );
 
     $event = \mod_pdfannotator\event\course_module_viewed::create($params);
@@ -631,7 +632,13 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     } else {
         $groupselect = "";
     }
-    $allnames = get_all_user_name_fields(true, 'u');
+
+    if (class_exists('\core_user\fields')) {
+        $allnames = \core_user\fields::for_name()->get_sql('u', true);
+    } else {
+         $allnames = get_all_user_name_fields(true, 'u');
+    }
+
     if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
                                               $allnames, u.email, u.picture, u.imagealt, u.email, a.page
                                          FROM {pdfannotator} p
@@ -705,7 +712,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
         'border-top' => '0',
         'cellpadding' => '3',
         'cellspacing' => '0',
-        'class' => ''
+        'class' => '',
     ];
     $output = html_writer::start_tag('table', $tableoptions);
     $output .= html_writer::start_tag('tr');
@@ -714,7 +721,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
 
     // Show user picture if author should not be hidden.
     $pictureoptions = [
-        'courseid' => $courseid
+        'courseid' => $courseid,
     ];
     if (!$authorhidden) {
         $picture = $OUTPUT->user_picture($activity->user, $pictureoptions);
@@ -780,15 +787,17 @@ function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
     $displaycontent = pdfannotator_file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post',
     $args['uuid'], pdfannotator_get_editor_options($context), $comment->content);
 
-    /* $params = ['draftitemid' => $data['draftItemId'], 'editorformat' => $data['editorFormat'], $args['action'], 'targetId' => 'editor-editcomment-inputs-' . $args['uuid'], $args['uuid']];
-    $PAGE->requires->js_init_call('loadEditorInputFields', $params); */
-
     // Input fields.
     $out = '';
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['editorFormat']]);
     $out .= 'displaycontent:' . $displaycontent;
-    
     return $out;
 }
 
@@ -802,10 +811,14 @@ function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
 
     $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', 0);
     $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
-    
     $out = '';
-    $out = html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid', 'name' => 'input_value_editor', 'value' => $data['draftItemId']]);
-    $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat', 'name' => 'input_value_editor', 'value' => $data['editorFormat']]);
-
+    $out = html_writer::empty_tag('input', ['type' => 'hidden',
+                                            'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid',
+                                            'name' => 'input_value_editor',
+                                            'value' => $data['draftItemId']]);
+    $out .= html_writer::empty_tag('input', ['type' => 'hidden',
+                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editorformat',
+                                             'name' => 'input_value_editor',
+                                             'value' => $data['editorFormat']]);
     return $out;
 }

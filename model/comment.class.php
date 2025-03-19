@@ -13,7 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Defining class for comments
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Rabea de Groot, Anna Heynkes and Friederike Schwager
@@ -24,8 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/pdfannotator/lib.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once('model/annotation.class.php');
-require_once('model/pdfannotator.php');
+require_once($CFG->dirroot . '/mod/pdfannotator/model/annotation.class.php');
+require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
+
 
 class pdfannotator_comment {
 

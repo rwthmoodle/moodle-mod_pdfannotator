@@ -13,7 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * Defining class for statistics tab
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Friederike Schwager
@@ -99,7 +101,7 @@ class pdfannotator_statistics {
         $sql = "SELECT AVG(count) AS average FROM ("
                 . "SELECT COUNT(*) AS count "
                 . "FROM {pdfannotator_comments} c, {pdfannotator} a "
-                . "WHERE a.course = ? AND a.id = c.pdfannotatorid AND c.isquestion = ? AND c.isdeleted = ?"
+                . "WHERE a.course = ? AND a.id = c.pdfannotatorid AND c.isquestion = ? AND c.isdeleted = ? "
                 . "GROUP BY c.userid ) AS counts";
 
         return (float) key($DB->get_records_sql($sql, array($this->courseid, $isquestion, '0')));

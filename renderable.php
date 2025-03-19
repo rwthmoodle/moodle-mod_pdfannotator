@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * This file contains the definition of renderable classes in the pdfannotator module.
  * The renderables will be replaced by templatables but are still used by the latter.

@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Language strings definition
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Rabea de Groot, Anna Heynkes, Friederike Schwager
@@ -462,7 +463,7 @@ $string['successfullymarkedasunread'] = 'The report was marked as unread.';
 $string['successfullymarkedasunreadandnolongerdisplayed'] = 'The report was marked as unread and removed from the table.';
 $string['successfullyRedisplayed'] = 'The comment is visible to participants once more';
 $string['successfullySubscribed'] = 'Subscribed to question.';
-$string['successfullySubscribed'] = 'Your subscription to the question was registered.';
+$string['successfullySubscribednotify'] = 'Your subscription to the question was registered.';
 $string['successfullyUnsubscribed'] = 'Your subscribtion was cancelled.';
 $string['successfullyUnsubscribedPlural'] = 'Your subscribtion was cancelled. All {$a} answers to the question were removed from this table.';
 $string['successfullyUnsubscribedSingular'] = 'Your subscribtion to the question was cancelled and the only answer removed from this table.';
