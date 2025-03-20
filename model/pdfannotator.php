@@ -40,6 +40,7 @@ class pdfannotator_instance {
     private $userposts;
     private $hiddenanswers;
     private $hiddenreports;
+    private $userposts;
 
     public function __construct($dbrecord) {
         $this->id = $dbrecord->id;
