@@ -1024,15 +1024,15 @@ function pdfannotator_get_questions($courseid, $context, $questionfilter) {
         . "JOIN {course_modules} cm ON p.id = cm.instance "
         . "LEFT JOIN {pdfannotator_votes} v ON c.id=v.commentid "
         . "LEFT JOIN {pdfannotator_comments} answ ON answ.annotationid = a.id "
-        . "WHERE c.isquestion = 1 AND p.course = ? AND cm.id $insql";
+        . "WHERE c.isquestion = 1 AND p.course = ? AND cm.id $insql ";
     if ($questionfilter == 0) {
         $sql = $sql . ' AND c.solved = 0 ';
     }
     if ($questionfilter == 1) {
         $sql = $sql . ' AND NOT c.solved = 0 ';
     }
-    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility,"
-        . "c.timecreated, c.isdeleted, c.ishidden, c.isquestion";
+    $sql = $sql . "GROUP BY a.id, p.name, p.usevotes, cm.id, c.id, a.page, a.pdfannotatorid, c.content, c.userid, c.visibility, "
+        . "c.timecreated, c.isdeleted, c.ishidden, c.isquestion ";
     $params = array_merge([$courseid], $inparams);
     $questions = $DB->get_records_sql($sql, $params);
 
@@ -1194,7 +1194,7 @@ function pdfannotator_get_answers_for_this_user($courseid, $context, $answerfilt
 
     if ($answerfilter == 0) { // Either: get all answers in this annotator.
         $sql = "SELECT c.id AS answerid, c.content AS answer, c.userid AS userid, c.visibility, "
-            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid,"
+            . "c.timemodified, c.solved AS correct, c.ishidden AS answerhidden, a.id AS annoid, a.page, q.id AS questionid, "
             . "q.userid AS questionuserid, c.isquestion, c.annotationid, "
             . "q.visibility AS questionvisibility, "
             . "q.content AS answeredquestion, q.isdeleted AS questiondeleted, q.ishidden AS questionhidden, p.id AS annotatorid, "
