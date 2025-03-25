@@ -1,3 +1,8 @@
+## 2025032500 v1.5.8
+* Hotfix: correct further trailing junk after parameter 
+* Versioning error fix
+
+
 ## 2025031700 v1.5.8
 * Correct Privacy API tests
 * Iss129: remove print_error deprecated function
