@@ -1,4 +1,6 @@
-PDF Annotation Tool for Moodle
+[![Moodle Plugin CI](https://github.com/rwthmoodle/moodle-mod_pdfannotator/actions/workflows/moodle-plugin-ci.yml/badge.svg?branch=main)](https://github.com/rwthmoodle/moodle-mod_pdfannotator/actions/workflows/moodle-plugin-ci.yml)
+
+# PDF Annotation Tool for Moodle
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -5,6 +5,8 @@
  *
  */
 
+/* global MathJax, $ */
+
 function addDropdownNavigation(Y, __capabilities, __cmid) {
 
     // Select the general overview tab.
@@ -84,17 +86,13 @@ function addDropdownNavigation(Y, __capabilities, __cmid) {
 }
 
 function renderMathJax(node) {
-    var counter = 0;
-    let mathjax = function (node) {
-        if (typeof (MathJax) !== "undefined") {
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub, node]);
-        } else if (counter < 30) {
-            counter++;
-            setTimeout(mathjax, 100);
-        } else {
-        }
-    };
-    mathjax(node);
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([node]).catch(function (err) {
+            console.error('MathJax typeset failed: ', err);
+        });
+    } else {
+        console.warn("MathJax not loaded yet.");
+    }
 }
 
 function fixCommentForm() {
@@ -179,7 +177,7 @@ function makeFullScreen() {
 
 /**
  * Check just one checkbox under the comment form
- * 
+ *
  */
 function checkOnlyOneCheckbox( Y ) {
     var radios = document.getElementsByClassName('pdfannotator-radio');
@@ -229,8 +227,8 @@ function checkOnlyOneCheckbox( Y ) {
 function setTimeoutNotification(){
     setTimeout(function(){
         let notificationpanel = document.getElementById("user-notifications");
-        while (notificationpanel.hasChildNodes()) {  
+        while (notificationpanel.hasChildNodes()) {
             notificationpanel.removeChild(notificationpanel.firstChild);
-        } 
+        }
     }, 10000);
 }

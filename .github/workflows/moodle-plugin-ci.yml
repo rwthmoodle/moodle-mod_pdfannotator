@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres:14
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -17,7 +17,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
       mariadb:
-        image: mariadb:10
+        image: mariadb:10.11
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -31,6 +31,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: pgsql
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: mariadb
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: pgsql
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: mariadb
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: pgsql
+          - php: 8.4
+            moodle-branch: MOODLE_500_STABLE
+            database: mariadb
+
           - php: 8.3
             moodle-branch: MOODLE_405_STABLE
             database: pgsql
@@ -42,13 +61,13 @@ jobs:
             database: pgsql
           - php: 8.2
             moodle-branch: MOODLE_405_STABLE
-            database: mariadb   
+            database: mariadb
           - php: 8.1
             moodle-branch: MOODLE_405_STABLE
             database: pgsql
           - php: 8.1
             moodle-branch: MOODLE_405_STABLE
-            database: mariadb         
+            database: mariadb
 
           - php: 8.3
             moodle-branch: MOODLE_404_STABLE
@@ -61,13 +80,13 @@ jobs:
             database: pgsql
           - php: 8.2
             moodle-branch: MOODLE_404_STABLE
-            database: mariadb   
+            database: mariadb
           - php: 8.1
             moodle-branch: MOODLE_404_STABLE
             database: pgsql
           - php: 8.1
             moodle-branch: MOODLE_404_STABLE
-            database: mariadb         
+            database: mariadb
 
           - php: 8.2
             moodle-branch: MOODLE_403_STABLE
@@ -119,12 +138,14 @@ jobs:
           - php: 8.0
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
+
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: pgsql
           - php: 7.4
             moodle-branch: MOODLE_401_STABLE
             database: mariadb
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -147,8 +168,7 @@ jobs:
           echo $(cd ci/bin; pwd) >> $GITHUB_PATH
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
-          # echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
       - name: Install moodle-plugin-ci
         run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
@@ -213,3 +233,4 @@ jobs:
       - name: Mark cancelled jobs as failed.
         if: ${{ cancelled() }}
         run: exit 1
+

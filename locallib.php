@@ -328,7 +328,8 @@ function pdfannotator_data_preprocessing($context, $textarea, $draftitemid = 0) 
  * Same function as core, however we need to add files into the existing draft area!
  * Copied from hsuforum.
  */
-function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
+function pdfannotator_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, ?array $options=null,
+    ?string $text=null) {
     global $CFG, $USER, $CFG, $DB;
 
     $options = (array)$options;
@@ -869,7 +870,7 @@ function pdfannotator_set_mainfile($data) {
     }
 }
 
-function pdfannotator_render_listitem_actions(array $actions = null) {
+function pdfannotator_render_listitem_actions(?array $actions = null) {
     $menu = new action_menu();
     $menu->attributes['class'] .= ' course-item-actions item-actions';
     $hasitems = false;
