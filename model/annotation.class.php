@@ -27,17 +27,19 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class pdfannotator_annotation
+ */
 class pdfannotator_annotation {
 
     /**
      * This method creates a new record in the database table named mdl_pdfannotator_annotations and returns its id
      *
-     * @param type $documentid specifies the pdf file to which this annotation belongs
-     * @param type $pageid specifies the page within that pdf file
-     * @param type $type child class (highlight, strikeout, area, textbox, drawing, comment or point)
-     * @param type $itemid identifies the record in the respective child class table, e.g. highlights
+     * @param int $documentid specifies the pdf file to which this annotation belongs
+     * @param int $pageid specifies the page within that pdf file
+     * @param string $type child class (highlight, strikeout, area, textbox, drawing, comment or point)
+     * @param int $itemid identifies the record in the respective child class table, e.g. highlights
      * @return int (or boolean false)
      */
     public static function create_annotation($documentid, $pageid, $type, $itemid) {
@@ -58,9 +60,9 @@ class pdfannotator_annotation {
      * Method updates data attribute (consisting of width, color and lines)
      * in mdl_pdfannotator_drawings after a drawing was shifted in position
      *
-     * @param type $annotationid
-     * @param type $newdata
-     * @return type int 1 for success
+     * @param int $annotationid
+     * @param array $newdata
+     * @return int 1 for success
      */
     public static function update($annotationid, $newdata) {
         global $DB, $USER;
@@ -77,7 +79,7 @@ class pdfannotator_annotation {
         }
 
         if ($success) {
-            $result = array('status' => 'success', 'timemoved' => $time);
+            $result = ['status' => 'success', 'timemoved' => $time];
             if ($annotation->userid != $USER->id) {
                 $result['movedby'] = pdfannotator_get_username($USER->id);
             }
@@ -92,16 +94,16 @@ class pdfannotator_annotation {
      * if the user is allowed to do so.
      * Teachers are allowed to delete any comment, students may only delete their own comments.
      *
-     * @param type $annotationId
-     * @param type $cmid
-     * @param type $deleteanyway Delete annotation in any case. F.e. if right to be forgotten was invoked or
+     * @param int $annotationid
+     * @param id $cmid
+     * @param bool $deleteanyway Delete annotation in any case. F.e. if right to be forgotten was invoked or
      *  a user without the capability to delete the annotation deletes it implicitly by deleting the last comment of the annotation
      * @return boolean
      */
     public static function delete($annotationid, $cmid = null, $deleteanyway = null) {
 
         global $DB;
-        $annotation = $DB->get_record('pdfannotator_annotations', array('id' => $annotationid), '*', $strictness = IGNORE_MISSING);
+        $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid], '*', $strictness = IGNORE_MISSING);
         if (!$annotation) {
             return false;
         }
@@ -113,17 +115,17 @@ class pdfannotator_annotation {
         if ($deletionallowed[0] === true || $deleteanyway === true) {
 
             // Delete all comments of this annotation.
-            $comments = $DB->get_records('pdfannotator_comments', array("annotationid" => $annotationid));
+            $comments = $DB->get_records('pdfannotator_comments', ["annotationid" => $annotationid]);
             foreach ($comments as $commentdata) {
-                $DB->delete_records('pdfannotator_votes', array("commentid" => $commentdata->id));
+                $DB->delete_records('pdfannotator_votes', ["commentid" => $commentdata->id]);
             }
-            $success = $DB->delete_records('pdfannotator_comments', array("annotationid" => $annotationid));
+            $success = $DB->delete_records('pdfannotator_comments', ["annotationid" => $annotationid]);
 
             // Delete subscriptions to the question.
-            $DB->delete_records('pdfannotator_subscriptions', array('annotationid' => $annotationid));
+            $DB->delete_records('pdfannotator_subscriptions', ['annotationid' => $annotationid]);
 
             // Delete the annotation itself.
-            $success = $DB->delete_records('pdfannotator_annotations', array("id" => $annotationid));
+            $success = $DB->delete_records('pdfannotator_annotations', ["id" => $annotationid]);
 
             if ($deleteanyway) {
                 return;
@@ -141,8 +143,11 @@ class pdfannotator_annotation {
 
     /**
      * Method checks whether the annotation as well as possible comments attached to it
-     * belong to the current user.     *
-     * @return
+     * belong to the current user.
+     *
+     * @param stdClass $annotation
+     * @param int $cmid
+     * @return array
      */
     public static function deletion_allowed($annotation, $cmid) {
 
@@ -178,7 +183,8 @@ class pdfannotator_annotation {
      * It returns true if the annotation was made by the user who is trying to shift it and no other person has answered
      * or if that user is an admin.
      *
-     * @param type $annotationId
+     * @param int $annotationid
+     * @param context $context
      * @return boolean
      */
     public static function shifting_allowed($annotationid, $context) {
@@ -192,7 +198,7 @@ class pdfannotator_annotation {
         if (!$editownpost || $USER->id != self::get_author($annotationid)) {
             return false;
         } else if ($DB->record_exists_select('pdfannotator_comments', "annotationid = ? AND userid != ?",
-            array($annotationid, $USER->id))) {
+            [$annotationid, $USER->id])) {
             // Annotation was answered by other users.
             return false;
         }
@@ -201,7 +207,7 @@ class pdfannotator_annotation {
 
     /**
      * Return information for the dummy-comment of a textbox or drawing
-     * @param type $annotationid
+     * @param int $annotationid
      */
     public static function get_information($annotationid) {
         global $DB;
@@ -227,6 +233,7 @@ class pdfannotator_annotation {
                 }
             }
             $comment->usevotes = 0;
+            // phpcs:disable moodle.Commenting.TodoComment
             $comment->uuid = -1; // TODO.
             $comment->annotation = $annotationid;
             $comment->isdeleted = 0;
@@ -242,31 +249,31 @@ class pdfannotator_annotation {
     /**
      * Method takes an annotation's id and returns the user id of its author
      *
-     * @param type $itemid
-     * @return type
+     * @param int $annotationid
+     * @return array
      */
     public static function get_author($annotationid) {
 
         global $DB;
-        return $DB->get_field('pdfannotator_annotations', 'userid', array('id' => $annotationid), $strictness = MUST_EXIST);
+        return $DB->get_field('pdfannotator_annotations', 'userid', ['id' => $annotationid], $strictness = MUST_EXIST);
     }
 
     /**
      * Method takes an annotation's id and returns the page it was made on
      *
-     * @param type $annotationId
-     * @return type
+     * @param int $annotationid
+     * @return array
      */
     public static function get_pageid($annotationid) {
         global $DB;
-        return $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), $strictness = IGNORE_MISSING);
+        return $DB->get_field('pdfannotator_annotations', 'page', ['id' => $annotationid], $strictness = IGNORE_MISSING);
     }
 
     /**
      * Method takes an annotation's id and returns the content of the underlying question comment
      *
-     * @param type $annotationId
-     * @return type
+     * @param int $annotationid
+     * @return string
      */
     public static function get_question($annotationid) {
         global $DB;

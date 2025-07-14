@@ -16,6 +16,7 @@
 
 /**
  * File containing DB access rules
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author   Rabea de Groot and Anna Heynkes
@@ -23,352 +24,352 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
-    'mod/pdfannotator:view' => array( // The following archetypes are recommended for the view capability (to maintain consistancy).
+$capabilities = [
+    'mod/pdfannotator:view' => [ // The following archetypes are recommended for the view capability (to maintain consistancy).
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'guest' => CAP_ALLOW,
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:addinstance' => array(
+    'mod/pdfannotator:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
+        ],
         'clonepermissionsfrom' => 'moodle/course:manageactivities',
-    ),
+    ],
 
-    'mod/pdfannotator:administrateuserinput' => array (
+    'mod/pdfannotator:administrateuserinput' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:create' => array ( // Create annotation or comment.
+    'mod/pdfannotator:create' => [ // Create annotation or comment.
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:deleteown' => array ( // Delete own comments or annotations.
+    'mod/pdfannotator:deleteown' => [ // Delete own comments or annotations.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:deleteany' => array ( // Delete all comments or annotations (including comments/annotations by other users).
+    'mod/pdfannotator:deleteany' => [ // Delete all comments or annotations (including comments/annotations by other users).
         'riskbitmask' => RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:hidecomments' => array (
+    'mod/pdfannotator:hidecomments' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:seehiddencomments' => array (
+    'mod/pdfannotator:seehiddencomments' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:edit' => array ( // Update/Edit own annotations or comments.
+    'mod/pdfannotator:edit' => [ // Update/Edit own annotations or comments.
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:editanypost' => array( // Update/Edit all annotations or comments.
+    'mod/pdfannotator:editanypost' => [ // Update/Edit all annotations or comments.
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:report' => array ( // Report comments.
+    'mod/pdfannotator:report' => [ // Report comments.
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:vote' => array ( // Give an interesting question or a helpful comment your vote.
+    'mod/pdfannotator:vote' => [ // Give an interesting question or a helpful comment your vote.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'student' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        ),
-    ),
-
-    'mod/pdfannotator:subscribe' => array ( // Subscribe to a question for notifications about new answers.
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:closequestion' => array ( // Close/Open own questions.
+    'mod/pdfannotator:subscribe' => [ // Subscribe to a question for notifications about new answers.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:closeanyquestion' => array( // Close/Open all questions.
+    'mod/pdfannotator:closequestion' => [ // Close/Open own questions.
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+    'mod/pdfannotator:closeanyquestion' => [ // Close/Open all questions.
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:markcorrectanswer' => array( // Mark answers as correct.
+    'mod/pdfannotator:markcorrectanswer' => [ // Mark answers as correct.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:usetextbox' => array ( // Always use textbox (even if using textbox (for students) is disabled in settings).
+    'mod/pdfannotator:usetextbox' => [ // Always use textbox (even if using textbox (for students) is disabled in settings).
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:usedrawing' => array ( // Always use drawing (even if using textbox (for students) is disabled in settings).
+    'mod/pdfannotator:usedrawing' => [ // Always use drawing (even if using textbox (for students) is disabled in settings).
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:printdocument' => array ( // Download the pdf document.
+    'mod/pdfannotator:printdocument' => [ // Download the pdf document.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:printcomments' => array ( // Download a pdf with all comments in this document.
+    'mod/pdfannotator:printcomments' => [ // Download a pdf with all comments in this document.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:forwardquestions' => array ( // Forward a question (to an other teacher/manager).
+    'mod/pdfannotator:forwardquestions' => [ // Forward a question (to an other teacher/manager).
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:getforwardedquestions' => array ( // Receive forwarded questions.
+    'mod/pdfannotator:getforwardedquestions' => [ // Receive forwarded questions.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
 
     // Get a notification about new questions.
-    'mod/pdfannotator:recievenewquestionnotifications' => array (
+    'mod/pdfannotator:recievenewquestionnotifications' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:viewstatistics' => array ( // View statistics page.
+    'mod/pdfannotator:viewstatistics' => [ // View statistics page.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:viewteacherstatistics' => array ( // See additional information on statistics page.
+    'mod/pdfannotator:viewteacherstatistics' => [ // See additional information on statistics page.
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
 
     /* ********************** capabilities for viewing the overview page **********************/
 
     // View reports of comments.
-    'mod/pdfannotator:viewreports' => array (
+    'mod/pdfannotator:viewreports' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
     // View answers to questions you wrote or subscribed to.
-    'mod/pdfannotator:viewanswers' => array (
+    'mod/pdfannotator:viewanswers' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
     // View all questions that are new in this course.
-    'mod/pdfannotator:viewquestions' => array (
+    'mod/pdfannotator:viewquestions' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
     // View all self-written posts, be it questions or comments.
-    'mod/pdfannotator:viewposts' => array (
+    'mod/pdfannotator:viewposts' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'student' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:viewprotectedcomments' => array (
+    'mod/pdfannotator:viewprotectedcomments' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:writeprivatecomments' => array (
+    'mod/pdfannotator:writeprivatecomments' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'student' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-    'mod/pdfannotator:writeprotectedcomments' => array (
+    'mod/pdfannotator:writeprotectedcomments' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'manager' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'student' => CAP_ALLOW,
-        ),
-    ),
+        ],
+    ],
 
-);
+];

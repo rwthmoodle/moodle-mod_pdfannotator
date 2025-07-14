@@ -28,8 +28,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Define all the restore steps that will be used by the restore_pdfannotator_activity_task
  */
@@ -46,7 +44,7 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
      */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
 
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -185,7 +183,6 @@ class restore_pdfannotator_activity_structure_step extends restore_activity_stru
         $data->commentid = $this->get_new_parentid('pdfannotator_comment');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        // $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->pdfannotatorid = $this->get_mappingid('pdfannotator', $data->pdfannotatorid);
         // Params: 1. Object class as defined in structure, 2. attribute&/column name.
 

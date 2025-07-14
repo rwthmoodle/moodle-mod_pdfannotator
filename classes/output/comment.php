@@ -17,8 +17,6 @@
 namespace mod_pdfannotator\output;
 use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Renderable for comments.
  *
@@ -29,7 +27,14 @@ defined('MOODLE_INTERNAL') || die();
  */
 class comment implements \renderable, \templatable {
 
+    /**
+     * @var array
+     */
     private $comments = [];
+
+    /**
+     * @var string
+     */
     private $questionvisibility;
 
     /**
@@ -38,7 +43,7 @@ class comment implements \renderable, \templatable {
      * @param object $data Comment or array of comments
      * @param object $cm Course module
      * @param object $context Context
-     * @return type
+     * @return void
      */
     public function __construct($data, $cm, $context) {
         global $USER;
@@ -112,8 +117,9 @@ class comment implements \renderable, \templatable {
     /**
      * This function is required by any renderer to retrieve the data structure
      * passed into the template.
+     *
      * @param \renderer_base $output
-     * @return type
+     * @return array
      */
     public function export_for_template(\renderer_base $output) {
         $data = [];
@@ -122,11 +128,18 @@ class comment implements \renderable, \templatable {
         return $data;
     }
 
+    /**
+     * Add CSS classes to comment wrapper.
+     *
+     * @param string $comment
+     * @param \stdClass $owner
+     * @return void
+     */
     private function addcssclasses($comment, $owner) {
         $comment->wrapperClass = 'chat-message comment-list-item';
         if ($comment->isquestion) {
             $comment->wrapperClass .= ' questioncomment';
-            if($comment->visibility == 'private' || $comment->visibility == 'protected') {
+            if ($comment->visibility == 'private' || $comment->visibility == 'protected') {
                 $comment->wrapperClass .= ' questions-private';
             }
         } else if ($comment->solved) {
@@ -140,6 +153,13 @@ class comment implements \renderable, \templatable {
         }
     }
 
+    /**
+     * Set votes for comment.
+     *
+     * @param string $comment
+     * @return void
+     * @throws \coding_exception
+     */
     public function setvotes($comment) {
         if ($comment->usevotes && !$comment->isdeleted) {
             if ($comment->owner) {
@@ -167,7 +187,8 @@ class comment implements \renderable, \templatable {
 
     /**
      * Add check icon if comment is marked as correct.
-     * @param type $comment
+     *
+     * @param string $comment
      */
     public function addsolvedicon($comment) {
         if ($comment->solved) {
@@ -183,9 +204,10 @@ class comment implements \renderable, \templatable {
 
     /**
      * Report comment if user is not the owner.
-     * @param type $comment
-     * @param type $owner
-     * @param type $report
+     *
+     * @param string $comment
+     * @param \stdClass $report
+     * @param \context_module $cm Course module object
      */
     private function addreportbutton($comment, $report, $cm) {
         if (!$comment->isdeleted && $report && !$comment->owner && !isset($comment->type)) {
@@ -197,10 +219,10 @@ class comment implements \renderable, \templatable {
 
     /**
      * Open/close question if user is owner of the question or manager.
-     * @param type $comment
-     * @param type $owner
-     * @param type $closequestion
-     * @param type $closeanyquestion
+     *
+     * @param string $comment
+     * @param bool $closequestion
+     * @param bool $closeanyquestion
      */
     private function addcloseopenbutton($comment, $closequestion, $closeanyquestion) {
 
@@ -219,9 +241,9 @@ class comment implements \renderable, \templatable {
 
     /**
      * Button for editing comment if user is owner of the comment or manager.
-     * @param type $comment
-     * @param type $owner
-     * @param type $editanypost
+     *
+     * @param string $comment
+     * @param bool $editanypost
      */
     private function addeditbutton($comment, $editanypost) {
         if (!$comment->isdeleted && !isset($comment->type) && ($comment->owner || $editanypost)) {
@@ -232,6 +254,15 @@ class comment implements \renderable, \templatable {
         }
     }
 
+    /**
+     * Add button to hide or unhide comment.
+     *
+     * @param string $comment
+     * @param bool $seehiddencomments
+     * @param bool $hidecomments
+     * @return void
+     * @throws \coding_exception
+     */
     private function addhidebutton($comment, $seehiddencomments, $hidecomments) {
         // Don't need to hide personal notes.
         if ($this->questionvisibility == 'private') {
@@ -259,11 +290,12 @@ class comment implements \renderable, \templatable {
     }
 
     /**
+     * Add button to delete comment.
      * Delete comment if user is owner of the comment or manager.
-     * @param type $comment
-     * @param type $owner
-     * @param type $deleteown
-     * @param type $deleteany
+     *
+     * @param string $comment
+     * @param bool $deleteown
+     * @param bool $deleteany
      */
     private function adddeletebutton($comment, $deleteown, $deleteany) {
         if (!$comment->isdeleted && ($deleteany || ($deleteown && $comment->owner))) {
@@ -273,6 +305,14 @@ class comment implements \renderable, \templatable {
         }
     }
 
+    /**
+     * Add button to subscribe to question.
+     *
+     * @param string $comment
+     * @param bool $subscribe
+     * @return void
+     * @throws \coding_exception
+     */
     private function addsubscribebutton($comment, $subscribe) {
         if (!isset($comment->type) && $comment->isquestion && $subscribe && $comment->visibility != 'private') {
             // Only set for textbox and drawing.
@@ -286,6 +326,16 @@ class comment implements \renderable, \templatable {
         }
     }
 
+    /**
+     * Add button to forward question to other users.
+     *
+     * @param string $comment
+     * @param bool $forwardquestions
+     * @param \context_module $cm
+     * @return void
+     * @throws \coding_exception
+     * @throws \core\exception\moodle_exception
+     */
     private function addforwardbutton($comment, $forwardquestions, $cm) {
         if (!isset($comment->type) && $comment->isquestion && !$comment->isdeleted && $forwardquestions &&
             $comment->visibility != 'private') {
@@ -299,6 +349,14 @@ class comment implements \renderable, \templatable {
         }
     }
 
+    /**
+     * Add button to mark comment as solved or remove solved status.
+     *
+     * @param string $comment
+     * @param bool $solve
+     * @return void
+     * @throws \coding_exception
+     */
     private function addmarksolvedbutton($comment, $solve) {
         if ($solve && !$comment->isquestion && !$comment->isdeleted && !isset($comment->type) &&
             $this->questionvisibility != 'private') {

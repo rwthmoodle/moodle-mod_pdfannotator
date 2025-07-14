@@ -33,6 +33,12 @@ require_once($CFG->libdir . '/formslib.php');
  */
 class pdfannotator_reportform extends moodleform {
 
+    /**
+     * Define the form elements.
+     *
+     * @return void
+     * @throws coding_exception
+     */
     public function definition() {
         global $CFG;
 
@@ -68,6 +74,11 @@ class pdfannotator_reportform extends moodleform {
         $this->add_action_buttons($cancel = true, get_string('reportsendbutton', 'pdfannotator'));
     }
 
+    /**
+     * Display the form.
+     *
+     * @return void
+     */
     public function display() {
         $this->_form->display();
     }

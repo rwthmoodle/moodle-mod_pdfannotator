@@ -34,19 +34,48 @@ namespace mod_pdfannotator\output;
 use moodle_url;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ *
+ */
 class index implements \renderable, \templatable {
     // Class should be placed elsewhere.
 
+    /**
+     * @var bool
+     */
     private $usestudenttextbox;
+    /**
+     * @var bool
+     */
     private $usestudentdrawing;
+    /**
+     * @var bool
+     */
     private $useprint;
+    /**
+     * @var bool
+     */
     private $useprintcomments;
+    /**
+     * @var string
+     */
     private $printurl;
+    /**
+     * @var bool
+     */
     private $useprivatecomments;
+    /**
+     * @var bool
+     */
     private $useprotectedcomments;
 
+    /**
+     * Constructor for the index class.
+     *
+     * @param stdClass $pdfannotator
+     * @param array $capabilities
+     * @param stdClass $file
+     */
     public function __construct($pdfannotator, $capabilities, $file) {
         $this->usestudenttextbox = ($pdfannotator->use_studenttextbox || $capabilities->usetextbox);
         $this->usestudentdrawing = ($pdfannotator->use_studentdrawing || $capabilities->usedrawing);
@@ -60,6 +89,12 @@ class index implements \renderable, \templatable {
             $file->get_itemid(), $file->get_filepath(), $file->get_filename(), true)->out(false);
     }
 
+    /**
+     * Export data for the template.
+     *
+     * @param \renderer_base $output
+     * @return stdClass
+     */
     public function export_for_template(\renderer_base $output) {
         global $OUTPUT, $PAGE;
         $url = $PAGE->url;

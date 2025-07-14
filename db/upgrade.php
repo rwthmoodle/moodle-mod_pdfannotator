@@ -22,9 +22,19 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-defined('MOODLE_INTERNAL') || die;
 
-function xmldb_pdfannotator_upgrade($oldversion) {
+/**
+ * Upgrade function for the pdfannotator module.
+ *
+ * @param int $oldversion
+ * @return true
+ * @throws ddl_change_structure_exception
+ * @throws ddl_exception
+ * @throws ddl_field_missing_exception
+ * @throws ddl_table_missing_exception
+ * @throws dml_exception
+ */
+function xmldb_pdfannotator_upgrade(int $oldversion) {
 
     global $CFG, $DB;
     $dbman = $DB->get_manager();
@@ -41,7 +51,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         $table->add_field('vote', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '1');
 
         // Adding keys to table pdfannotator_votes.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
         // Conditionally launch create table for pdfannotator_votes.
         if (!$dbman->table_exists($table)) {
@@ -70,7 +80,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         $table->add_field('seen', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0');
 
         // Adding keys to table pdfannotator_comments_archiv.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
 
         // Conditionally launch create table for pdfannotator_comments_archiv.
         if (!$dbman->table_exists($table)) {
@@ -109,13 +119,13 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key commentid (foreign) to be added to pdfannotator_votes.
         $table1 = new xmldb_table('pdfannotator_votes');
-        $key1 = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, array('commentid'), 'comments', array('id'));
+        $key1 = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
 
         // Launch add key commentid.
         $dbman->add_key($table1, $key1);
 
         // Define index userid (not unique) to be added to pdfannotator_votes.
-        $index1 = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $index1 = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
 
         // Conditionally launch add index userid.
         if (!$dbman->index_exists($table1, $index1)) {
@@ -124,13 +134,13 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key annotationid (foreign) to be added to pdfannotator_comments.
         $table2 = new xmldb_table('pdfannotator_comments');
-        $key2 = new xmldb_key('annotationid', XMLDB_KEY_FOREIGN, array('annotationid'), 'annotations', array('id'));
+        $key2 = new xmldb_key('annotationid', XMLDB_KEY_FOREIGN, ['annotationid'], 'annotations', ['id']);
 
         // Launch add key annotationid.
         $dbman->add_key($table2, $key2);
 
         // Define index userid (not unique) to be added to pdfannotator_comments.
-        $index2 = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $index2 = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
 
         // Conditionally launch add index userid.
         if (!$dbman->index_exists($table2, $index2)) {
@@ -139,7 +149,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key commentid (foreign) to be added to pdfannotator_reports.
         $table3 = new xmldb_table('pdfannotator_reports');
-        $key3 = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, array('commentid'), 'comments', array('id'));
+        $key3 = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
 
         // Launch add key commentid.
         $dbman->add_key($table3, $key3);
@@ -212,8 +222,8 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         $table->add_field('commentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table pdfannotator_subscriptions.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('commentid', XMLDB_KEY_FOREIGN, array('commentid'), 'comments', array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
 
         // Conditionally launch create table for pdfannotator_subscriptions.
         if (!$dbman->table_exists($table)) {
@@ -228,7 +238,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key commentid (foreign) to be dropped form pdfannotator_subscriptions.
         $table = new xmldb_table('pdfannotator_subscriptions');
-        $key = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, array('commentid'), 'comments', array('id'));
+        $key = new xmldb_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
 
         // Launch drop key commentid.
         $dbman->drop_key($table, $key);
@@ -242,7 +252,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key annotationid (foreign) to be added to pdfannotator_subscriptions.
         $table = new xmldb_table('pdfannotator_subscriptions');
-        $key = new xmldb_key('annotationid', XMLDB_KEY_FOREIGN, array('annotationid'), 'annotationsneu', array('id'));
+        $key = new xmldb_key('annotationid', XMLDB_KEY_FOREIGN, ['annotationid'], 'annotationsneu', ['id']);
 
         // Launch add key annotationid.
         $dbman->add_key($table, $key);
@@ -250,7 +260,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         // Update existing records.
         $rs = $DB->get_recordset('pdfannotator_subscriptions');
         foreach ($rs as $record) {
-            $annotationid = $DB->get_field('pdfannotator_comments', 'annotationid', array('id' => $record->annotationid));
+            $annotationid = $DB->get_field('pdfannotator_comments', 'annotationid', ['id' => $record->annotationid]);
             $record->annotationid = $annotationid;
             $DB->update_record('pdfannotator_subscriptions', $record);
         }
@@ -272,7 +282,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key pdfannotatorid (foreign) to be added to pdfannotator_comments.
         $table = new xmldb_table('pdfannotator_comments');
-        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, array('pdfannotatorid'), 'pdfannotator', array('id'));
+        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, ['pdfannotatorid'], 'pdfannotator', ['id']);
 
         // Launch add key pdfannotatorid.
         $dbman->add_key($table, $key);
@@ -289,7 +299,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
         // Add pdfannotatorid to old records in comments-table.
         $rs = $DB->get_recordset('pdfannotator_comments');
         foreach ($rs as $record) {
-            $pdfannotatorid = $DB->get_field('pdfannotator_annotationsneu', 'pdfannotatorid', array('id' => $record->annotationid));
+            $pdfannotatorid = $DB->get_field('pdfannotator_annotationsneu', 'pdfannotatorid', ['id' => $record->annotationid]);
             $record->pdfannotatorid = $pdfannotatorid;
             $DB->update_record('pdfannotator_comments', $record);
         }
@@ -297,7 +307,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         $rs = $DB->get_recordset('pdfannotator_comments_archiv');
         foreach ($rs as $record) {
-            $pdfannotatorid = $DB->get_field('pdfannotator_annotationsneu', 'pdfannotatorid', array('id' => $record->annotationid));
+            $pdfannotatorid = $DB->get_field('pdfannotator_annotationsneu', 'pdfannotatorid', ['id' => $record->annotationid]);
             $record->pdfannotatorid = $pdfannotatorid;
             $DB->update_record('pdfannotator_comments_archiv', $record);
         }
@@ -310,7 +320,7 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key pdfannotatorid (foreign) to be added to pdfannotator_comments_archiv.
         $table = new xmldb_table('pdfannotator_comments_archiv');
-        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, array('pdfannotatorid'), 'pdfannotator', array('id'));
+        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, ['pdfannotatorid'], 'pdfannotator', ['id']);
 
         // Launch add key pdfannotatorid.
         $dbman->add_key($table, $key);
@@ -337,15 +347,15 @@ function xmldb_pdfannotator_upgrade($oldversion) {
 
         // Define key pdfannotatorid (foreign) to be added to pdfannotator_annotations.
         $table = new xmldb_table('pdfannotator_annotations');
-        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, array('pdfannotatorid'), 'pdfannotator', array('id'));
+        $key = new xmldb_key('pdfannotatorid', XMLDB_KEY_FOREIGN, ['pdfannotatorid'], 'pdfannotator', ['id']);
 
         // Launch add key pdfannotatorid.
         $dbman->add_key($table, $key);
 
         // Define key annotationtypeid (foreign) to be added to pdfannotator_annotations.
         $table = new xmldb_table('pdfannotator_annotations');
-        $key = new xmldb_key('annotationtypeid', XMLDB_KEY_FOREIGN, array('annotationtypeid'), 'pdfannotator_annotationtypes',
-            array('id'));
+        $key = new xmldb_key('annotationtypeid', XMLDB_KEY_FOREIGN, ['annotationtypeid'], 'pdfannotator_annotationtypes',
+            ['id']);
 
         // Launch add key annotationtypeid.
         $dbman->add_key($table, $key);

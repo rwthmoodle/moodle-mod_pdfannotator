@@ -29,15 +29,19 @@ namespace mod_pdfannotator\output;
 
 use pdfannotator_statistics;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The purpose of this script is to collect the output data for the template and
  * make it available to the renderer.
  */
 class statistics implements \renderable, \templatable {
 
+    /**
+     * @var bool
+     */
     private $isteacher;
+    /**
+     * @var array
+     */
     private $tabledata;
 
     /**
@@ -57,15 +61,16 @@ class statistics implements \renderable, \templatable {
         $this->tabledata = $statistics->get_tabledata();
 
         $params = $statistics->get_chartdata();
-        $PAGE->requires->js_init_call('addDropdownNavigation', array($capabilities, $id), true);
+        $PAGE->requires->js_init_call('addDropdownNavigation', [$capabilities, $id], true);
         $PAGE->requires->js_init_call('setCharts', $params, true);
     }
 
     /**
      * This function is required by any renderer to retrieve the data structure
      * passed into the template.
+     *
      * @param \renderer_base $output
-     * @return type
+     * @return array
      */
     public function export_for_template(\renderer_base $output) {
 

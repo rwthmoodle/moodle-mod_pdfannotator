@@ -28,15 +28,31 @@
 
 namespace mod_pdfannotator\output;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * The purpose of this script is to collect the output data for the printview template
+ */
 class printview implements \renderable, \templatable {
 
+    /**
+     * @var mixed|null
+     */
     private $documentname;
+    /**
+     * @var mixed|null
+     */
     private $conversations;
+    /**
+     * @var mixed|null
+     */
     private $url;
 
-
+    /**
+     * Constructor for the printview class.
+     *
+     * @param string $documentname
+     * @param array $conversations
+     * @param string $url
+     */
     public function __construct($documentname=null, $conversations=null, $url=null) {
 
         $this->documentname = $documentname;
@@ -44,6 +60,12 @@ class printview implements \renderable, \templatable {
         $this->url = $url;
     }
 
+    /**
+     * This method returns an array containing the data that is needed
+     *
+     * @param \renderer_base $output
+     * @return array
+     */
     public function export_for_template(\renderer_base $output) {
 
         $data = [];

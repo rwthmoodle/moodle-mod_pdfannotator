@@ -29,15 +29,22 @@ require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/model/annotation.class.php');
 require_once($CFG->dirroot . '/mod/pdfannotator/model/pdfannotator.php');
 
-
+/**
+ *
+ */
 class pdfannotator_comment {
 
     /**
      * This method inserts a new record into mdl_pdfannotator_comments and returns its id
      *
-     * @param type $documentid specifies the pdf
-     * @param type $annotationid specifies the annotation (usually a highlight) to be commented
-     * @param String $content the text or comment itself
+     * @param int $documentid specifies the pdf
+     * @param int $annotationid specifies the annotation (usually a highlight) to be commented
+     * @param string $content the text or comment itself
+     * @param string $visibility the visibility of the comment, can be 'public', 'private', 'protected' or 'anonymous'
+     * @param int $isquestion specifies if the comment is a question (1) or an answer (0)
+     * @param \cm_info $cm the course module information
+     * @param \context $context the context of the pdfannotator instance
+     * @return array|bool returns the comment object if successful, false otherwise
      */
     public static function create($documentid, $annotationid, $content, $visibility, $isquestion, $cm, $context) {
         global $DB, $USER, $CFG;
@@ -46,7 +53,7 @@ class pdfannotator_comment {
             return false;
         }
 
-        $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 
         // Create a new record in 'pdfannotator_comments'.
         $datarecord = new stdClass();
@@ -62,19 +69,20 @@ class pdfannotator_comment {
         // Create a new record in the table named 'comments' and return its id, which is created by autoincrement.
         $commentuuid = $DB->insert_record('pdfannotator_comments', $datarecord, true);
         $datarecord->id = $commentuuid;
-        
+
         // Get the draftitemid and prepare the draft area.
         $draftitemid = required_param('pdfannotator_addcomment_editoritemid', PARAM_INT);
         $options = pdfannotator_get_editor_options($context);
 
-        $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentuuid, $options, $datarecord->content, true);
+        $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post", $commentuuid,
+            $options, $datarecord->content, true);
 
         $datarecord->content = $text;
         $DB->update_record('pdfannotator_comments', $datarecord);
 
         $datarecord->uuid = $commentuuid;
         self::set_username($datarecord);
-        
+
         $datarecord->displaycontent = pdfannotator_get_relativelink($datarecord->content, $datarecord->id, $context);
         $datarecord->displaycontent = format_text($datarecord->displaycontent, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
         $datarecord->timecreated = pdfannotator_optional_timeago($datarecord->timecreated);
@@ -120,7 +128,7 @@ class pdfannotator_comment {
             $question->answeruser = $visibility == 'public' ? fullname($USER) : 'Anonymous';
             $question->content = $content;
 
-            $page = $DB->get_field('pdfannotator_annotations', 'page', array('id' => $annotationid), MUST_EXIST);
+            $page = $DB->get_field('pdfannotator_annotations', 'page', ['id' => $annotationid], MUST_EXIST);
             $question->urltoanswer = $CFG->wwwroot . '/mod/pdfannotator/view.php?id=' . $cm->id . '&page=' . $page .
                 '&annoid=' . $annotationid . '&commid=' . $commentuuid;
 
@@ -147,9 +155,9 @@ class pdfannotator_comment {
     /**
      * This method returns an array of all comment objects belonging to the specified annotation.
      *
-     * @param type $documentid
-     * @param type $highlightid
-     * @param $context
+     * @param int $documentid
+     * @param int $annotationid
+     * @param \context $context
      * @return \stdClass
      */
     public static function read($documentid, $annotationid, $context) {
@@ -164,7 +172,7 @@ class pdfannotator_comment {
                 . " GROUP BY c.id, c.content, c.userid, c.visibility, c.isquestion, c.isdeleted, c.ishidden, c.timecreated, "
                 . "c.timemodified, c.modifiedby, c.solved, c.annotationid"
                 . " ORDER BY c.timecreated";
-        $a = array();
+        $a = [];
         $a[] = $annotationid;
         $comments = $DB->get_records_sql($sql, $a); // Records taken from table 'comments' as an array of objects.
         $usevotes = pdfannotator_instance::use_votes($documentid);
@@ -172,7 +180,7 @@ class pdfannotator_comment {
         $annotation = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid],
             $fields = 'timecreated, timemodified, modifiedby', $strictness = MUST_EXIST);
 
-        $result = array();
+        $result = [];
         foreach ($comments as $data) {
             $comment = new stdClass();
 
@@ -207,7 +215,8 @@ class pdfannotator_comment {
             } else {
                 $comment->content = $data->content;
                 $comment->displaycontent = pdfannotator_get_relativelink($comment->content, $comment->uuid, $context);
-                $comment->displaycontent = format_text($comment->displaycontent, FORMAT_MOODLE, ['para' => false, 'filter' => true]);
+                $comment->displaycontent = format_text($comment->displaycontent, FORMAT_MOODLE, ['para' => false,
+                    'filter' => true]);
             }
 
             self::set_username($comment);
@@ -225,7 +234,8 @@ class pdfannotator_comment {
     /**
      * Function sets the username to be passed to JavaScript according to comment visibility
      *
-     * @param type $comment
+     * @param string $comment
+     * @return void
      */
     public static function set_username($comment) {
         global $USER;
@@ -253,7 +263,9 @@ class pdfannotator_comment {
     /**
      * Function serves to hide a comment from participants' view while keeping it visibile for managers/teachers/etc.
      *
-     * @return type
+     * @param int $commentid
+     * @param int $cmid
+     * @return void
      */
     public static function hide_comment($commentid, $cmid) {
 
@@ -261,7 +273,7 @@ class pdfannotator_comment {
         $success = 0;
 
         // 1. Is there a comment to hide? Retrieve comment from db (return false if it doesn't exist).
-        $comment = $DB->get_record('pdfannotator_comments', array('id' => $commentid), '*', $strictness = IGNORE_MISSING);
+        $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid], '*', $strictness = IGNORE_MISSING);
         if (!$comment) {
             echo json_encode(['status' => 'error']);
             return;
@@ -286,16 +298,16 @@ class pdfannotator_comment {
             // But first: Check if the predecessor was already marked as deleted, too and if so, delete it completely.
             $sql = "SELECT id, isdeleted, isquestion from {pdfannotator_comments} "
                     . "WHERE annotationid = ? AND timecreated < ? ORDER BY id DESC";
-            $params = array($annotationid, $comment->timecreated);
+            $params = [$annotationid, $comment->timecreated];
             $predecessors = $DB->get_records_sql($sql, $params);
 
             foreach ($predecessors as $predecessor) {
                 if ($predecessor->isdeleted != 0) {
-                    $workingfine = $DB->delete_records('pdfannotator_comments', array("id" => $predecessor->id));
+                    $workingfine = $DB->delete_records('pdfannotator_comments', ["id" => $predecessor->id]);
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
-                                $hideannotation = 1; // ... $annotationid;
+                                $hideannotation = 1; // Refers to $annotationid.
                         }
                     }
                 } else {
@@ -305,7 +317,7 @@ class pdfannotator_comment {
 
         }
 
-        $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 1), $bulk = false);
+        $success = $DB->update_record('pdfannotator_comments', ["id" => $commentid, "ishidden" => 1], $bulk = false);
 
         if ($success == 1) {
             return ['status' => 'success', 'hideannotation' => $hideannotation, 'wasanswered' => $wasanswered,
@@ -326,7 +338,7 @@ class pdfannotator_comment {
 
         global $DB;
 
-        $success = $DB->update_record('pdfannotator_comments', array("id" => $commentid, "ishidden" => 0), $bulk = false);
+        $success = $DB->update_record('pdfannotator_comments', ["id" => $commentid, "ishidden" => 0], $bulk = false);
 
         if ($success == 1) {
             return ['status' => 'success'];
@@ -338,12 +350,15 @@ class pdfannotator_comment {
     /**
      * Deletes a comment.
      * If the comment is answered, it will be displayed as deleted comment.
+     *
+     * @param int $commentid
+     * @param int $cmid
      */
     public static function delete_comment($commentid, $cmid) {
         global $DB, $USER;
         $success = 0;
         // Retrieve comment from db (return false if it doesn't exist).
-        $comment = $DB->get_record('pdfannotator_comments', array('id' => $commentid), '*', $strictness = IGNORE_MISSING);
+        $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid], '*', $strictness = IGNORE_MISSING);
 
         if (!$comment) {
             echo json_encode(['status' => 'error']);
@@ -367,18 +382,18 @@ class pdfannotator_comment {
         $deleteannotation = 0;
 
         if ($wasanswered) { // If the comment was answered, mark it as deleted for a special display.
-            $params = array("id" => $commentid, "isdeleted" => 1);
+            $params = ["id" => $commentid, "isdeleted" => 1];
             $success = $DB->update_record('pdfannotator_comments', $params, $bulk = false);
         } else { // If not, just delete it.
             // But first: Check if the predecessor was already marked as deleted, too and if so, delete it completely.
             $sql = "SELECT id, isdeleted, isquestion from {pdfannotator_comments} "
                     . "WHERE annotationid = ? AND timecreated < ? ORDER BY id DESC";
-            $params = array($annotationid, $comment->timecreated);
+            $params = [$annotationid, $comment->timecreated];
             $predecessors = $DB->get_records_sql($sql, $params);
 
             foreach ($predecessors as $predecessor) {
                 if ($predecessor->isdeleted != 0) {
-                    $workingfine = $DB->delete_records('pdfannotator_comments', array("id" => $predecessor->id));
+                    $workingfine = $DB->delete_records('pdfannotator_comments', ["id" => $predecessor->id]);
                     if ($workingfine != 0) {
                         $tobedeletedaswell[] = $predecessor->id;
                         if ($predecessor->isquestion) {
@@ -397,10 +412,10 @@ class pdfannotator_comment {
                 $deleteannotation = $annotationid;
             }
 
-            $success = $DB->delete_records('pdfannotator_comments', array("id" => $commentid));
+            $success = $DB->delete_records('pdfannotator_comments', ["id" => $commentid]);
         }
         // Delete votes to the comment.
-        $DB->delete_records('pdfannotator_votes', array("commentid" => $commentid));
+        $DB->delete_records('pdfannotator_votes', ["commentid" => $commentid]);
 
         if ($success == 1) {
             return ['status' => 'success', 'wasanswered' => $wasanswered, 'followups' => $tobedeletedaswell,
@@ -410,6 +425,17 @@ class pdfannotator_comment {
         }
     }
 
+    /**
+     * Updates a comment.
+     *
+     * @param int $commentid
+     * @param stdClass $content
+     * @param bool $editanypost
+     * @param \context $context
+     * @return array|string[]
+     * @throws coding_exception
+     * @throws dml_exception
+     */
     public static function update($commentid, $content, $editanypost, $context) {
         global $DB, $USER;
         $comment = $DB->get_record('pdfannotator_comments', ['id' => $commentid]);
@@ -423,7 +449,8 @@ class pdfannotator_comment {
             $draftitemid = required_param('pdfannotator_editcomment_editoritemid', PARAM_INT);
             $options = pdfannotator_get_editor_options($context);
 
-            $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",  $commentid, $options, $content, true);
+            $text = file_save_draft_area_files($draftitemid, $context->id, "mod_pdfannotator", "post",
+                $commentid, $options, $content, true);
 
             $comment->content = $text;
             $success = $DB->update_record('pdfannotator_comments', $comment);
@@ -434,7 +461,7 @@ class pdfannotator_comment {
         if ($success) {
             $content = pdfannotator_get_relativelink($comment->content, $comment->id, $context);
             $content = format_text($content, $format = FORMAT_MOODLE, $options = ['para' => false, 'filter' => true]);
-            $result = array('status' => 'success', 'timemodified' => $time, 'newContent' => $content);
+            $result = ['status' => 'success', 'timemodified' => $time, 'newContent' => $content];
             if ($comment->userid != $USER->id) {
                 $result['modifiedby'] = pdfannotator_get_username($USER->id);
             }
@@ -446,7 +473,9 @@ class pdfannotator_comment {
 
     /**
      * Inserts a vote into the db.
-     * @param type $commentid
+     *
+     * @param int $documentid
+     * @param int $commentid
      * @return boolean
      */
     public static function insert_vote($documentid, $commentid) {
@@ -460,7 +489,7 @@ class pdfannotator_comment {
         }
 
         // Check comment's existence.
-        if (!$DB->record_exists('pdfannotator_comments', array('id' => $commentid))) {
+        if (!$DB->record_exists('pdfannotator_comments', ['id' => $commentid])) {
             return false;
         }
 
@@ -476,18 +505,20 @@ class pdfannotator_comment {
 
     /**
      * Inserts a subscription into the DB.
-     * @param type $annotationid
-     * @return boolean
+     *
+     * @param int $annotationid
+     * @param \context $context
+     * @return bool
      */
     public static function insert_subscription($annotationid, $context) {
         global $DB, $USER;
 
         // Check if subscription already exists.
-        if ($DB->record_exists('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id))) {
+        if ($DB->record_exists('pdfannotator_subscriptions', ['annotationid' => $annotationid, 'userid' => $USER->id])) {
             return false;
         }
 
-        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $annotationid, 'isquestion' => '1'));
+        $comment = $DB->get_record('pdfannotator_comments', ['annotationid' => $annotationid, 'isquestion' => '1']);
         if (!pdfannotator_can_see_comment($comment, $context)) {
             return false;
         }
@@ -502,13 +533,13 @@ class pdfannotator_comment {
 
     /**
      * Deletes a subscription.
-     * @param type $annotationid
+     * @param int $annotationid
      * @return string
      */
     public static function delete_subscription($annotationid) {
         global $DB, $USER;
-        $count = $DB->count_records('pdfannotator_comments', array('annotationid' => $annotationid, 'isquestion' => 0));
-        $success = $DB->delete_records('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id));
+        $count = $DB->count_records('pdfannotator_comments', ['annotationid' => $annotationid, 'isquestion' => 0]);
+        $success = $DB->delete_records('pdfannotator_subscriptions', ['annotationid' => $annotationid, 'userid' => $USER->id]);
         if (!empty($success)) {
             return $count;
         }
@@ -517,7 +548,9 @@ class pdfannotator_comment {
 
     /**
      * Marks a comment as solved. A question will be closed (or opened) and a answer will be marked as correct.
-     * @param type $commentid
+     *
+     * @param int $commentid
+     * @param \context $context
      * @return boolean
      */
     public static function mark_solved($commentid, $context) {
@@ -545,6 +578,13 @@ class pdfannotator_comment {
         return $success;
     }
 
+    /**
+     * Returns if a comment is solved.
+     *
+     * @param int $commentid
+     * @return bool
+     * @throws dml_exception
+     */
     public static function is_solved($commentid) {
         global $DB;
         return $DB->record_exists('pdfannotator_comments', ['commentid' => $commentid, 'solved' => 1]);
@@ -552,53 +592,66 @@ class pdfannotator_comment {
 
     /**
      * Returns if the user already voted a comment.
-     * @param type $commentid
-     * @return type
+     * @param int $commentid
+     * @return bool
      */
     public static function is_voted($commentid) {
         global $DB, $USER;
-        return $DB->record_exists('pdfannotator_votes', array('commentid' => $commentid, 'userid' => $USER->id));
+        return $DB->record_exists('pdfannotator_votes', ['commentid' => $commentid, 'userid' => $USER->id]);
     }
 
     /**
      * Returns the number of votes a comment got.
-     * @param type $commentid
-     * @return type
+     *
+     * @param int $commentid
+     * @return int
      */
     public static function get_number_of_votes($commentid) {
         global $DB;
-        return $DB->count_records('pdfannotator_votes', array('commentid' => $commentid));
+        return $DB->count_records('pdfannotator_votes', ['commentid' => $commentid]);
     }
 
     /**
      * Returns if the user is subscribed to a question.
-     * @param type $annotationid
-     * @return type
+     *
+     * @param int $annotationid
+     * @return bool
      */
     public static function is_subscribed($annotationid) {
         global $DB, $USER;
-        return $DB->record_exists('pdfannotator_subscriptions', array('annotationid' => $annotationid, 'userid' => $USER->id));
+        return $DB->record_exists('pdfannotator_subscriptions', ['annotationid' => $annotationid, 'userid' => $USER->id]);
     }
 
     /**
      * Returns all subscribed users to a question.
-     * @param type $annotationid
+     *
+     * @param int $annotationid
      * @return arry of userids as strings
      */
     public static function get_subscribed_users($annotationid) {
         global $DB;
         $select = 'annotationid = ?';
-        $test = $DB->get_fieldset_select('pdfannotator_subscriptions', 'userid', $select, array($annotationid));
+        $test = $DB->get_fieldset_select('pdfannotator_subscriptions', 'userid', $select, [$annotationid]);
         return $test;
     }
 
+    /**
+     * Returns all questions of a page.
+     *
+     * @param int $documentid
+     * @param int $pagenumber
+     * @param \context $context
+     * @return array
+     * @throws coding_exception
+     * @throws dml_exception
+     */
     public static function get_questions($documentid, $pagenumber, $context) {
         global $DB, $USER;
         $displayhidden = has_capability('mod/pdfannotator:seehiddencomments', $context);
         // Get all questions of a page with a subselect, where all ids of annotations of one page are selected.
         $sql = "SELECT c.* FROM {pdfannotator_comments} c WHERE isquestion = 1 AND annotationid IN "
                 . "(SELECT id FROM {pdfannotator_annotations} a WHERE a.page = :page AND a.pdfannotatorid = :docid)";
-        $questions = $DB->get_records_sql($sql, array('page' => $pagenumber, 'docid' => $documentid));
+        $questions = $DB->get_records_sql($sql, ['page' => $pagenumber, 'docid' => $documentid]);
         $ret = [];
         foreach ($questions as $question) {
             // Private Comments are only displayed for the author.
@@ -623,13 +676,22 @@ class pdfannotator_comment {
         return $ret;
     }
 
+    /**
+     * Returns all questions of a document.
+     *
+     * @param int $documentid
+     * @param \context $context
+     * @return array
+     * @throws coding_exception
+     * @throws dml_exception
+     */
     public static function get_all_questions($documentid, $context) {
         global $DB;
         // Get all questions of a page with a subselect, where all ids of annotations of one page are selected.
         $sql = "SELECT c.*, a.page FROM {pdfannotator_comments} c "
                 . "JOIN (SELECT * FROM {pdfannotator_annotations} WHERE pdfannotatorid = :docid) a "
                 . "ON a.id = c.annotationid WHERE isquestion = 1";
-        $questions = $DB->get_records_sql($sql, array('docid' => $documentid));
+        $questions = $DB->get_records_sql($sql, ['docid' => $documentid]);
 
         $ret = [];
         foreach ($questions as $question) {
@@ -644,8 +706,10 @@ class pdfannotator_comment {
 
     /**
      * Get all questions in an annotator where a comment contains the pattern
-     * @param type $documentid
-     * @param type $pattern
+     *
+     * @param int $documentid
+     * @param string $pattern
+     * @param \context $context
      */
     public static function get_questions_search($documentid, $pattern, $context) {
         global $DB;

@@ -26,12 +26,22 @@
 namespace mod_pdfannotator\output;
 use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class for the report menu in the reportstable on overview tab.
+ */
 class reportmenu implements \renderable, \templatable {
 
+    /**
+     * @var moodle_url
+     */
     private $url;
+    /**
+     * @var string
+     */
     private $iconclass;
+    /**
+     * @var \lang_string|string
+     */
     private $label;
 
     /**
@@ -45,11 +55,11 @@ class reportmenu implements \renderable, \templatable {
     public function __construct($report, $cmid, $currentpage, $itemsperpage, $reportfilter) {
         global $CFG;
         if ($report->seen == 0) {
-            $urlparams = array('action' => 'markreportasread');
+            $urlparams = ['action' => 'markreportasread'];
             $iconclass = "icon fa fa-eye-slash fa-fw";
             $label = get_string('markasread', 'pdfannotator');
         } else {
-            $urlparams = array('action' => 'markreportasunread');
+            $urlparams = ['action' => 'markreportasunread'];
             $iconclass = "icon fa fa-eye fa-fw";
             $label = get_string('markasunread', 'pdfannotator');
         }
@@ -74,8 +84,9 @@ class reportmenu implements \renderable, \templatable {
     /**
      * This function is required by any renderer to retrieve the data structure
      * passed into the template.
+     *
      * @param \renderer_base $output
-     * @return type
+     * @return array
      */
     public function export_for_template(\renderer_base $output) {
         $data = [];

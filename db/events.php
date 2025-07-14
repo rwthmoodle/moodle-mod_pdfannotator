@@ -14,4 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * File containing the events of the pdfannotator module.
+ *
+ * @package   mod_pdfannotator
+ * @copyright 2018 RWTH Aachen (see README.md)
+ * @author   Rabea de Groot and Anna Heynkes
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */

@@ -21,8 +21,9 @@
  * @copyright  2014 CIL
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_pdfannotator\event;
-defined('MOODLE_INTERNAL') || die();
+
 /**
  *
  * The mod_pdfannotator report_added event class.
@@ -37,7 +38,7 @@ class report_added extends \core\event\base {
      * the initialising function
      */
     protected function init() {
-        $this->data['crud'] = 'c'; // ... c(reate), r(ead), u(pdate), d(elete).
+        $this->data['crud'] = 'c'; // This m eans c(reate), r(ead), u(pdate), d(elete).
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'pdfannotator_reports';
     }
@@ -59,6 +60,6 @@ class report_added extends \core\event\base {
       * the url fetch function
       */
     public function get_url() {
-        return new \moodle_url('/mod/pdfannotator/view.php', array('id' => $this->other['cmid'], 'action' => 'overview'));
+        return new \moodle_url('/mod/pdfannotator/view.php', ['id' => $this->other['cmid'], 'action' => 'overview']);
     }
 }

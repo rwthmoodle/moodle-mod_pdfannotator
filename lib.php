@@ -75,15 +75,16 @@ function pdfannotator_supports($feature) {
  * @return array
  */
 function pdfannotator_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups');
+    return ['moodle/site:accessallgroups'];
 }
 /**
  * This function is used by the reset_course_userdata function in moodlelib.
- * @param $data the data submitted from the reset course.
+ *
+ * @param array $data the data submitted from the reset course.
  * @return array status array
  */
 function pdfannotator_reset_userdata($data) {
-    return array();
+    return [];
 }
 
 /**
@@ -97,7 +98,7 @@ function pdfannotator_reset_userdata($data) {
  * @return array
  */
 function pdfannotator_get_view_actions() {
-    return array('view', 'view all');
+    return ['view', 'view all'];
 }
 
 /**
@@ -111,7 +112,7 @@ function pdfannotator_get_view_actions() {
  * @return array
  */
 function pdfannotator_get_post_actions() {
-    return array('update', 'add');
+    return ['update', 'add'];
 }
 
 /**
@@ -131,7 +132,7 @@ function pdfannotator_add_instance($data, $mform) {
     $data->id = $DB->insert_record('pdfannotator', $data);
 
     // We need to use context now, so we need to make sure all needed info is already in db.
-    $DB->set_field('course_modules', 'instance', $data->id, array('id' => $cmid));
+    $DB->set_field('course_modules', 'instance', $data->id, ['id' => $cmid]);
     pdfannotator_set_mainfile($data);
 
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
@@ -173,7 +174,7 @@ function pdfannotator_update_instance($data, $mform) {
  * @param object $data Data object
  */
 function pdfannotator_set_display_options($data) {
-    $displayoptions = array();
+    $displayoptions = [];
     $displayoptions['printintro'] = (int) !empty($data->printintro);
     $data->displayoptions = serialize($displayoptions);
 }
@@ -187,7 +188,7 @@ function pdfannotator_delete_instance($id) {
 
     global $DB;
 
-    if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $id))) {
+    if (!$pdfannotator = $DB->get_record('pdfannotator', ['id' => $id])) {
         return false;
     }
 
@@ -229,7 +230,7 @@ function pdfannotator_delete_instance($id) {
     }
 
     // 4. Delete the annotator itself.
-    if (!$DB->delete_records('pdfannotator', array('id' => $id)) == 1) {
+    if (!$DB->delete_records('pdfannotator', ['id' => $id]) == 1) {
         return false;
     }
 
@@ -254,7 +255,7 @@ function pdfannotator_get_coursemodule_info($coursemodule) {
 
     $context = context_module::instance($coursemodule->id);
 
-    if (!$pdfannotator = $DB->get_record('pdfannotator', array('id' => $coursemodule->instance), 'id, name, course,
+    if (!$pdfannotator = $DB->get_record('pdfannotator', ['id' => $coursemodule->instance], 'id, name, course,
         timemodified, timecreated, intro, introformat')) {
         return null;
     }
@@ -271,7 +272,8 @@ function pdfannotator_get_coursemodule_info($coursemodule) {
     $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'content', 0, 'sortorder DESC, id ASC', false, 0, 0, 1);
     if (count($files) >= 1) {
         $mainfile = reset($files);
-        // $info->icon = file_file_icon($mainfile, 24); // Uncomment to use pdf icon.
+        // phpcs:disable Squiz.PHP.CommentedOutCode
+        // Uncomment $info->icon = file_file_icon($mainfile, 24); // Uncomment to use pdf icon.
         $pdfannotator->mainfile = $mainfile->get_filename();
     }
     // If any optional extra details are turned on, store in custom data,
@@ -292,7 +294,7 @@ function pdfannotator_get_coursemodule_info($coursemodule) {
  * @return array
  */
 function pdfannotator_get_file_areas($course, $cm, $context) {
-    $areas = array();
+    $areas = [];
     $areas['content'] = get_string('pdfannotatorcontent', 'pdfannotator');
     $areas['post'] = get_string('pdfannotatorpost', 'pdfannotator');
     return $areas;
@@ -338,7 +340,8 @@ function pdfannotator_get_file_info($browser, $areas, $course, $cm, $context, $f
             }
         }
         require_once("$CFG->dirroot/mod/pdfannotator/locallib.php");
-        return new pdfannotator_content_file_info($browser, $context, $storedfile, $urlbase, $areas[$filearea], true, true, true, false);
+        return new pdfannotator_content_file_info($browser, $context, $storedfile, $urlbase, $areas[$filearea], true,
+            true, true, false);
     }
 
     // Note: pdfannotator_intro handled in file_browser automatically.
@@ -360,7 +363,7 @@ function pdfannotator_get_file_info($browser, $areas, $course, $cm, $context, $f
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
  */
-function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $CFG, $DB;
     require_once("$CFG->libdir/resourcelib.php");
 
@@ -395,11 +398,12 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
                         break;
                     }
                 }
-                $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), 'id, legacyfiles', MUST_EXIST);
+                $pdfannotator = $DB->get_record('pdfannotator', ['id' => $cm->instance], 'id, legacyfiles', MUST_EXIST);
                 if ($pdfannotator->legacyfiles != RESOURCELIB_LEGACYFILES_ACTIVE) {
                     return false;
                 }
-                if (!$file = resourcelib_try_file_migration('/' . $relativepath, $cm->id, $cm->course, 'mod_pdfannotator', 'content', 0)) {
+                if (!$file = resourcelib_try_file_migration('/' . $relativepath, $cm->id, $cm->course,
+                    'mod_pdfannotator', 'content', 0)) {
                     return false;
                 }
                 // File migrate - update flag.
@@ -409,7 +413,6 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
         } while (false);
 
         // Should we apply filters?
-        // $mimetype = $file->get_mimetype();
         $filter = 0;
         // Finally send the file.
         send_stored_file($file, null, $filter, $forcedownload, $options);
@@ -432,7 +435,8 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
             $pdfid = $DB->get_record('pdfannotator_comments', ['id' => $commentid], 'pdfannotatorid');
             if ($pdfid) {
                 $pdfannotator = $DB->get_record('pdfannotator', ['id' => $pdfid->pdfannotatorid], '*', MUST_EXIST);
-                $cm = get_coursemodule_from_instance('pdfannotator', $pdfid->pdfannotatorid, $pdfannotator->course, false, MUST_EXIST);
+                $cm = get_coursemodule_from_instance('pdfannotator', $pdfid->pdfannotatorid, $pdfannotator->course,
+                    false, MUST_EXIST);
                 $context2 = context_module::instance($cm->id);
                 $fullpath = rtrim("/$context2->id/mod_pdfannotator/$filearea/$commentid/$relativepath", '/');
                 if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
@@ -452,32 +456,35 @@ function pdfannotator_pluginfile($course, $cm, $context, $filearea, $args, $forc
  * @param stdClass $currentcontext Current context of block
  */
 function pdfannotator_page_type_list($pagetype, $parentcontext, $currentcontext) {
-    $modulepagetype = array('mod-pdfannotator-*' => get_string('page-mod-pdfannotator-x', 'pdfannotator'));
+    $modulepagetype = ['mod-pdfannotator-*' => get_string('page-mod-pdfannotator-x', 'pdfannotator')];
     return $modulepagetype;
 }
 
 /**
  * Export file pdfannotator contents
  *
+ * @param stdClass $cm course module object
+ * @param string $baseurl base URL for the file
  * @return array of file content
  */
 function pdfannotator_export_contents($cm, $baseurl) {
     global $CFG, $DB;
-    $contents = array();
+    $contents = [];
     $context = context_module::instance($cm->id);
-    $pdfannotator = $DB->get_record('pdfannotator', array('id' => $cm->instance), '*', MUST_EXIST);
+    $pdfannotator = $DB->get_record('pdfannotator', ['id' => $cm->instance], '*', MUST_EXIST);
     if ($pdfannotator->useprint == 1) {
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_pdfannotator', 'content', 0, 'sortorder DESC, id ASC', false);
         $fileinfo = reset($files);
-        $file = array();
+        $file = [];
         $file['type'] = 'file';
         $file['filename'] = $fileinfo->get_filename();
         $file['filepath'] = $fileinfo->get_filepath();
         $file['filesize'] = $fileinfo->get_filesize();
         $file['mimetype'] = 'pdf';
         $file['fileurl'] = moodle_url::make_webservice_pluginfile_url(
-                    $context->id, 'mod_pdfannotator', 'content', '1', $fileinfo->get_filepath(), $fileinfo->get_filename())->out(false);
+                    $context->id, 'mod_pdfannotator', 'content', '1', $fileinfo->get_filepath(),
+                    $fileinfo->get_filename())->out(false);
         $file['timecreated'] = $fileinfo->get_timecreated();
         $file['timemodified'] = $fileinfo->get_timemodified();
         $file['sortorder'] = $fileinfo->get_sortorder();
@@ -495,37 +502,6 @@ function pdfannotator_export_contents($cm, $baseurl) {
 }
 
 /**
- * Register the ability to handle drag and drop file uploads
- * @return array containing details of the files / types the mod can handle
- */
-// function pdfannotator_dndupload_register() {
-    // return array('files' => array(
-                   // array('extension' => 'pdf', 'message' => get_string('dnduploadpdfannotator', 'mod_pdfannotator'))
-                // ));
-// }
-
-/**
- * Handle a file that has been uploaded
- * @param object $uploadinfo details of the file / content that has been uploaded
- * @return int instance id of the newly created mod
- */
-// function pdfannotator_dndupload_handle($uploadinfo) {
-// // Gather the required info.
-// $data = new stdClass();
-// $data->course = $uploadinfo->course->id;
-// $data->name = $uploadinfo->displayname;
-// $data->intro = '';
-// $data->introformat = FORMAT_HTML;
-// $data->coursemodule = $uploadinfo->coursemodule;
-// $data->files = $uploadinfo->draftitemid;
-//
-// // Set the display options to the site defaults.
-// $config = get_config('pdfannotator');//
-//
-// return pdfannotator_add_instance($data, null);
-// }
-
-/**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
  * @param  stdClass $pdfannotator   pdfannotator object
@@ -537,10 +513,10 @@ function pdfannotator_export_contents($cm, $baseurl) {
 function pdfannotator_view($pdfannotator, $course, $cm, $context) {
 
     // Trigger course_module_viewed event.
-    $params = array(
+    $params = [
         'context' => $context,
         'objectid' => $pdfannotator->id,
-    );
+    ];
 
     $event = \mod_pdfannotator\event\course_module_viewed::create($params);
     $event->add_record_snapshot('course_modules', $cm);
@@ -562,8 +538,8 @@ function pdfannotator_view($pdfannotator, $course, $cm, $context) {
  * @return stdClass an object with the different type of areas indicating if they were updated or not
  * @since Moodle 3.2
  */
-function pdfannotator_check_updates_since(cm_info $cm, $from, $filter = array()) {
-    $updates = course_check_module_updates_since($cm, $from, array('content'), $filter);
+function pdfannotator_check_updates_since(cm_info $cm, $from, $filter = []) {
+    $updates = course_check_module_updates_since($cm, $from, ['content'], $filter);
     return $updates;
 }
 
@@ -593,15 +569,16 @@ function mod_pdfannotator_core_calendar_provide_event_action(calendar_event $eve
     );
 }
 
+// phpcs:disable moodle.Commenting.TodoComment
 /**
  * Returns all annotations comments since a given time in specified annotator.
  *
  * @todo Document this functions args
- * @param $activities
- * @param $index
- * @param $timestart
- * @param $courseid
- * @param $cmid
+ * @param array $activities
+ * @param int $index
+ * @param int $timestart
+ * @param int $courseid
+ * @param int $cmid
  * @param int $userid
  * @param int $groupid
  * @throws dml_exception
@@ -613,13 +590,13 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     if ($COURSE->id == $courseid) {
         $course = $COURSE;
     } else {
-        $course = $DB->get_record('course', array('id' => $courseid));
+        $course = $DB->get_record('course', ['id' => $courseid]);
     }
 
     $modinfo = get_fast_modinfo($course);
 
     $cm = $modinfo->cms[$cmid];
-    $params = array($timestart, $cm->instance);
+    $params = [$timestart, $cm->instance];
 
     if ($userid) {
         $userselect = "AND u.id = ? AND c.visibility='public'";
@@ -640,8 +617,9 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
          $allnames = get_all_user_name_fields(true, 'u');
     }
 
-    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
-                                              $allnames, u.email, u.picture, u.imagealt, u.email, a.page
+    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated,
+                                             c.annotationid, c.isquestion, $allnames, u.email, u.picture, u.imagealt, u.email,
+                                             a.page
                                          FROM {pdfannotator} p
                                               JOIN {pdfannotator_annotations} a ON  a.pdfannotatorid=p.id
                                               JOIN {pdfannotator_comments} c       ON  c.annotationid = a.id
@@ -651,7 +629,7 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
                                     ORDER BY p.id ASC ", $params)) { // Order by initial posting date.
         return;
     }
-    $printposts = array();
+    $printposts = [];
     $context = context_course::instance($courseid);
     foreach ($posts as $post) {
         if (!pdfannotator_can_see_comment($post, $context)) {
@@ -682,7 +660,6 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
         $tmpactivity->visible = $post->visibility;
 
         $tmpactivity->user = new stdClass();
-        // $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
         $additionalfields = explode(',', user_picture::fields());
         $tmpactivity->user = username_load_fields_from_object($tmpactivity->user, $post, null, $additionalfields);
         $tmpactivity->user->id = $post->userid;
@@ -727,9 +704,9 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
     if (!$authorhidden) {
         $picture = $OUTPUT->user_picture($activity->user, $pictureoptions);
     } else {
-        // $pictureoptions = [  'courseid' => $courseid, 'link' => $authorhidden, 'alttext' => $authorhidden, ];
         $pic = $OUTPUT->image_url('/u/f2');
-        $picture = '<img src="' . $pic . '" class="userpicture" alt="' . get_string('anonymous', 'pdfannotator') . '" width="35" height="35">';
+        $picture = '<img src="' . $pic . '" class="userpicture" alt="' . get_string('anonymous', 'pdfannotator') .
+            '" width="35" height="35">';
     }
     $output .= html_writer::tag('td', $picture, ['class' => 'userpicture', 'valign' => 'top']);
 
@@ -743,10 +720,10 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
         $aname = s($activity->name);
         $output .= $OUTPUT->image_icon('icon', $aname, $activity->type);
     }
-    $isquestion = ($content->isquestion) ? '<img src="' . $OUTPUT->image_url('t/message') . '" alt="' . get_string('question', 'pdfannotator')
-            . '" title="' . get_string('question', 'pdfannotator') . '"> ' : '';
-    $discussionurl = new moodle_url('/mod/pdfannotator/view.php', ['id' => $activity->cmid, 'page' => $content->page, 'annoid' => $content->id, 'commid' => $content->commid]);
-    // $discussionurl->set_anchor('p' . $activity->content->id);
+    $isquestion = ($content->isquestion) ? '<img src="' . $OUTPUT->image_url('t/message') . '" alt="' .
+        get_string('question', 'pdfannotator') . '" title="' . get_string('question', 'pdfannotator') . '"> ' : '';
+    $discussionurl = new moodle_url('/mod/pdfannotator/view.php', ['id' => $activity->cmid, 'page' => $content->page,
+        'annoid' => $content->id, 'commid' => $content->commid]);
     $output .= html_writer::link($discussionurl, ($isquestion . $content->discussion));
     $output .= html_writer::end_div();
 
@@ -775,7 +752,7 @@ function pdfannotator_print_recent_mod_activity($activity, $courseid, $detail, $
 
 /**
  * Initialize the editor for editing a comment.
- * @param type $args
+ * @param array $args
  * @return string
  */
 function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
@@ -804,14 +781,15 @@ function mod_pdfannotator_output_fragment_open_edit_comment_editor($args) {
 
 /**
  * Initialize the editor for adding a comment.
- * @param type $args
+ * @param array $args
  * @return string
  */
 function mod_pdfannotator_output_fragment_open_add_comment_editor($args) {
     $context = context_module::instance($args['cmid']);
 
     $data = pdfannotator_data_preprocessing($context, 'id_pdfannotator_content', 0);
-    $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post', 0, pdfannotator_get_editor_options($context));
+    $text = file_prepare_draft_area($data['draftItemId'], $context->id, 'mod_pdfannotator', 'post',
+        0, pdfannotator_get_editor_options($context));
     $out = '';
     $out = html_writer::empty_tag('input', ['type' => 'hidden',
                                             'class' => 'pdfannotator_' . $args['action'] . 'comment' . '_editoritemid',

@@ -16,28 +16,34 @@
 
 /**
  * Renderer file
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Rabea de Groot and Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
-defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer class for the pdfannotator module.
+ */
 class mod_pdfannotator_renderer extends plugin_renderer_base {
 
     /**
+     * Renders the pdfannotator overview page.
      *
-     * @param type $index
-     * @return type
+     * @param stdClass $index
+     * @return bool|string
      */
     public function render_index($index) {
         return $this->render_from_template('pdfannotator/index', $index->export_for_template($this));
     }
+
     /**
+     * Renders the statistics of the pdfannotator module.
      *
      * @param \templatable $statistic
-     * @return type
+     * @return bool|string
      */
     public function render_statistic(\templatable $statistic) {
         $data = $statistic->export_for_template($this);
@@ -45,9 +51,11 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
     }
 
     /**
-     * renders dropdown-actionmenu. Currently used on overview in the categories "answers" and "reports".
-     * @param \templatable $dropdownmenu
-     * @return type
+     * Renders dropdown-actionmenu. Currently used on overview in the categories "answers" and "reports".
+     *
+     * @param templatable $dropdownmenu
+     * @return bool|string
+     * @throws \core\exception\moodle_exception
      */
     public function render_dropdownmenu(\templatable $dropdownmenu) {
         $data = $dropdownmenu->export_for_template($this);
@@ -70,19 +78,19 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
         $row = new html_table_row();
         $cell1 = new html_table_cell(get_string('slotdatetimelabel', 'pdfannotator'));
         $cell2 = $info->datetime;
-        $row->cells = array($cell1, $cell2);
+        $row->cells = [$cell1, $cell2];
         $t->data[] = $row;
 
         $row = new html_table_row();
         $cell1 = new html_table_cell(get_string('author', 'pdfannotator'));
         $cell2 = new html_table_cell($info->author);
-        $row->cells = array($cell1, $cell2);
+        $row->cells = [$cell1, $cell2];
         $t->data[] = $row;
 
         $row = new html_table_row();
         $cell1 = new html_table_cell(get_string('comment', 'pdfannotator'));
         $cell2 = new html_table_cell($info->content);
-        $row->cells = array($cell1, $cell2);
+        $row->cells = [$cell1, $cell2];
         $t->data[] = $row;
 
         $o .= html_writer::table($t);
@@ -90,19 +98,22 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
         $o .= $this->output->container_end();
         return $o;
     }
+
     /**
      * Construct a tab header.
      *
      * @param moodle_url $baseurl
-     * @param string $what
+     * @param string $action
      * @param string $namekey
-     * @param string $subpage
+     * @param string $pdfannotatorname
      * @param string $nameargs
      * @return tabobject
+     * @throws \core\exception\moodle_exception
+     * @throws coding_exception
      */
     private function pdfannotator_create_tab(moodle_url $baseurl, $action, $namekey = null, $pdfannotatorname = null,
         $nameargs = null) {
-        $taburl = new moodle_url($baseurl, array('action' => $action));
+        $taburl = new moodle_url($baseurl, ['action' => $action]);
         $tabname = get_string($namekey, 'pdfannotator', $nameargs);
         if ($pdfannotatorname) {
             strlen($pdfannotatorname) > 20 ? $tabname = substr($pdfannotatorname, 0, 21) . "..." : $tabname = $pdfannotatorname;
@@ -115,21 +126,21 @@ class mod_pdfannotator_renderer extends plugin_renderer_base {
      * Render the tab header hierarchy.
      *
      * @param moodle_url $baseurl
-     * @param type $pdfannotatorname
-     * @param type $context
-     * @param type $selected
-     * @param type $inactive
-     * @return type
+     * @param string $pdfannotatorname
+     * @param context $context
+     * @param bool $selected
+     * @param bool $inactive
+     * @return array
      */
     public function pdfannotator_render_tabs(moodle_url $baseurl, $pdfannotatorname, $context, $selected = null, $inactive = null) {
 
         $overviewtab = $this->pdfannotator_create_tab($baseurl, 'overview', 'overview');
 
-        $level1 = array(
+        $level1 = [
             $overviewtab,
             $this->pdfannotator_create_tab($baseurl, 'view', 'document', $pdfannotatorname),
             $this->pdfannotator_create_tab($baseurl, 'statistic', 'statistic'),
-        );
+        ];
         return $this->tabtree($level1, $selected, $inactive);
     }
 

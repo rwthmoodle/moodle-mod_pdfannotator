@@ -27,11 +27,12 @@ class mod_pdfannotator_generator extends testing_module_generator {
     /**
      * Create a new instance of the PDF Annotation activity.
      *
-     * @param array|stdClass|null $record
+     * @param array|null $record
      * @param array|null $options
      * @return stdClass
+     * @throws coding_exception
      */
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance(?array $record = null, ?array $options = null) {
         if (!isset($record['files'])) {
             $record['files'] = 0;
         }

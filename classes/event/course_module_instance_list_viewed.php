@@ -16,8 +16,6 @@
 
 namespace mod_pdfannotator\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_pdfannotator instance list viewed event class.
  *

@@ -29,7 +29,6 @@
  * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die;
 
 /**
  * Define the complete pdfannotator structure for backup, with file and id annotations
@@ -53,28 +52,28 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
         $userinfo = $this->get_setting_value('userinfo');
 
         // 2. Define each element separately.
-        $pdfannotator = new backup_nested_element('pdfannotator', array('id'), array(
+        $pdfannotator = new backup_nested_element('pdfannotator', ['id'], [
             'name', 'intro', 'introformat', 'usevotes', 'useprint', 'useprintcomments', 'use_studenttextbox', 'use_studentdrawing',
-            'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified'));
+            'useprivatecomments', 'useprotectedcomments', 'timecreated', 'timemodified']);
 
             $annotations = new backup_nested_element('annotations');
-            $annotation = new backup_nested_element('annotation', array('id'), array('page', 'userid', 'annotationtypeid',
-                'data', 'timecreated', 'timemodified', 'modifiedby'));
+            $annotation = new backup_nested_element('annotation', ['id'], ['page', 'userid', 'annotationtypeid',
+                'data', 'timecreated', 'timemodified', 'modifiedby']);
 
                 $subscriptions = new backup_nested_element('subscriptions');
-                $subscription = new backup_nested_element('subscription', array('id'), array('userid'));
+                $subscription = new backup_nested_element('subscription', ['id'], ['userid']);
 
                 $comments = new backup_nested_element('comments');
-                $c = array('pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility',
-                    'isquestion', 'isdeleted', 'ishidden', 'solved');
-                $comment = new backup_nested_element('comment', array('id'), $c);
+                $c = ['pdfannotatorid', 'userid', 'content', 'timecreated', 'timemodified', 'modifiedby', 'visibility',
+                    'isquestion', 'isdeleted', 'ishidden', 'solved'];
+                $comment = new backup_nested_element('comment', ['id'], $c);
 
                     $votes = new backup_nested_element('votes');
-                    $vote = new backup_nested_element('vote', array('id'), array('userid', 'annotationid'));
+                    $vote = new backup_nested_element('vote', ['id'], ['userid', 'annotationid']);
 
                     $reports = new backup_nested_element('reports');
-                    $report = new backup_nested_element('report', array('id'), array('courseid', 'pdfannotatorid', 'message',
-                        'userid', 'timecreated', 'seen'));
+                    $report = new backup_nested_element('report', ['id'], ['courseid', 'pdfannotatorid', 'message',
+                        'userid', 'timecreated', 'seen']);
 
         // 3. Build the tree (mind the right order!)
         $pdfannotator->add_child($annotations);
@@ -94,7 +93,7 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
 
         // 4. Define db sources
         // backup::VAR_ACTIVITYID is the 'course module id'.
-        $pdfannotator->set_source_table('pdfannotator', array('id' => backup::VAR_ACTIVITYID));
+        $pdfannotator->set_source_table('pdfannotator', ['id' => backup::VAR_ACTIVITYID]);
 
         if ($userinfo) {
             // Add all annotations specific to this annotator instance.
@@ -102,19 +101,19 @@ class backup_pdfannotator_activity_structure_step extends backup_activity_struct
                                         . 'JOIN {pdfannotator_comments} c ON a.id = c.annotationid '
                                         . "WHERE a.pdfannotatorid = ? AND c.isquestion = 1 AND "
                                         . "(c.visibility = 'public' OR c.visibility = 'anonymous') ",
-                                        array('pdfannotatorid' => backup::VAR_PARENTID));
+                                        ['pdfannotatorid' => backup::VAR_PARENTID]);
 
                 // Add any subscriptions to this annotation.
-                $subscription->set_source_table('pdfannotator_subscriptions', array('annotationid' => backup::VAR_PARENTID));
+                $subscription->set_source_table('pdfannotator_subscriptions', ['annotationid' => backup::VAR_PARENTID]);
 
                 // Add any comments of this annotation.
-                $comment->set_source_table('pdfannotator_comments', array('annotationid' => backup::VAR_PARENTID));
+                $comment->set_source_table('pdfannotator_comments', ['annotationid' => backup::VAR_PARENTID]);
 
                     // Add any votes for this comment.
-                    $vote->set_source_table('pdfannotator_votes', array('commentid' => backup::VAR_PARENTID));
+                    $vote->set_source_table('pdfannotator_votes', ['commentid' => backup::VAR_PARENTID]);
 
                     // Add any reports of this comment.
-                    $report->set_source_table('pdfannotator_reports', array('commentid' => backup::VAR_PARENTID));
+                    $report->set_source_table('pdfannotator_reports', ['commentid' => backup::VAR_PARENTID]);
         }
 
         // 5. Define id annotations (some attributes are foreign keys).

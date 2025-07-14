@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings script for the pdfannotator module.
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -51,13 +53,13 @@ if ($ADMIN->fulltree) {
             get_string('global_setting_use_protected_comments_desc', 'pdfannotator'), 0));
 
     // Define what API to use for converting latex formulas into png.
-    $options = array();
+    $options = [];
     $options[LATEX_TO_PNG_MOODLE] = get_string("global_setting_latexusemoodle", "pdfannotator");
     $options[LATEX_TO_PNG_GOOGLE_API] = get_string("global_setting_latexusegoogle", "pdfannotator");
     $settings->add(new admin_setting_configselect('mod_pdfannotator/latexapi', get_string('global_setting_latexapisetting',
         'pdfannotator'),
         get_string('global_setting_latexapisetting_desc', 'pdfannotator'), LATEX_TO_PNG_MOODLE, $options));
-    
+
     $name = new lang_string('global_setting_attobuttons', 'pdfannotator');
     $desc = new lang_string('global_setting_attobuttons_desc', 'pdfannotator');
     $default = 'collapse = collapse
@@ -78,7 +80,7 @@ screen = fullscreen';
 
         $name = new lang_string('maximumfilesize', 'pdfannotator');
         $description = new lang_string('configmaxbytes', 'pdfannotator');
-    
+
         $maxbytes = get_config('pdfannotator', 'maxbytes');
         $element = new admin_setting_configselect('mod_pdfannotator/maxbytes',
                                                   $name,

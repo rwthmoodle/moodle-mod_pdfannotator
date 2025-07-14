@@ -26,13 +26,29 @@
 namespace mod_pdfannotator\output;
 use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class for rendering a dropdown menu in the answerstable on the overview tab.
+ */
 class answermenu implements \renderable, \templatable {
 
+    /**
+     * @var moodle_url
+     */
     private $url;
+
+    /**
+     * @var string
+     */
     private $iconclass;
+
+    /**
+     * @var \lang_string|string
+     */
     private $label;
+
+    /**
+     * @var string
+     */
     private $buttonclass;
 
     /**
@@ -49,12 +65,12 @@ class answermenu implements \renderable, \templatable {
         global $CFG;
         if ($answerfilter == 0 && empty($issubscribed)) { // Show all answers and this answer is not subscribed.
             // No one size fits all.
-            $urlparams = array('action' => 'subscribeQuestion');
+            $urlparams = ['action' => 'subscribeQuestion'];
             $iconclass = "icon fa fa-bell fa-fw";
             $label = get_string('subscribeQuestion', 'pdfannotator');
             $buttonclass = 'comment-subscribe subscribe';
         } else { // Show answers to subscribed questions.
-            $urlparams = array('action' => 'unsubscribeQuestion');
+            $urlparams = ['action' => 'unsubscribeQuestion'];
             $iconclass = "icon fa fa-bell-slash fa-fw";
             $label = get_string('unsubscribeQuestion', 'pdfannotator');
             $buttonclass = 'comment-subscribe unsubscribe';
@@ -81,8 +97,9 @@ class answermenu implements \renderable, \templatable {
     /**
      * This function is required by any renderer to retrieve the data structure
      * passed into the template.
+     *
      * @param \renderer_base $output
-     * @return type
+     * @return array
      */
     public function export_for_template(\renderer_base $output) {
         $data = [];

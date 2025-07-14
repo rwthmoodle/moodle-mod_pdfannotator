@@ -16,8 +16,6 @@
 
 namespace mod_pdfannotator\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_pdfannotator instance list viewed event class.
  *
@@ -43,6 +41,6 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * Get objectid mapping for restore.
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'pdfannotator', 'restore' => 'pdfannotator');
+        return ['db' => 'pdfannotator', 'restore' => 'pdfannotator'];
     }
 }

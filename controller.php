@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Controller script for the pdfannotator module.
+ *
  * @package   mod_pdfannotator
  * @copyright 2018 RWTH Aachen (see README.md)
  * @author    Anna Heynkes, Friederike Schwager
@@ -27,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $action = optional_param('action', 'view', PARAM_ALPHA); // The default action is 'view'.
 
-$taburl = new moodle_url('/mod/pdfannotator/view.php', array('id' => $id));
+$taburl = new moodle_url('/mod/pdfannotator/view.php', ['id' => $id]);
 
 $myrenderer = $PAGE->get_renderer('mod_pdfannotator');
 
@@ -119,8 +121,8 @@ if ($action === 'forwardquestion') {
                 $action = 'view';
             }
         } else if ($data = $mform->get_data()) { // Process validated data. $mform->get_data() returns data posted in form.
-            $url = (new moodle_url('/mod/pdfannotator/view.php', array('id' => $comment->cmid,
-                'page' => $comment->page, 'annoid' => $comment->annotationid, 'commid' => $comment->id)))->out();
+            $url = (new moodle_url('/mod/pdfannotator/view.php', ['id' => $comment->cmid,
+                'page' => $comment->page, 'annoid' => $comment->annotationid, 'commid' => $comment->id]))->out();
 
             $params = new stdClass();
             $params->sender = $USER->firstname . ' ' . $USER->lastname;
@@ -182,8 +184,8 @@ if ($action === 'overviewquestions') {
         }
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
     } else {
-        $urlparams = array('action' => 'overviewquestions', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
-            'questionfilter' => $questionfilter);
+        $urlparams = ['action' => 'overviewquestions', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
+            'questionfilter' => $questionfilter];
         pdfannotator_print_questions($questions, $thiscourse, $urlparams, $currentpage, $itemsperpage, $context);
     }
 }
@@ -279,8 +281,8 @@ if ($action === 'overviewanswers') {
         }
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
     } else {
-        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
-            'answerfilter' => $answerfilter);
+        $urlparams = ['action' => 'overviewanswers', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
+            'answerfilter' => $answerfilter];
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         pdfannotator_print_answers($data, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $answerfilter, $context);
     }
@@ -313,7 +315,7 @@ if ($action === 'overviewownposts') {
         $info = get_string('nomyposts', 'pdfannotator');
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
     } else {
-        $urlparams = array('action' => 'overviewownposts', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage);
+        $urlparams = ['action' => 'overviewownposts', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage];
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         pdfannotator_print_this_users_posts($posts, $thiscourse, $url, $currentpage, $itemsperpage);
     }
@@ -332,7 +334,7 @@ if ($action === 'markreportasread') { // XXX Rename key and move it into $action
     $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
     $reportfilter = optional_param('reportfilter', 0, PARAM_INT);
 
-    $success = $DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 1), $bulk = false);
+    $success = $DB->update_record('pdfannotator_reports', ["id" => $reportid, "seen" => 1], $bulk = false);
 
     // Give feedback to the user.
     if ($success) {
@@ -370,7 +372,7 @@ if ($action === 'markreportasunread') { // XXX Rename key and move it into $acti
     $itemsperpage = optional_param('itemsperpage', 5, PARAM_INT);
     $reportfilter = optional_param('reportfilter', 2, PARAM_INT);
 
-    $success = $DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 0), $bulk = false);
+    $success = $DB->update_record('pdfannotator_reports', ["id" => $reportid, "seen" => 0], $bulk = false);
 
     // Give feedback to the user.
     if ($success) {
@@ -433,8 +435,8 @@ if ($action === 'overviewreports') {
         }
         echo "<span class='notification'><div class='alert alert-info alert-block fade in' role='alert'>$info</div></span>";
     } else {
-        $urlparams = array('action' => 'overviewreports', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
-            'reportfilter' => $reportfilter);
+        $urlparams = ['action' => 'overviewreports', 'id' => $cmid, 'page' => $currentpage, 'itemsperpage' => $itemsperpage,
+            'reportfilter' => $reportfilter];
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         pdfannotator_print_reports($reports, $thiscourse, $url, $currentpage, $itemsperpage, $cmid, $reportfilter, $context);
     }

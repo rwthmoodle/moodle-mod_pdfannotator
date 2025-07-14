@@ -26,29 +26,29 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$messageproviders = array (
+$messageproviders = [
 
-    'newquestion' => array (
+    'newquestion' => [
         'capability'  => 'mod/pdfannotator:recievenewquestionnotifications', // All capabilities.
-        'defaults' => array(
+        'defaults' => [
             'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
             'email' => MESSAGE_PERMITTED,
-        ),
-    ),
+        ],
+    ],
 
     // Concerns answers to questions the student subscribed to.
-    'newanswer' => array (
+    'newanswer' => [
         'capability'  => 'mod/pdfannotator:viewanswers', // Student capability.
-    ),
+    ],
 
     // Notify teacher about a newly reported comment.
-    'newreport' => array (
+    'newreport' => [
         'capability'  => 'mod/pdfannotator:viewreports', // Teacher capability.
-    ),
+    ],
 
     // Notify when receiving a forwarded question.
-    'forwardedquestion' => array (
+    'forwardedquestion' => [
         'capability'  => 'mod/pdfannotator:getforwardedquestions', // Teacher capability.
-    ),
+    ],
 
-);
+];

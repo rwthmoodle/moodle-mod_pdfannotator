@@ -28,12 +28,30 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once('model/comment.class.php');
 
+/**
+ *
+ */
 class pdfannotator_comment_info implements renderable {
 
+    /**
+     * @var string
+     */
     public $pdfname;
+    /**
+     * @var int
+     */
     public $page;
+    /**
+     * @var int
+     */
     public $datetime;
+    /**
+     * @var string
+     */
     public $author;
+    /**
+     * @var string
+     */
     public $content;
 
     /**

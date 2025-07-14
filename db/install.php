@@ -21,12 +21,11 @@
  * @author    Anna Heynkes
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 /**
  * Function initialises the pdfannotator_annotationtypes table with its 6 standard records.
  *
  */
-defined('MOODLE_INTERNAL') || die();
-
 function xmldb_pdfannotator_install() {
 
     global $DB;
@@ -34,12 +33,12 @@ function xmldb_pdfannotator_install() {
     $condition = [];
     $types = $DB->record_exists($table, $condition);
     if (!$types) {
-        $DB->insert_record($table, array("name" => 'area'), false, false);
-        $DB->insert_record($table, array("name" => 'drawing'), false, false);
-        $DB->insert_record($table, array("name" => 'highlight'), false, false);
-        $DB->insert_record($table, array("name" => 'pin'), false, false);
-        $DB->insert_record($table, array("name" => 'strikeout'), false, false);
-        $DB->insert_record($table, array("name" => 'textbox'), false, false);
+        $DB->insert_record($table, ["name" => 'area'], false, false);
+        $DB->insert_record($table, ["name" => 'drawing'], false, false);
+        $DB->insert_record($table, ["name" => 'highlight'], false, false);
+        $DB->insert_record($table, ["name" => 'pin'], false, false);
+        $DB->insert_record($table, ["name" => 'strikeout'], false, false);
+        $DB->insert_record($table, ["name" => 'textbox'], false, false);
     }
 
 }

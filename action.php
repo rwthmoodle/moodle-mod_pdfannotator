@@ -43,7 +43,7 @@ require_once($CFG->dirroot . '/mod/pdfannotator/locallib.php');
 $documentid = required_param('documentId', PARAM_PATH);
 $action = required_param('action', PARAM_ALPHA); // ...'$action' determines what is to be done; see below.
 
-$pdfannotator = $DB->get_record('pdfannotator', array('id' => $documentid), '*', MUST_EXIST);
+$pdfannotator = $DB->get_record('pdfannotator', ['id' => $documentid], '*', MUST_EXIST);
 $cm = get_coursemodule_from_instance('pdfannotator', $documentid, $pdfannotator->course, false, MUST_EXIST);
 $context = context_module::instance($cm->id);
 
@@ -62,13 +62,13 @@ if ($action === 'read') {
 
     $page = optional_param('page_Number', 1, PARAM_INT); // Default page number is 1.
 
-    $annotations = array();
+    $annotations = [];
 
-    $records = $DB->get_records('pdfannotator_annotations', array('pdfannotatorid' => $documentid, 'page' => $page));
+    $records = $DB->get_records('pdfannotator_annotations', ['pdfannotatorid' => $documentid, 'page' => $page]);
 
     foreach ($records as $record) {
 
-        $comment = $DB->get_record('pdfannotator_comments', array('annotationid' => $record->id, 'isquestion' => 1));
+        $comment = $DB->get_record('pdfannotator_comments', ['annotationid' => $record->id, 'isquestion' => 1]);
         if ($comment && !pdfannotator_can_see_comment($comment, $context)) {
             continue;
         }
@@ -89,7 +89,7 @@ if ($action === 'read') {
         $annotations[] = $entry;
     }
 
-    $data = array('documentId' => $documentid, 'pageNumber' => $page, 'annotations' => $annotations);
+    $data = ['documentId' => $documentid, 'pageNumber' => $page, 'annotations' => $annotations];
     echo json_encode($data);
 }
 
@@ -101,7 +101,7 @@ if ($action === 'readsingle') {
     $annotationid = required_param('annotationId', PARAM_INT);
     $page = optional_param('page_Number', 1, PARAM_INT);
 
-    $record = $DB->get_record('pdfannotator_annotations', array('id' => $annotationid), '*', MUST_EXIST);
+    $record = $DB->get_record('pdfannotator_annotations', ['id' => $annotationid], '*', MUST_EXIST);
 
     $annotation = json_decode($record->data);
     // Add general annotation data.
@@ -113,7 +113,7 @@ if ($action === 'readsingle') {
     $annotation->class = "Annotation";
     $annotation->page = $record->page;
     $annotation->uuid = $record->id;
-    $data = array('documentId' => $documentid, 'annotation' => $annotation);
+    $data = ['documentId' => $documentid, 'annotation' => $annotation];
     echo json_encode($data);
     return;
 }
@@ -175,7 +175,7 @@ if ($action === 'create') {
             $data['rectangles'] = $annotation['rectangles'];
             break;
         case 'textbox':
-            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', array('id' => $documentid),
+            $studenttextboxesallowed = $DB->get_field('pdfannotator', 'use_studenttextbox', ['id' => $documentid],
                 $strictness = MUST_EXIST);
             $alwaystextboxallowed = has_capability('mod/pdfannotator:usetextbox', $context);
             if ($studenttextboxesallowed != 1 && !$alwaystextboxallowed) {
@@ -194,8 +194,8 @@ if ($action === 'create') {
     $insertiondata = json_encode($data);
 
     // 1.4 Insert a new record into mdl_pdfannotator_annotations.
-    $newannotationid = $DB->insert_record($table, array("pdfannotatorid" => $documentid, "page" => $pageid, "userid" => $USER->id,
-        "annotationtypeid" => $typeid, "data" => $insertiondata, "timecreated" => time()), true, false);
+    $newannotationid = $DB->insert_record($table, ["pdfannotatorid" => $documentid, "page" => $pageid, "userid" => $USER->id,
+        "annotationtypeid" => $typeid, "data" => $insertiondata, "timecreated" => time()], true, false);
     // 2. If the insertion was successful...
     if (isset($newannotationid) && $newannotationid !== false && $newannotationid > 0) {
         // 2.1 set additional data to send back to the client.
@@ -313,8 +313,8 @@ if ($action === 'getQuestions') {
         echo json_encode($questions);
     } else if ($pageid == -1) {
         $questions = pdfannotator_comment::get_all_questions($documentid, $context);
-        $pdfannotatorname = $DB->get_field('pdfannotator', 'name', array('id' => $documentid), $strictness = MUST_EXIST);
-        $result = array('questions' => $questions, 'pdfannotatorname' => $pdfannotatorname);
+        $pdfannotatorname = $DB->get_field('pdfannotator', 'name', ['id' => $documentid], $strictness = MUST_EXIST);
+        $result = ['questions' => $questions, 'pdfannotatorname' => $pdfannotatorname];
         echo json_encode($result);
     } else {
         $questions = pdfannotator_comment::get_questions($documentid, $pageid, $context);
@@ -482,8 +482,8 @@ if ($action === 'subscribeQuestion') {
         $thiscourse = $pdfannotator->course;
         $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
-        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage,
-            'answerfilter' => 0);
+        $urlparams = ['action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage,
+            'answerfilter' => 0];
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         redirect($url->out());
         return;
@@ -516,7 +516,7 @@ if ($action === 'unsubscribeQuestion') {
         $thiscourse = $pdfannotator->course;
         $cmid = get_coursemodule_from_instance('pdfannotator', $thisannotator, $thiscourse, false, MUST_EXIST)->id;
 
-        $urlparams = array('action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage);
+        $urlparams = ['action' => 'overviewanswers', 'id' => $cmid, 'page' => 0, 'itemsperpage' => $itemsperpage];
         $url = new moodle_url($CFG->wwwroot . '/mod/pdfannotator/view.php', $urlparams);
         redirect($url->out());
         return;
@@ -558,7 +558,7 @@ if ($action === 'markReportAsSeen') {
     $reportid = required_param('reportid', PARAM_INT);
     $openannotator = required_param('openannotator', PARAM_INT);
 
-    if ($DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 1), $bulk = false)) {
+    if ($DB->update_record('pdfannotator_reports', ["id" => $reportid, "seen" => 1], $bulk = false)) {
         echo json_encode(['status' => 'success', 'reportid' => $reportid]);
     } else {
         echo json_encode(['status' => 'error']);
@@ -576,7 +576,7 @@ if ($action === 'markReportAsUnseen') {
     $reportid = required_param('reportid', PARAM_INT);
     $openannotator = required_param('openannotator', PARAM_INT);
 
-    if ($DB->update_record('pdfannotator_reports', array("id" => $reportid, "seen" => 0), $bulk = false)) {
+    if ($DB->update_record('pdfannotator_reports', ["id" => $reportid, "seen" => 0], $bulk = false)) {
         echo json_encode(['status' => 'success', 'reportid' => $reportid]);
     } else {
         echo json_encode(['status' => 'error']);
