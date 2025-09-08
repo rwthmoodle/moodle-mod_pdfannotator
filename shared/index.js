@@ -8135,20 +8135,24 @@ function startIndex(
                                     documentId = _getMetadata.documentId;
                                     pageNumber = _getMetadata.pageNumber;
                                     deleteUndefinedPin();
-                                    var coordinates = {
-                                        x: e.changedTouches[0].clientX,
-                                        y: e.changedTouches[0].clientY,
-                                    };
-                                    renderPinTouchscreen(coordinates);
-                                    [textarea, data] = (0, _commentWrapper.openCommentTouchscreen)(
-                                        e,
-                                        handleCancelClick,
-                                        handleSubmitClick,
-                                        handleToolbarClick,
-                                        handleSubmitBlur,
-                                        'pin'
-                                    );
+                                    var fn = () => {
+                                        [textarea, data] = (0, _commentWrapper.openCommentTouchscreen)(
+                                            e,
+                                            handleCancelClick,
+                                            handleSubmitClick,
+                                            handleToolbarClick,
+                                            handleSubmitBlur,
+                                            'pin'
+                                        );
+                                        var coordinates = {
+                                            x: e.changedTouches[0].clientX,
+                                            y: e.changedTouches[0].clientY,
+                                        };
+                                        renderPinTouchscreen(coordinates);
+                                    }
+                                    _commentWrapper.loadEditor('add', 0, fn);
                                 }
+
 
                                 /**
                                  * If the toolbar is clicked, the point tool should be disabled and the commentswrapper should be closed
