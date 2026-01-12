@@ -8827,27 +8827,30 @@ function startIndex(
                                                 return;
                                             }
                                             var _svg = overlay.parentNode.querySelector('svg.annotationLayer');
-                                            renderRect(
-                                                _type,
-                                                [
-                                                    {
-                                                        top: parseInt(overlay.style.top, 10) + rect.top,
-                                                        left: parseInt(overlay.style.left, 10) + rect.left,
-                                                        width: parseInt(overlay.style.width, 10),
-                                                        height: parseInt(overlay.style.height, 10),
-                                                    },
-                                                ],
-                                                null
-                                            );
+                                            var fn = () => {
+                                                [textarea, data] = (0, _commentWrapper.openCommentTouchscreen)(
+                                                    e,
+                                                    handleCancelTouch,
+                                                    handleSubmitClick,
+                                                    handleToolbarClick,
+                                                    handleSubmitBlur,
+                                                    _type
+                                                );
+                                                renderRect(
+                                                    _type,
+                                                    [
+                                                        {
+                                                            top: parseInt(overlay.style.top, 10) + rect.top,
+                                                            left: parseInt(overlay.style.left, 10) + rect.left,
+                                                            width: parseInt(overlay.style.width, 10),
+                                                            height: parseInt(overlay.style.height, 10),
+                                                        },
+                                                    ],
+                                                    null
+                                                );
+                                            }
+                                            _commentWrapper.loadEditor('add', 0, fn);
 
-                                            [textarea, data] = (0, _commentWrapper.openComment)(
-                                                e,
-                                                handleCancelTouch,
-                                                handleSubmitClick,
-                                                handleToolbarClick,
-                                                handleSubmitBlur,
-                                                _type
-                                            );
                                         } else if ((rectsSelection = getSelectionRects()) && _type !== 'area') {
                                             renderRect(
                                                 _type,
