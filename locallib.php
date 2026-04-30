@@ -44,15 +44,22 @@ require_once($CFG->dirroot . '/mod/pdfannotator/constants.php');
  * @return does not return
  */
 function pdfannotator_display_embed($pdfannotator, $cm, $course, $file, $page = 1, $annoid = null, $commid = null) {
-    global $CFG, $PAGE, $OUTPUT, $USER;
+    global $PAGE, $OUTPUT, $USER;
 
     // The revision attribute's existance is demanded by moodle for versioning and could be saved in the pdfannotator table in the future.
     // Note, however, that we forbid file replacement in order to prevent a change of meaning in other people's comments.
     $pdfannotator->revision = 1;
 
     $context = context_module::instance($cm->id);
-    $path = '/' . $context->id . '/mod_pdfannotator/content/' . $pdfannotator->revision . $file->get_filepath() . $file->get_filename();
-    $fullurl = file_encode_url($CFG->wwwroot . '/pluginfile.php', $path, false);
+    $fullurl = \moodle_url::make_pluginfile_url(
+        $context->id,
+        'mod_pdfannotator',
+        'content',
+        $pdfannotator->revision,
+        $file->get_filepath(),
+        $file->get_filename(),
+        true
+    )->out(false);
 
     $documentobject = new stdClass();
     $documentobject->annotatorid = $pdfannotator->id;
