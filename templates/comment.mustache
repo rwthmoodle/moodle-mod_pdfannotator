@@ -16,10 +16,10 @@
             <div class="chat-message-meta">
                 {{# dropdown }}
                     <div class="dropdown">          
-                        <a class="dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="dropdown-toggle" id="dropdownMenuButton-{{ uuid }}" data-toggle="dropdown" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                             <i title="{{# str }} actiondropdown, pdfannotator {{/ str }}" class="icon fa fa-cog fa-fw"></i>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-end">
                             {{# report }}
                                 <span class="comment-report-button">
                                     <form action="view.php" method="POST">
