@@ -635,12 +635,12 @@ function pdfannotator_get_recent_mod_activity(&$activities, &$index, $timestart,
     }
 
     if (class_exists('\core_user\fields')) {
-        $allnames = \core_user\fields::for_name()->get_sql('u', true);
+        $allnames = \core_user\fields::for_name()->get_sql('u', true)->selects;
     } else {
          $allnames = get_all_user_name_fields(true, 'u');
     }
 
-    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion,
+    if (!$posts = $DB->get_records_sql("SELECT p.*,c.id, c.userid AS userid, c.visibility, c.content, c.timecreated, c.annotationid, c.isquestion
                                               $allnames, u.email, u.picture, u.imagealt, u.email, a.page
                                          FROM {pdfannotator} p
                                               JOIN {pdfannotator_annotations} a ON  a.pdfannotatorid=p.id
